@@ -68,6 +68,39 @@ export type Database = {
         }
         Relationships: []
       }
+      election_symbols: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          party_name: string
+          sort_order: number
+          symbol_image_path: string | null
+          symbol_name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          party_name: string
+          sort_order?: number
+          symbol_image_path?: string | null
+          symbol_name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          party_name?: string
+          sort_order?: number
+          symbol_image_path?: string | null
+          symbol_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           candidate_name_english: string
@@ -76,14 +109,22 @@ export type Database = {
           created_at: string
           district: string
           election_symbol: string
+          election_symbol_id: string | null
           gram_panchayat: string
           id: string
           ip_address: string | null
           order_id: string
           panchayat_samiti: string
+          party_name_snapshot: string | null
+          payment_amount: number | null
+          payment_screenshot_path: string | null
+          payment_status: string
+          payment_txn_id: string | null
+          payment_updated_at: string | null
           photo_path: string | null
           slogan: string | null
           status: string
+          symbol_name_snapshot: string | null
           ward_number: string
         }
         Insert: {
@@ -93,14 +134,22 @@ export type Database = {
           created_at?: string
           district: string
           election_symbol: string
+          election_symbol_id?: string | null
           gram_panchayat: string
           id?: string
           ip_address?: string | null
           order_id: string
           panchayat_samiti: string
+          party_name_snapshot?: string | null
+          payment_amount?: number | null
+          payment_screenshot_path?: string | null
+          payment_status?: string
+          payment_txn_id?: string | null
+          payment_updated_at?: string | null
           photo_path?: string | null
           slogan?: string | null
           status?: string
+          symbol_name_snapshot?: string | null
           ward_number: string
         }
         Update: {
@@ -110,15 +159,109 @@ export type Database = {
           created_at?: string
           district?: string
           election_symbol?: string
+          election_symbol_id?: string | null
           gram_panchayat?: string
           id?: string
           ip_address?: string | null
           order_id?: string
           panchayat_samiti?: string
+          party_name_snapshot?: string | null
+          payment_amount?: number | null
+          payment_screenshot_path?: string | null
+          payment_status?: string
+          payment_txn_id?: string | null
+          payment_updated_at?: string | null
           photo_path?: string | null
           slogan?: string | null
           status?: string
+          symbol_name_snapshot?: string | null
           ward_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_election_symbol_id_fkey"
+            columns: ["election_symbol_id"]
+            isOneToOne: false
+            referencedRelation: "election_symbols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_secrets: {
+        Row: {
+          created_at: string
+          id: string
+          paypur_api_key: string | null
+          paypur_signing_secret: string | null
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          paypur_api_key?: string | null
+          paypur_signing_secret?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          paypur_api_key?: string | null
+          paypur_signing_secret?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_settings: {
+        Row: {
+          amount: number | null
+          created_at: string
+          display_name: string | null
+          id: string
+          instructions: string | null
+          paypur_amount: number | null
+          paypur_base_url: string
+          paypur_enabled: boolean
+          paypur_failure_url: string | null
+          paypur_success_url: string | null
+          qr_image_path: string | null
+          singleton: boolean
+          updated_at: string
+          upi_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          instructions?: string | null
+          paypur_amount?: number | null
+          paypur_base_url?: string
+          paypur_enabled?: boolean
+          paypur_failure_url?: string | null
+          paypur_success_url?: string | null
+          qr_image_path?: string | null
+          singleton?: boolean
+          updated_at?: string
+          upi_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          instructions?: string | null
+          paypur_amount?: number | null
+          paypur_base_url?: string
+          paypur_enabled?: boolean
+          paypur_failure_url?: string | null
+          paypur_success_url?: string | null
+          qr_image_path?: string | null
+          singleton?: boolean
+          updated_at?: string
+          upi_id?: string | null
         }
         Relationships: []
       }

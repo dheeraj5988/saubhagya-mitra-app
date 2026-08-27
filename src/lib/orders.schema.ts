@@ -23,7 +23,10 @@ export const orderSchema = z.object({
   panchayat_samiti: z.string().trim().min(1).max(120),
   gram_panchayat: z.string().trim().min(1).max(120),
   ward_number: z.string().trim().min(1).max(20),
-  election_symbol: z.string().trim().min(1).max(120),
+  election_symbol: z.string().trim().min(1).max(240),
+  election_symbol_id: z.string().uuid().nullable().optional(),
+  party_name_snapshot: z.string().trim().max(120).nullable().optional(),
+  symbol_name_snapshot: z.string().trim().max(120).nullable().optional(),
   slogan: z.string().trim().max(200).optional().nullable(),
   // Must match the shape the storage upload policy permits.
   photo_path: z.string().regex(/^orders\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png)$/, "Invalid photo path"),

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { PAYMENT_STATUSES } from "./catalog.schema";
 import { ORDER_STATUSES } from "./orders.schema";
 
 const token = z.string().regex(/^[0-9a-f]{64}$/, "Invalid session token");
@@ -29,6 +30,7 @@ export const ordersQuerySchema = z.object({
   search: z.string().max(120).default(""),
   ward: z.string().max(40).default("all"),
   status: z.enum([...ORDER_STATUSES, "all"]).default("all"),
+  payment_status: z.enum([...PAYMENT_STATUSES, "all"]).default("all"),
   page: z.number().int().min(1).max(10_000).default(1),
   page_size: z.number().int().min(1).max(100).default(25),
 });
@@ -68,6 +70,14 @@ export type AdminOrder = {
   ip_address: string | null;
   status: string;
   created_at: string;
+  election_symbol_id: string | null;
+  party_name_snapshot: string | null;
+  symbol_name_snapshot: string | null;
+  payment_status: string;
+  payment_screenshot_path: string | null;
+  payment_txn_id: string | null;
+  payment_amount: number | null;
+  payment_updated_at: string | null;
 };
 
 export type AdminLead = {
