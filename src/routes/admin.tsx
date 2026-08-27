@@ -947,19 +947,23 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, orderTotal)} of{" "}
                   {orderTotal}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={page === 1}
+                    disabled={loading || page === 1}
                     onClick={() => setPage((p) => p - 1)}
                   >
                     Previous
                   </Button>
+                  <span className="tabular-nums">
+                    Page {page} / {pageCount}
+                  </span>
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={page >= pageCount}
+                    disabled={loading || page >= pageCount}
                     onClick={() => setPage((p) => p + 1)}
                   >
                     Next
