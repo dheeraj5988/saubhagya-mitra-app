@@ -342,7 +342,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     [debouncedSearch, ward, status, page],
   );
   const leadsQuery = useMemo(
-    () => ({ search: debouncedLeadSearch, date: leadDate, page: leadPage, page_size: PAGE_SIZE }),
+    () => ({
+      search: debouncedLeadSearch,
+      date: leadDate,
+      tz_offset: localTzOffset(),
+      page: leadPage,
+      page_size: PAGE_SIZE,
+    }),
     [debouncedLeadSearch, leadDate, leadPage],
   );
 
