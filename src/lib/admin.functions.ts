@@ -76,11 +76,23 @@ export const adminLogin = createServerFn({ method: "POST" })
 export const adminLogout = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => tokenSchema.parse(data))
   .handler(async ({ data }) => {
-    const { destroySession } = await import("./admin.server");
-    // Deleting by token hash is itself the authorization check: only the holder
-    // of the real token can remove that row.
+    const { assertSession, destroySession, UNAUTHORIZED } = await import("./admin.server");
+
+    // Validate server-side first so logout is a deliberate act on a real
+    // session, not an unauthenticated way to probe/delete arbitrary rows.
+    try {
+      await assertSession(data.token);
+    } catch (err) {
+      // An already-expired or unknown session is not an error worth surfacing:
+      // the caller wants to be signed out and the client clears its token
+      // regardless. Anything else is a genuine failure.
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes(UNAUTHORIZED)) return { ok: true as const, already_expired: true };
+      throw err;
+    }
+
     await destroySession(data.token);
-    return { ok: true };
+    return { ok: true as const, already_expired: false };
   });
 
 /** KPI counts computed by the database — never derived from a partial page. */
@@ -102,7 +114,9 @@ export const adminOverview = createServerFn({ method: "POST" })
       countOrders("In-Process"),
       countOrders("Completed"),
       db.from("visitor_leads").select("id", { count: "exact", head: true }),
-      db.from("orders").select("ward_number").limit(2000),
+      // DISTINCT across the whole table via a security-definer function, so the
+      // ward list stays complete past any row limit.
+      db.rpc("admin_distinct_wards"),
     ]);
 
     const kpis: AdminKpis = {
@@ -113,9 +127,10 @@ export const adminOverview = createServerFn({ method: "POST" })
       leads: leads.count ?? 0,
     };
 
-    const wards = Array.from(
-      new Set((wardRows.data ?? []).map((r) => r.ward_number).filter(Boolean)),
-    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const wards = ((wardRows.data ?? []) as { ward_number: string }[])
+      .map((r) => r.ward_number)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
     return { kpis, wards };
   });
