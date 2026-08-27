@@ -3,7 +3,6 @@ import {
   BadgeCheck,
   Clock3,
   FileText,
-  IndianRupee,
   MessageCircle,
   Phone,
   ShieldCheck,
@@ -14,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { OrderForm } from "@/components/OrderForm";
-import { CONTACT_DISPLAY, PRICE_PER_1000, buildEnquiryWhatsAppUrl } from "@/lib/campaign";
+import { CONTACT_DISPLAY, buildEnquiryWhatsAppUrl } from "@/lib/campaign";
 
 const TITLE = "सौभाग्य मतदाता पर्ची सेवा | Saubhagya Matdata Parchi";
 const DESCRIPTION =
@@ -55,6 +54,14 @@ const FEATURES = [
     title: "डेटा सुरक्षित",
     body: "आपकी मतदाता सूची व जानकारी पूर्णतः गोपनीय एवं सुरक्षित रखी जाती है।",
   },
+];
+
+const BENEFITS: string[] = [
+  "उम्मीदवार के नाम व फोटो सहित प्रोफेशनल डिज़ाइन",
+  "चुनाव चिन्ह के साथ कस्टम ब्रांडिंग",
+  "WhatsApp आधारित त्वरित सपोर्ट",
+  "राजस्थान पंचायत चुनावों के लिए विशेष सेवा",
+  "ड्राफ्ट अप्रूवल के बाद अंतिम डिलीवरी",
 ];
 
 const STEPS = [
@@ -168,20 +175,31 @@ function Index() {
           </div>
         </section>
 
-        {/* Pricing */}
+        {/* Trust / conversion */}
         <section className="mx-auto max-w-3xl px-4 py-14">
-          <div className="rounded-3xl border border-saffron/30 bg-card p-7 text-center shadow-elevated">
-            <p className="text-sm font-semibold uppercase tracking-wide text-saffron-deep">सरल मूल्य</p>
-            <p className="mt-3 inline-flex items-baseline gap-1 font-display text-4xl font-black text-navy">
-              <IndianRupee className="size-7" />
-              {PRICE_PER_1000.toLocaleString("en-IN")}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">प्रति 1000 मतदाता पर्ची (प्रिंट सहित)</p>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              डिज़ाइन एवं ड्राफ्ट अप्रूवल निःशुल्क। बड़ी मात्रा पर विशेष छूट — WhatsApp पर संपर्क करें।
-            </p>
+          <h2 className="text-center font-display text-2xl font-bold text-navy sm:text-3xl">
+            क्यों चुनें सौभाग्य मतदाता पर्ची सेवा?
+          </h2>
+          <ul className="mt-8 space-y-3">
+            {BENEFITS.map((b) => (
+              <li
+                key={b}
+                className="flex items-start gap-3 rounded-2xl border border-saffron/25 bg-card p-4 shadow-card"
+              >
+                <BadgeCheck className="mt-0.5 size-5 shrink-0 text-saffron-deep" />
+                <span className="text-sm font-medium leading-relaxed text-foreground sm:text-base">{b}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-7 text-center">
+            <Button asChild variant="hero" size="xl">
+              <a href="#order">
+                <FileText className="size-5" /> अभी ऑर्डर करें
+              </a>
+            </Button>
           </div>
         </section>
+
 
         {/* Order form */}
         <section id="order" className="scroll-mt-20 bg-muted/50 px-4 py-14">

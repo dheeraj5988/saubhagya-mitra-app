@@ -96,6 +96,7 @@ export type Database = {
           lead_type: string
           order_id: string | null
           phone: string | null
+          status: string
           updated_at: string
           visited_at: string
         }
@@ -105,6 +106,7 @@ export type Database = {
           lead_type?: string
           order_id?: string | null
           phone?: string | null
+          status?: string
           updated_at?: string
           visited_at?: string
         }
@@ -114,6 +116,7 @@ export type Database = {
           lead_type?: string
           order_id?: string | null
           phone?: string | null
+          status?: string
           updated_at?: string
           visited_at?: string
         }
