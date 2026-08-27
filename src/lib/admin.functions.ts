@@ -244,16 +244,26 @@ export const adminLeads = createServerFn({ method: "POST" })
     };
   });
 
-/** Export honours the exact same filters as the visible table. */
+/**
+ * Export honours the exact same filters as the visible table. It returns the
+ * matched total alongside the rows so the UI can say plainly when the download
+ * was truncated at EXPORT_LIMIT rather than implying it holds every record.
+ */
 export const adminExportOrders = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => ordersExportSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
-    const res = await selectOrders(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, false);
+    const res = await selectOrders(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, true);
     if (res.error) throw new Error(res.error.message);
+    const matched = res.count ?? (res.data?.length ?? 0);
     // photo_path is intentionally omitted: it is an internal storage key.
-    return { orders: (res.data ?? []) as unknown as AdminOrder[] };
+    return {
+      orders: (res.data ?? []) as unknown as AdminOrder[],
+      matched,
+      limit: EXPORT_LIMIT,
+      capped: matched > EXPORT_LIMIT,
+    };
   });
 
 export const adminExportLeads = createServerFn({ method: "POST" })
@@ -261,9 +271,15 @@ export const adminExportLeads = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
-    const res = await selectLeads(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, false);
+    const res = await selectLeads(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, true);
     if (res.error) throw new Error(res.error.message);
-    return { leads: (res.data ?? []) as unknown as AdminLead[] };
+    const matched = res.count ?? (res.data?.length ?? 0);
+    return {
+      leads: (res.data ?? []) as unknown as AdminLead[],
+      matched,
+      limit: EXPORT_LIMIT,
+      capped: matched > EXPORT_LIMIT,
+    };
   });
 
 export const adminUpdateStatus = createServerFn({ method: "POST" })
