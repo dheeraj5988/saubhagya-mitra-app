@@ -51,19 +51,25 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  adminDashboard,
   adminDeleteOrder,
+  adminExportLeads,
+  adminExportOrders,
+  adminLeads,
   adminLogin,
   adminLogout,
+  adminOrders,
+  adminOverview,
   adminPhotoUrl,
   adminUpdateStatus,
 } from "@/lib/admin.functions";
-import type { AdminLead, AdminOrder } from "@/lib/admin.schema";
+import type { AdminKpis, AdminLead, AdminOrder } from "@/lib/admin.schema";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/orders.schema";
 import {
   ADMIN_TOKEN_KEY,
   downloadCsv,
   formatDateTime,
+  isTokenShaped,
+  isUnauthorized,
   leadTypeLabel,
   telLink,
   waLink,
@@ -75,8 +81,11 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin Dashboard | Saubhagya" },
-      { name: "description", content: "Internal operations console for Saubhagya Matdata Parchi orders." },
-      { name: "robots", content: "noindex, nofollow" },
+      {
+        name: "description",
+        content: "Internal operations console for Saubhagya Matdata Parchi orders.",
+      },
+      { name: "robots", content: "noindex, nofollow, noarchive, nosnippet" },
       { property: "og:title", content: "Admin Dashboard | Saubhagya" },
       { property: "og:description", content: "Internal operations console." },
     ],
@@ -85,7 +94,9 @@ export const Route = createFileRoute("/admin")({
 });
 
 const PAGE_SIZE = 25;
+const POLL_MS = 15_000;
 
+/** Desktop gate boundary: blocked below 1024px, usable at exactly 1024px+. */
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
   useEffect(() => {
@@ -96,6 +107,15 @@ function useIsDesktop() {
     return () => mql.removeEventListener("change", update);
   }, []);
   return isDesktop;
+}
+
+function useDebounced<T>(value: T, delay = 350) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
 }
 
 function statusClass(status: string) {
@@ -110,7 +130,11 @@ function AdminPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setToken(window.localStorage.getItem(ADMIN_TOKEN_KEY));
+    const stored = window.localStorage.getItem(ADMIN_TOKEN_KEY);
+    // A malformed/forged value is discarded up front; the server re-validates
+    // every well-formed one against a live session row anyway.
+    if (isTokenShaped(stored)) setToken(stored);
+    else window.localStorage.removeItem(ADMIN_TOKEN_KEY);
     setReady(true);
   }, []);
 
@@ -148,7 +172,6 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const attempts = useRef(0);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -158,14 +181,15 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
     try {
       const result = await login({ data: { password } });
       if (!result.ok) {
-        attempts.current += 1;
-        if (attempts.current === 1 && result.hint) {
-          setHint(result.hint);
-          setError("Incorrect password.");
-        } else {
+        if (result.locked) {
           setHint(null);
-          setError("Invalid password. Please try again.");
+          const minutes = Math.max(1, Math.ceil(result.retry_after_seconds / 60));
+          setError(`Too many failed attempts. Try again in ${minutes} minute(s).`);
+          return;
         }
+        // The server decides whether a hint is warranted (first failure only).
+        setHint(result.hint);
+        setError(result.hint ? "Incorrect password." : "Invalid password. Please try again.");
         return;
       }
       window.localStorage.setItem(ADMIN_TOKEN_KEY, result.token);
@@ -188,7 +212,9 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
           सौ
         </span>
         <h1 className="mt-5 font-display text-xl font-bold text-navy">Admin Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Restricted access — desktop workstation.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Restricted access — desktop workstation.
+        </p>
 
         <div className="mt-6 space-y-2">
           <Label htmlFor="admin-password">Password</Label>
@@ -204,7 +230,10 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
         </div>
 
         {error ? (
-          <p role="alert" className="mt-3 flex items-center gap-1.5 text-sm font-medium text-destructive">
+          <p
+            role="alert"
+            className="mt-3 flex items-center gap-1.5 text-sm font-medium text-destructive"
+          >
             <AlertTriangle className="size-4" /> {error}
           </p>
         ) : null}
@@ -242,47 +271,105 @@ function Kpi({
   );
 }
 
+const EMPTY_KPIS: AdminKpis = { total: 0, pending: 0, process: 0, completed: 0, leads: 0 };
+
 function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => void }) {
-  const fetchDashboard = useServerFn(adminDashboard);
+  const fetchOverview = useServerFn(adminOverview);
+  const fetchOrders = useServerFn(adminOrders);
+  const fetchLeads = useServerFn(adminLeads);
+  const exportOrdersFn = useServerFn(adminExportOrders);
+  const exportLeadsFn = useServerFn(adminExportLeads);
   const logout = useServerFn(adminLogout);
   const updateStatus = useServerFn(adminUpdateStatus);
   const deleteOrder = useServerFn(adminDeleteOrder);
   const photoUrl = useServerFn(adminPhotoUrl);
 
+  const [kpis, setKpis] = useState<AdminKpis>(EMPTY_KPIS);
+  const [wards, setWards] = useState<string[]>([]);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [orderTotal, setOrderTotal] = useState(0);
   const [leads, setLeads] = useState<AdminLead[]>([]);
+  const [leadTotal, setLeadTotal] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [busyPhoto, setBusyPhoto] = useState(false);
 
   const [search, setSearch] = useState("");
   const [ward, setWard] = useState("all");
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState<OrderStatus | "all">("all");
   const [page, setPage] = useState(1);
 
   const [leadSearch, setLeadSearch] = useState("");
   const [leadDate, setLeadDate] = useState("");
+  const [leadPage, setLeadPage] = useState(1);
 
   const [detail, setDetail] = useState<AdminOrder | null>(null);
   const [preview, setPreview] = useState<AdminOrder | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminOrder | null>(null);
+
+  const debouncedSearch = useDebounced(search);
+  const debouncedLeadSearch = useDebounced(leadSearch);
 
   const signOut = useCallback(() => {
     window.localStorage.removeItem(ADMIN_TOKEN_KEY);
     onLogout();
   }, [onLogout]);
 
+  /** Central handler so every action reacts identically to an expired session. */
+  const handleError = useCallback(
+    (err: unknown, fallback: string) => {
+      if (isUnauthorized(err)) {
+        toast.error("Session expired. Please sign in again.");
+        signOut();
+        return true;
+      }
+      toast.error(fallback);
+      return false;
+    },
+    [signOut],
+  );
+
+  useEffect(() => setPage(1), [debouncedSearch, ward, status]);
+  useEffect(() => setLeadPage(1), [debouncedLeadSearch, leadDate]);
+
+  const ordersQuery = useMemo(
+    () => ({ search: debouncedSearch, ward, status, page, page_size: PAGE_SIZE }),
+    [debouncedSearch, ward, status, page],
+  );
+  const leadsQuery = useMemo(
+    () => ({ search: debouncedLeadSearch, date: leadDate, page: leadPage, page_size: PAGE_SIZE }),
+    [debouncedLeadSearch, leadDate, leadPage],
+  );
+
+  // Keep the latest query in a ref so the polling timer never goes stale.
+  const queryRef = useRef({ ordersQuery, leadsQuery });
+  queryRef.current = { ordersQuery, leadsQuery };
+
   const load = useCallback(
     async (silent = false) => {
       if (silent) setRefreshing(true);
       try {
-        const data = await fetchDashboard({ data: { token } });
-        setOrders(data.orders);
-        setLeads(data.leads);
+        const { ordersQuery: oq, leadsQuery: lq } = queryRef.current;
+        const [overview, orderRes, leadRes] = await Promise.all([
+          fetchOverview({ data: { token } }),
+          fetchOrders({ data: { token, ...oq } }),
+          fetchLeads({ data: { token, ...lq } }),
+        ]);
+        setKpis(overview.kpis);
+        setWards(overview.wards);
+        setOrders(orderRes.orders);
+        setOrderTotal(orderRes.total);
+        setLeads(leadRes.leads);
+        setLeadTotal(leadRes.total);
+        setLastSynced(new Date());
         setError(null);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "";
-        if (message.includes("UNAUTHORIZED")) {
+        if (isUnauthorized(err)) {
           toast.error("Session expired. Please sign in again.");
           signOut();
           return;
@@ -293,65 +380,24 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
         setRefreshing(false);
       }
     },
-    [fetchDashboard, token, signOut],
+    [fetchOverview, fetchOrders, fetchLeads, token, signOut],
   );
 
+  // Refetch whenever the server-side query changes.
   useEffect(() => {
-    void load();
-    const timer = setInterval(() => void load(true), 15000);
+    void load(true);
+  }, [load, ordersQuery, leadsQuery]);
+
+  // Realtime is not possible from the browser here: every table is deny-all to
+  // anon/authenticated by design, so we poll through the authenticated server
+  // functions instead rather than weakening RLS.
+  useEffect(() => {
+    const timer = setInterval(() => void load(true), POLL_MS);
     return () => clearInterval(timer);
   }, [load]);
 
-  const kpis = useMemo(
-    () => ({
-      total: orders.length,
-      pending: orders.filter((o) => o.status === "Pending").length,
-      process: orders.filter((o) => o.status === "In-Process").length,
-      completed: orders.filter((o) => o.status === "Completed").length,
-      leads: leads.length,
-    }),
-    [orders, leads],
-  );
-
-  const wards = useMemo(
-    () => Array.from(new Set(orders.map((o) => o.ward_number))).sort(),
-    [orders],
-  );
-
-  const filteredOrders = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return orders.filter((o) => {
-      if (ward !== "all" && o.ward_number !== ward) return false;
-      if (status !== "all" && o.status !== status) return false;
-      if (!q) return true;
-      return [
-        o.order_id,
-        o.candidate_name_hindi,
-        o.candidate_name_english,
-        o.contact_number,
-        o.district,
-        o.gram_panchayat,
-        o.election_symbol,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q);
-    });
-  }, [orders, search, ward, status]);
-
-  useEffect(() => setPage(1), [search, ward, status]);
-
-  const pageCount = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
-  const pageRows = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const filteredLeads = useMemo(() => {
-    const q = leadSearch.trim().toLowerCase();
-    return leads.filter((l) => {
-      if (leadDate && !l.visited_at.startsWith(leadDate)) return false;
-      if (!q) return true;
-      return `${l.ip_address ?? ""} ${l.phone ?? ""}`.toLowerCase().includes(q);
-    });
-  }, [leads, leadSearch, leadDate]);
+  const pageCount = Math.max(1, Math.ceil(orderTotal / PAGE_SIZE));
+  const leadPageCount = Math.max(1, Math.ceil(leadTotal / PAGE_SIZE));
 
   async function changeStatus(order: AdminOrder, next: OrderStatus) {
     const prev = orders;
@@ -359,9 +405,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     try {
       await updateStatus({ data: { token, order_id: order.order_id, status: next } });
       toast.success(`${order.order_id} → ${next}`);
-    } catch {
+      void load(true);
+    } catch (err) {
       setOrders(prev);
-      toast.error("Status update failed.");
+      handleError(err, "Status update failed.");
     }
   }
 
@@ -370,6 +417,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       toast.error("No photo stored for this order.");
       return;
     }
+    setBusyPhoto(true);
     try {
       const { url } = await photoUrl({ data: { token, path: order.photo_path } });
       const a = document.createElement("a");
@@ -377,71 +425,111 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       a.rel = "noopener noreferrer";
       a.download = `${order.order_id}.jpg`;
       a.click();
-    } catch {
-      toast.error("Could not download the photo.");
+    } catch (err) {
+      handleError(err, "Could not download the photo.");
+    } finally {
+      setBusyPhoto(false);
     }
   }
 
   async function confirmDelete() {
     const order = pendingDelete;
     if (!order) return;
-    setPendingDelete(null);
+    setDeleting(true);
     try {
-      await deleteOrder({ data: { token, order_id: order.order_id } });
-      setOrders((rows) => rows.filter((r) => r.id !== order.id));
-      toast.success(`${order.order_id} deleted.`);
-    } catch {
-      toast.error("Delete failed. Please retry.");
+      const result = await deleteOrder({ data: { token, order_id: order.order_id } });
+      setPendingDelete(null);
+      toast.success(
+        order.photo_path && !result.photo_removed
+          ? `${order.order_id} deleted (photo cleanup pending).`
+          : `${order.order_id} deleted.`,
+      );
+      void load(true);
+    } catch (err) {
+      handleError(err, "Delete failed. Please retry.");
+    } finally {
+      setDeleting(false);
     }
   }
 
-  function exportOrders() {
-    downloadCsv("saubhagya-orders.csv", [
-      [
-        "Order ID",
-        "Created",
-        "Candidate (Hindi)",
-        "Candidate (English)",
-        "Phone",
-        "District",
-        "Panchayat Samiti",
-        "Gram Panchayat",
-        "Ward",
-        "Election Symbol",
-        "Slogan",
-        "IP",
-        "Status",
-      ],
-      ...filteredOrders.map((o) => [
-        o.order_id,
-        formatDateTime(o.created_at),
-        o.candidate_name_hindi,
-        o.candidate_name_english,
-        o.contact_number,
-        o.district,
-        o.panchayat_samiti,
-        o.gram_panchayat,
-        o.ward_number,
-        o.election_symbol,
-        o.slogan,
-        o.ip_address,
-        o.status,
-      ]),
-    ]);
+  /** Exports pull the full filtered set from the server, not just this page. */
+  async function exportOrders() {
+    setExporting(true);
+    try {
+      const { orders: rows } = await exportOrdersFn({
+        data: { token, search: debouncedSearch, ward, status },
+      });
+      if (!rows.length) {
+        toast.error("Nothing to export for the current filters.");
+        return;
+      }
+      downloadCsv("saubhagya-orders.csv", [
+        [
+          "Order ID",
+          "Created",
+          "Candidate (Hindi)",
+          "Candidate (English)",
+          "Phone",
+          "District",
+          "Panchayat Samiti",
+          "Gram Panchayat",
+          "Ward",
+          "Election Symbol",
+          "Slogan",
+          "IP",
+          "Status",
+        ],
+        ...rows.map((o) => [
+          o.order_id,
+          formatDateTime(o.created_at),
+          o.candidate_name_hindi,
+          o.candidate_name_english,
+          o.contact_number,
+          o.district,
+          o.panchayat_samiti,
+          o.gram_panchayat,
+          o.ward_number,
+          o.election_symbol,
+          o.slogan,
+          o.ip_address,
+          o.status,
+        ]),
+      ]);
+      toast.success(`Exported ${rows.length} order(s).`);
+    } catch (err) {
+      handleError(err, "Export failed. Please retry.");
+    } finally {
+      setExporting(false);
+    }
   }
 
-  function exportLeads() {
-    downloadCsv("saubhagya-leads.csv", [
-      ["IP Address", "Timestamp", "Mobile", "Lead Type", "Status", "Order ID"],
-      ...filteredLeads.map((l) => [
-        l.ip_address,
-        formatDateTime(l.visited_at),
-        l.phone,
-        leadTypeLabel(l.lead_type),
-        l.status,
-        l.order_id,
-      ]),
-    ]);
+  async function exportLeads() {
+    setExporting(true);
+    try {
+      const { leads: rows } = await exportLeadsFn({
+        data: { token, search: debouncedLeadSearch, date: leadDate },
+      });
+      if (!rows.length) {
+        toast.error("Nothing to export for the current filters.");
+        return;
+      }
+      downloadCsv("saubhagya-leads.csv", [
+        ["IP Address", "Timestamp", "Mobile", "Lead Type", "Status", "Order ID"],
+        ...rows.map((l) => [
+          l.ip_address,
+          formatDateTime(l.visited_at),
+          l.phone,
+          leadTypeLabel(l.lead_type),
+          l.status,
+          l.order_id,
+        ]),
+      ]);
+      toast.success(`Exported ${rows.length} lead(s).`);
+    } catch (err) {
+      handleError(err, "Export failed. Please retry.");
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -453,8 +541,12 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               सौ
             </span>
             <div>
-              <p className="font-display text-sm font-bold leading-tight">सौभाग्य — Admin Dashboard</p>
-              <p className="text-[11px] text-navy-foreground/70">मतदाता पर्ची सेवा · operations console</p>
+              <p className="font-display text-sm font-bold leading-tight">
+                सौभाग्य — Admin Dashboard
+              </p>
+              <p className="text-[11px] text-navy-foreground/70">
+                मतदाता पर्ची सेवा · operations console
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -469,9 +561,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 try {
                   await logout({ data: { token } });
                 } catch {
-                  /* best effort */
+                  /* best effort — the local token is cleared regardless */
                 }
                 signOut();
+                toast.success("Signed out.");
               }}
             >
               <LogOut className="size-4" /> Logout
@@ -497,9 +590,27 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <Users className="mr-1.5 size-4" /> Visitor &amp; Lead Tracker
               </TabsTrigger>
             </TabsList>
-            <Button variant="outline" size="sm" onClick={() => void load(true)} disabled={refreshing}>
-              <RefreshCw className={cn("size-4", refreshing && "animate-spin")} /> Refresh
-            </Button>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">
+                {refreshing
+                  ? "Syncing…"
+                  : lastSynced
+                    ? `Auto-syncs every 15s · updated ${lastSynced.toLocaleTimeString("en-IN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}`
+                    : "Auto-syncs every 15s"}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void load(true)}
+                disabled={refreshing}
+              >
+                <RefreshCw className={cn("size-4", refreshing && "animate-spin")} /> Refresh
+              </Button>
+            </div>
           </div>
 
           <TabsContent value="orders" className="space-y-4">
@@ -526,7 +637,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={status} onValueChange={setStatus}>
+              <Select
+                value={status}
+                onValueChange={(v) => setStatus(v as OrderStatus | "all")}
+              >
                 <SelectTrigger className="h-10 w-[160px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -550,8 +664,18 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               >
                 <X className="size-4" /> Clear filters
               </Button>
-              <Button variant="outline" size="sm" onClick={exportOrders} disabled={!filteredOrders.length}>
-                <Download className="size-4" /> Export CSV
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void exportOrders()}
+                disabled={exporting || !orderTotal}
+              >
+                {exporting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Download className="size-4" />
+                )}{" "}
+                Export CSV
               </Button>
             </div>
 
@@ -569,8 +693,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                     <RefreshCw className="size-4" /> Retry
                   </Button>
                 </div>
-              ) : !filteredOrders.length ? (
-                <p className="py-16 text-center text-sm text-muted-foreground">No orders match your filters.</p>
+              ) : !orders.length ? (
+                <p className="py-16 text-center text-sm text-muted-foreground">
+                  No orders match your filters.
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
@@ -595,15 +721,22 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                       </tr>
                     </thead>
                     <tbody>
-                      {pageRows.map((o) => (
-                        <tr key={o.id} className="border-t border-border/70 align-top hover:bg-muted/40">
-                          <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-navy">{o.order_id}</td>
+                      {orders.map((o) => (
+                        <tr
+                          key={o.id}
+                          className="border-t border-border/70 align-top hover:bg-muted/40"
+                        >
+                          <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-navy">
+                            {o.order_id}
+                          </td>
                           <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
                             {formatDateTime(o.created_at)}
                           </td>
                           <td className="px-3 py-2.5">
                             <p className="font-medium">{o.candidate_name_hindi}</p>
-                            <p className="text-xs text-muted-foreground">{o.candidate_name_english}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {o.candidate_name_english}
+                            </p>
                           </td>
                           <td className="px-3 py-2.5 text-xs">
                             {o.gram_panchayat} / वार्ड {o.ward_number}
@@ -611,7 +744,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                             <span className="text-muted-foreground">{o.district}</span>
                           </td>
                           <td className="px-3 py-2.5 text-xs">{o.election_symbol}</td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs">{o.contact_number}</td>
+                          <td className="whitespace-nowrap px-3 py-2.5 text-xs">
+                            {o.contact_number}
+                          </td>
                           <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
                             {o.ip_address ?? "—"}
                           </td>
@@ -640,7 +775,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               value={o.status}
                               onValueChange={(v) => void changeStatus(o, v as OrderStatus)}
                             >
-                              <SelectTrigger className={cn("h-8 w-[130px] text-xs", statusClass(o.status))}>
+                              <SelectTrigger
+                                className={cn("h-8 w-[130px] text-xs", statusClass(o.status))}
+                              >
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -654,20 +791,30 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           </td>
                           <td className="px-3 py-2.5">
                             <div className="flex items-center gap-1">
-                              <Button size="icon" variant="ghost" title="View details" onClick={() => setDetail(o)}>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                title="View details"
+                                onClick={() => setDetail(o)}
+                              >
                                 <Eye className="size-4" />
                               </Button>
                               <Button
                                 size="icon"
                                 variant="ghost"
                                 title="Download photo"
+                                disabled={busyPhoto || !o.photo_path}
                                 onClick={() => void download(o)}
                               >
                                 <Download className="size-4" />
                               </Button>
                               {waLink(o.contact_number) ? (
                                 <Button asChild size="icon" variant="ghost" title="WhatsApp chat">
-                                  <a href={waLink(o.contact_number)!} target="_blank" rel="noopener noreferrer">
+                                  <a
+                                    href={waLink(o.contact_number)!}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
                                     <MessageCircle className="size-4 text-success" />
                                   </a>
                                 </Button>
@@ -699,14 +846,19 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               )}
             </div>
 
-            {filteredOrders.length > PAGE_SIZE ? (
+            {orderTotal > PAGE_SIZE ? (
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>
-                  Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filteredOrders.length)} of{" "}
-                  {filteredOrders.length}
+                  Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, orderTotal)} of{" "}
+                  {orderTotal}
                 </span>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
                     Previous
                   </Button>
                   <Button
@@ -729,7 +881,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <Input
                   value={leadSearch}
                   onChange={(e) => setLeadSearch(e.target.value)}
-                  placeholder="Search IP address or mobile"
+                  placeholder="Search IP address, mobile or order ID"
                   className="h-10 pl-9"
                 />
               </div>
@@ -749,8 +901,18 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               >
                 <X className="size-4" /> Clear filters
               </Button>
-              <Button variant="outline" size="sm" onClick={exportLeads} disabled={!filteredLeads.length}>
-                <Download className="size-4" /> Export CSV
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void exportLeads()}
+                disabled={exporting || !leadTotal}
+              >
+                {exporting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Download className="size-4" />
+                )}{" "}
+                Export CSV
               </Button>
             </div>
 
@@ -759,24 +921,32 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <div className="grid place-items-center gap-2 py-16 text-muted-foreground">
                   <Loader2 className="size-6 animate-spin" />
                 </div>
-              ) : !filteredLeads.length ? (
-                <p className="py-16 text-center text-sm text-muted-foreground">No leads captured yet.</p>
+              ) : !leads.length ? (
+                <p className="py-16 text-center text-sm text-muted-foreground">
+                  No leads captured yet.
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
                       <tr>
-                        {["IP Address", "Timestamp", "Captured Mobile", "Lead Type", "Status", "Order ID", "Actions"].map(
-                          (h) => (
-                            <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
-                              {h}
-                            </th>
-                          ),
-                        )}
+                        {[
+                          "IP Address",
+                          "Timestamp",
+                          "Captured Mobile",
+                          "Lead Type",
+                          "Status",
+                          "Order ID",
+                          "Actions",
+                        ].map((h) => (
+                          <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
+                            {h}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredLeads.map((l) => (
+                      {leads.map((l) => (
                         <tr key={l.id} className="border-t border-border/70 hover:bg-muted/40">
                           <td className="px-3 py-2.5 text-xs">{l.ip_address ?? "—"}</td>
                           <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
@@ -789,7 +959,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                             </Badge>
                           </td>
                           <td className="px-3 py-2.5 text-xs">{l.status}</td>
-                          <td className="px-3 py-2.5 text-xs font-semibold text-navy">{l.order_id ?? "—"}</td>
+                          <td className="px-3 py-2.5 text-xs font-semibold text-navy">
+                            {l.order_id ?? "—"}
+                          </td>
                           <td className="px-3 py-2.5">
                             <div className="flex gap-1">
                               {telLink(l.phone) ? (
@@ -801,7 +973,11 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               ) : null}
                               {waLink(l.phone) ? (
                                 <Button asChild size="icon" variant="ghost" title="WhatsApp">
-                                  <a href={waLink(l.phone)!} target="_blank" rel="noopener noreferrer">
+                                  <a
+                                    href={waLink(l.phone)!}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
                                     <MessageCircle className="size-4 text-success" />
                                   </a>
                                 </Button>
@@ -815,6 +991,33 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 </div>
               )}
             </div>
+
+            {leadTotal > PAGE_SIZE ? (
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>
+                  Showing {(leadPage - 1) * PAGE_SIZE + 1}–
+                  {Math.min(leadPage * PAGE_SIZE, leadTotal)} of {leadTotal}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={leadPage === 1}
+                    onClick={() => setLeadPage((p) => p - 1)}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={leadPage >= leadPageCount}
+                    onClick={() => setLeadPage((p) => p + 1)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            ) : null}
           </TabsContent>
         </Tabs>
       </main>
@@ -837,8 +1040,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           )}
           <DialogFooter>
             {preview ? (
-              <Button variant="outline" onClick={() => void download(preview)}>
-                <Download className="size-4" /> Download Photo
+              <Button variant="outline" disabled={busyPhoto} onClick={() => void download(preview)}>
+                {busyPhoto ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Download className="size-4" />
+                )}{" "}
+                Download Photo
               </Button>
             ) : null}
           </DialogFooter>
@@ -850,7 +1058,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Order {detail?.order_id}</DialogTitle>
-            <DialogDescription>{detail ? formatDateTime(detail.created_at) : null}</DialogDescription>
+            <DialogDescription>
+              {detail ? formatDateTime(detail.created_at) : null}
+            </DialogDescription>
           </DialogHeader>
           {detail ? (
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
@@ -866,29 +1076,53 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 ["Slogan", detail.slogan ?? "—"],
                 ["IP Address", detail.ip_address ?? "—"],
                 ["Status", detail.status],
-              ].map(([k, v]) => (
-                <div key={k}>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{k}</dt>
-                  <dd className="mt-0.5 font-medium">{v}</dd>
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {label}
+                  </dt>
+                  <dd className="mt-0.5 font-medium">{value}</dd>
                 </div>
               ))}
             </dl>
           ) : null}
+          <DialogFooter>
+            {detail && waLink(detail.contact_number) ? (
+              <Button asChild variant="success">
+                <a href={waLink(detail.contact_number)!} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="size-4" /> WhatsApp candidate
+                </a>
+              </Button>
+            ) : null}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirm */}
-      <AlertDialog open={Boolean(pendingDelete)} onOpenChange={(open) => !open && setPendingDelete(null)}>
+      {/* Delete confirmation */}
+      <AlertDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => !open && !deleting && setPendingDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {pendingDelete?.order_id}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes the order record and its stored candidate photo. This cannot be undone.
+              This permanently removes the order record and its uploaded candidate photo. This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void confirmDelete()}>Delete</AlertDialogAction>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmDelete();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="size-4 animate-spin" /> : null} Delete order
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
