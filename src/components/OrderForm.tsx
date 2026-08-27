@@ -367,7 +367,7 @@ export function OrderForm() {
                   <img
                     src={photoPreview}
                     alt="चयनित प्रत्याशी फोटो का पूर्वावलोकन"
-                    className="size-20 rounded-xl border border-border object-cover shadow-[var(--shadow-card)]"
+                    className="size-20 rounded-xl border border-border object-cover shadow-card"
                   />
                   <Button
                     type="button"

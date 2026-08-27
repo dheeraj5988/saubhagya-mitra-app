@@ -110,7 +110,7 @@ function Index() {
                   <FileText className="size-5" /> अभी ऑर्डर करें
                 </a>
               </Button>
-              <Button asChild variant="outline" size="xl" className="border-navy-foreground/70 bg-navy-foreground/10 text-white hover:bg-navy-foreground/20">
+              <Button asChild variant="outline" size="xl" className="border-navy-foreground/70 bg-navy-foreground/10 text-navy-foreground hover:bg-navy-foreground/20">
                 <a href={`tel:+91${CONTACT_DISPLAY.replace(/\D/g, "").slice(-10)}`}>
                   <Phone className="size-5" /> {CONTACT_DISPLAY}
                 </a>
@@ -209,7 +209,7 @@ function Index() {
                 <MessageCircle className="size-5" /> WhatsApp पर संपर्क करें
               </a>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-navy-foreground/40 bg-navy-foreground/10 text-white hover:bg-navy-foreground/20">
+            <Button asChild variant="outline" size="lg" className="border-navy-foreground/40 bg-navy-foreground/10 text-navy-foreground hover:bg-navy-foreground/20">
               <a href={`tel:+91${CONTACT_DISPLAY.replace(/\D/g, "").slice(-10)}`}>
                 <Phone className="size-4" /> {CONTACT_DISPLAY}
               </a>
