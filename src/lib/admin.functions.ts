@@ -198,7 +198,7 @@ type LeadsQuery = ReturnType<typeof leadsQuerySchema.parse>;
 
 async function selectLeads(
   db: Awaited<ReturnType<(typeof import("./admin.server"))["assertSession"]>>,
-  filters: Pick<LeadsQuery, "search" | "date">,
+  filters: Pick<LeadsQuery, "search" | "date" | "tz_offset">,
   range: { from: number; to: number },
   withCount: boolean,
 ) {
@@ -209,7 +209,11 @@ async function selectLeads(
     .order("visited_at", { ascending: false });
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
-    const start = new Date(`${filters.date}T00:00:00.000Z`);
+    // Resolve the picked day against the operator's local midnight. Their
+    // offset (minutes to add to local time to reach UTC, e.g. -330 for IST)
+    // converts local midnight into the correct UTC instant.
+    const localMidnightUtc = Date.parse(`${filters.date}T00:00:00.000Z`);
+    const start = new Date(localMidnightUtc + filters.tz_offset * 60_000);
     const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
     query = query.gte("visited_at", start.toISOString()).lt("visited_at", end.toISOString());
   }
