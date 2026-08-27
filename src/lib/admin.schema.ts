@@ -42,6 +42,7 @@ export type AdminLead = {
   ip_address: string | null;
   phone: string | null;
   lead_type: string;
+  status: string;
   order_id: string | null;
   visited_at: string;
   updated_at: string;
