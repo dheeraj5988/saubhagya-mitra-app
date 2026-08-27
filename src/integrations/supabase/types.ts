@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_login_attempts: {
+        Row: {
+          client_key: string
+          created_at: string
+          failed_count: number
+          first_failed_at: string
+          id: string
+          last_failed_at: string
+          locked_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_key: string
+          created_at?: string
+          failed_count?: number
+          first_failed_at?: string
+          id?: string
+          last_failed_at?: string
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_key?: string
+          created_at?: string
+          failed_count?: number
+          first_failed_at?: string
+          id?: string
+          last_failed_at?: string
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_sessions: {
         Row: {
           created_at: string
