@@ -465,7 +465,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   async function exportOrders() {
     setExporting(true);
     try {
-      const { orders: rows } = await exportOrdersFn({
+      const { orders: rows, matched, limit, capped } = await exportOrdersFn({
         data: { token, search: debouncedSearch, ward, status },
       });
       if (!rows.length) {
