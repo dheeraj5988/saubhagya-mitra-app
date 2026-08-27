@@ -17,7 +17,7 @@ import { CONTACT_DISPLAY, buildEnquiryWhatsAppUrl } from "@/lib/campaign";
 
 const TITLE = "सौभाग्य मतदाता पर्ची सेवा | Saubhagya Matdata Parchi";
 const DESCRIPTION =
-  "राजस्थान पंचायत चुनाव के लिए सरपंच एवं वार्ड पंच प्रत्याशियों हेतु प्रोफेशनल मतदाता पर्ची — फोटो, चुनाव चिन्ह और नारे के साथ, 24 घंटे में डिलीवरी।";
+  "राजस्थान पंचायत चुनाव के लिए सरपंच एवं वार्ड पंच प्रत्याशियों हेतु प्रोफेशनल मतदाता पर्ची — फोटो, चुनाव चिन्ह और नारे के साथ, ड्राफ्ट अप्रूवल के बाद शीघ्र डिलीवरी।";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,7 +41,7 @@ const FEATURES = [
   },
   {
     icon: Clock3,
-    title: "24 घंटे में तैयार",
+    title: "शीघ्र तैयार",
     body: "ऑर्डर मिलते ही डिज़ाइन शुरू — अप्रूवल के बाद तुरंत प्रिंट एवं डिलीवरी।",
   },
   {
@@ -109,7 +109,7 @@ function Index() {
             </h1>
             <p className="mt-4 text-base leading-relaxed text-navy-foreground/90 sm:text-lg">
               सरपंच एवं वार्ड पंच प्रत्याशियों के लिए फोटो, चुनाव चिन्ह और नारे सहित प्रोफेशनल मतदाता
-              पर्ची — बूथवार व्यवस्था के साथ, मात्र 24 घंटे में।
+              पर्ची — बूथवार व्यवस्था के साथ, ड्राफ्ट अप्रूवल के बाद शीघ्र डिलीवरी।
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild variant="hero" size="xl">
@@ -125,7 +125,7 @@ function Index() {
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-navy-foreground/85">
               <span className="inline-flex items-center gap-1.5">
-                <BadgeCheck className="size-4" /> 500+ प्रत्याशियों का भरोसा
+                <BadgeCheck className="size-4" /> प्रत्याशियों का भरोसा
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Truck className="size-4" /> पूरे राजस्थान में डिलीवरी

@@ -70,7 +70,10 @@ import {
   formatDateTime,
   isTokenShaped,
   isUnauthorized,
+  leadStatusClass,
+  leadTypeClass,
   leadTypeLabel,
+  localTzOffset,
   telLink,
   waLink,
 } from "@/lib/admin-ui";
@@ -342,7 +345,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     [debouncedSearch, ward, status, page],
   );
   const leadsQuery = useMemo(
-    () => ({ search: debouncedLeadSearch, date: leadDate, page: leadPage, page_size: PAGE_SIZE }),
+    () => ({
+      search: debouncedLeadSearch,
+      date: leadDate,
+      tz_offset: localTzOffset(),
+      page: leadPage,
+      page_size: PAGE_SIZE,
+    }),
     [debouncedLeadSearch, leadDate, leadPage],
   );
 
@@ -456,7 +465,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   async function exportOrders() {
     setExporting(true);
     try {
-      const { orders: rows } = await exportOrdersFn({
+      const { orders: rows, matched, limit, capped } = await exportOrdersFn({
         data: { token, search: debouncedSearch, ward, status },
       });
       if (!rows.length) {
@@ -495,7 +504,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           o.status,
         ]),
       ]);
-      toast.success(`Exported ${rows.length} order(s).`);
+      if (capped) {
+        toast.warning(
+          `Export capped at ${limit} rows — ${matched} orders match these filters. Narrow the filters to reach the rest.`,
+        );
+      } else {
+        toast.success(`Exported ${rows.length} order(s).`);
+      }
     } catch (err) {
       handleError(err, "Export failed. Please retry.");
     } finally {
@@ -506,8 +521,8 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   async function exportLeads() {
     setExporting(true);
     try {
-      const { leads: rows } = await exportLeadsFn({
-        data: { token, search: debouncedLeadSearch, date: leadDate },
+      const { leads: rows, matched, limit, capped } = await exportLeadsFn({
+        data: { token, search: debouncedLeadSearch, date: leadDate, tz_offset: localTzOffset() },
       });
       if (!rows.length) {
         toast.error("Nothing to export for the current filters.");
@@ -524,7 +539,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           l.order_id,
         ]),
       ]);
-      toast.success(`Exported ${rows.length} lead(s).`);
+      if (capped) {
+        toast.warning(
+          `Export capped at ${limit} rows — ${matched} leads match these filters. Narrow the filters to reach the rest.`,
+        );
+      } else {
+        toast.success(`Exported ${rows.length} lead(s).`);
+      }
     } catch (err) {
       handleError(err, "Export failed. Please retry.");
     } finally {
@@ -698,9 +719,21 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   No orders match your filters.
                 </p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="relative max-h-[calc(100vh-24rem)] overflow-auto">
                   <table className="w-full border-collapse text-sm">
-                    <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <colgroup>
+                      <col className="w-[110px]" />
+                      <col className="w-[140px]" />
+                      <col className="w-[200px]" />
+                      <col className="w-[190px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[68px]" />
+                      <col className="w-[150px]" />
+                      <col className="w-[190px]" />
+                    </colgroup>
+                    <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
                       <tr>
                         {[
                           "Order ID",
@@ -714,7 +747,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "Status",
                           "Actions",
                         ].map((h) => (
-                          <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
+                          <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">
                             {h}
                           </th>
                         ))}
@@ -724,38 +757,70 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                       {orders.map((o) => (
                         <tr
                           key={o.id}
-                          className="border-t border-border/70 align-top hover:bg-muted/40"
+                          className="border-t border-border/70 align-middle transition-colors hover:bg-saffron/[0.06]"
                         >
-                          <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-navy">
-                            {o.order_id}
+                          <td className="px-3 py-2 font-semibold text-navy">
+                            <button
+                              type="button"
+                              onClick={() => setDetail(o)}
+                              className="rounded underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              title={`Open details for ${o.order_id}`}
+                            >
+                              {o.order_id}
+                            </button>
                           </td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
+                          <td
+                            className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground"
+                            title={formatDateTime(o.created_at)}
+                          >
                             {formatDateTime(o.created_at)}
                           </td>
-                          <td className="px-3 py-2.5">
-                            <p className="font-medium">{o.candidate_name_hindi}</p>
-                            <p className="text-xs text-muted-foreground">
+                          <td className="px-3 py-2">
+                            <p
+                              className="truncate font-medium"
+                              title={o.candidate_name_hindi}
+                            >
+                              {o.candidate_name_hindi}
+                            </p>
+                            <p
+                              className="truncate text-xs text-muted-foreground"
+                              title={o.candidate_name_english}
+                            >
                               {o.candidate_name_english}
                             </p>
                           </td>
-                          <td className="px-3 py-2.5 text-xs">
-                            {o.gram_panchayat} / वार्ड {o.ward_number}
-                            <br />
-                            <span className="text-muted-foreground">{o.district}</span>
+                          <td className="px-3 py-2 text-xs">
+                            <p
+                              className="truncate"
+                              title={`${o.gram_panchayat} / वार्ड ${o.ward_number}`}
+                            >
+                              {o.gram_panchayat} / वार्ड {o.ward_number}
+                            </p>
+                            <p className="truncate text-muted-foreground" title={o.district}>
+                              {o.district}
+                            </p>
                           </td>
-                          <td className="px-3 py-2.5 text-xs">{o.election_symbol}</td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs">
+                          <td className="px-3 py-2 text-xs">
+                            <span className="block truncate" title={o.election_symbol}>
+                              {o.election_symbol}
+                            </span>
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-2 text-xs tabular-nums">
                             {o.contact_number}
                           </td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
-                            {o.ip_address ?? "—"}
+                          <td
+                            className="px-3 py-2 text-xs text-muted-foreground"
+                            title={o.ip_address ?? undefined}
+                          >
+                            <span className="block truncate">{o.ip_address ?? "—"}</span>
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2">
                             {o.photo_url ? (
                               <button
                                 type="button"
                                 onClick={() => setPreview(o)}
-                                className="size-10 overflow-hidden rounded-md border border-border focus-visible:ring-2 focus-visible:ring-ring"
+                                title={`Preview photo for ${o.order_id}`}
+                                className="size-9 overflow-hidden rounded-md border border-border transition-shadow hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <img
                                   src={o.photo_url}
@@ -765,18 +830,25 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 />
                               </button>
                             ) : (
-                              <span className="grid size-10 place-items-center rounded-md border border-dashed border-border text-muted-foreground">
+                              <span
+                                title="No photo uploaded"
+                                className="grid size-9 place-items-center rounded-md border border-dashed border-border text-muted-foreground"
+                              >
                                 <ImageOff className="size-4" />
                               </span>
                             )}
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2">
                             <Select
                               value={o.status}
                               onValueChange={(v) => void changeStatus(o, v as OrderStatus)}
                             >
                               <SelectTrigger
-                                className={cn("h-8 w-[130px] text-xs", statusClass(o.status))}
+                                title={`Change status for ${o.order_id}`}
+                                className={cn(
+                                  "h-8 w-[128px] border text-xs font-semibold",
+                                  statusClass(o.status),
+                                )}
                               >
                                 <SelectValue />
                               </SelectTrigger>
@@ -789,12 +861,14 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               </SelectContent>
                             </Select>
                           </td>
-                          <td className="px-3 py-2.5">
-                            <div className="flex items-center gap-1">
+                          <td className="px-3 py-2">
+                            <div className="flex items-center gap-0.5">
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="View details"
+                                className="size-8"
+                                title={`View full details for ${o.order_id}`}
+                                aria-label={`View full details for ${o.order_id}`}
                                 onClick={() => setDetail(o)}
                               >
                                 <Eye className="size-4" />
@@ -802,18 +876,31 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="Download photo"
+                                className="size-8"
+                                title={
+                                  o.photo_path
+                                    ? `Download photo for ${o.order_id}`
+                                    : "No photo to download"
+                                }
+                                aria-label={`Download photo for ${o.order_id}`}
                                 disabled={busyPhoto || !o.photo_path}
                                 onClick={() => void download(o)}
                               >
                                 <Download className="size-4" />
                               </Button>
                               {waLink(o.contact_number) ? (
-                                <Button asChild size="icon" variant="ghost" title="WhatsApp chat">
+                                <Button
+                                  asChild
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                  title={`WhatsApp ${o.contact_number}`}
+                                >
                                   <a
                                     href={waLink(o.contact_number)!}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={`WhatsApp ${o.contact_number}`}
                                   >
                                     <MessageCircle className="size-4 text-success" />
                                   </a>
@@ -822,7 +909,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="Mark complete"
+                                className="size-8"
+                                title={
+                                  o.status === "Completed"
+                                    ? "Already completed"
+                                    : `Mark ${o.order_id} complete`
+                                }
+                                aria-label={`Mark ${o.order_id} complete`}
                                 disabled={o.status === "Completed"}
                                 onClick={() => void changeStatus(o, "Completed")}
                               >
@@ -831,7 +924,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="Delete order"
+                                className="size-8"
+                                title={`Delete ${o.order_id}`}
+                                aria-label={`Delete ${o.order_id}`}
                                 onClick={() => setPendingDelete(o)}
                               >
                                 <Trash2 className="size-4 text-destructive" />
@@ -852,19 +947,23 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, orderTotal)} of{" "}
                   {orderTotal}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={page === 1}
+                    disabled={loading || page === 1}
                     onClick={() => setPage((p) => p - 1)}
                   >
                     Previous
                   </Button>
+                  <span className="tabular-nums">
+                    Page {page} / {pageCount}
+                  </span>
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={page >= pageCount}
+                    disabled={loading || page >= pageCount}
                     onClick={() => setPage((p) => p + 1)}
                   >
                     Next
@@ -926,9 +1025,18 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   No leads captured yet.
                 </p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="relative max-h-[calc(100vh-24rem)] overflow-auto">
                   <table className="w-full border-collapse text-sm">
-                    <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <colgroup>
+                      <col className="w-[150px]" />
+                      <col className="w-[160px]" />
+                      <col className="w-[140px]" />
+                      <col className="w-[130px]" />
+                      <col className="w-[130px]" />
+                      <col className="w-[130px]" />
+                      <col className="w-[110px]" />
+                    </colgroup>
+                    <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
                       <tr>
                         {[
                           "IP Address",
@@ -939,7 +1047,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "Order ID",
                           "Actions",
                         ].map((h) => (
-                          <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
+                          <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">
                             {h}
                           </th>
                         ))}
@@ -947,36 +1055,69 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                     </thead>
                     <tbody>
                       {leads.map((l) => (
-                        <tr key={l.id} className="border-t border-border/70 hover:bg-muted/40">
-                          <td className="px-3 py-2.5 text-xs">{l.ip_address ?? "—"}</td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
+                        <tr
+                          key={l.id}
+                          className="border-t border-border/70 transition-colors hover:bg-saffron/[0.06]"
+                        >
+                          <td
+                            className="px-3 py-2 text-xs"
+                            title={l.ip_address ?? undefined}
+                          >
+                            <span className="block truncate">{l.ip_address ?? "—"}</span>
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
                             {formatDateTime(l.visited_at)}
                           </td>
-                          <td className="px-3 py-2.5 text-xs font-medium">{l.phone ?? "—"}</td>
-                          <td className="px-3 py-2.5">
-                            <Badge variant="outline" className="text-[11px]">
+                          <td className="px-3 py-2 text-xs font-medium tabular-nums">
+                            {l.phone ?? "—"}
+                          </td>
+                          <td className="px-3 py-2">
+                            <Badge
+                              variant="outline"
+                              className={cn("text-[11px] font-semibold", leadTypeClass(l.lead_type))}
+                            >
                               {leadTypeLabel(l.lead_type)}
                             </Badge>
                           </td>
-                          <td className="px-3 py-2.5 text-xs">{l.status}</td>
-                          <td className="px-3 py-2.5 text-xs font-semibold text-navy">
+                          <td className="px-3 py-2">
+                            <Badge
+                              variant="outline"
+                              className={cn("text-[11px] font-semibold", leadStatusClass(l.status))}
+                            >
+                              {l.status}
+                            </Badge>
+                          </td>
+                          <td className="px-3 py-2 text-xs font-semibold text-navy">
                             {l.order_id ?? "—"}
                           </td>
-                          <td className="px-3 py-2.5">
-                            <div className="flex gap-1">
+                          <td className="px-3 py-2">
+                            <div className="flex gap-0.5">
                               {telLink(l.phone) ? (
-                                <Button asChild size="icon" variant="ghost" title="Call">
-                                  <a href={telLink(l.phone)!}>
+                                <Button
+                                  asChild
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                  title={`Call ${l.phone}`}
+                                >
+                                  <a href={telLink(l.phone)!} aria-label={`Call ${l.phone}`}>
                                     <Phone className="size-4" />
                                   </a>
                                 </Button>
                               ) : null}
                               {waLink(l.phone) ? (
-                                <Button asChild size="icon" variant="ghost" title="WhatsApp">
+                                <Button
+                                  asChild
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                  title={`WhatsApp ${l.phone}`}
+                                >
                                   <a
                                     href={waLink(l.phone)!}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={`WhatsApp ${l.phone}`}
                                   >
                                     <MessageCircle className="size-4 text-success" />
                                   </a>
@@ -998,19 +1139,23 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   Showing {(leadPage - 1) * PAGE_SIZE + 1}–
                   {Math.min(leadPage * PAGE_SIZE, leadTotal)} of {leadTotal}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={leadPage === 1}
+                    disabled={loading || leadPage === 1}
                     onClick={() => setLeadPage((p) => p - 1)}
                   >
                     Previous
                   </Button>
+                  <span className="tabular-nums">
+                    Page {leadPage} / {leadPageCount}
+                  </span>
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={leadPage >= leadPageCount}
+                    disabled={loading || leadPage >= leadPageCount}
                     onClick={() => setLeadPage((p) => p + 1)}
                   >
                     Next
@@ -1055,38 +1200,102 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
 
       {/* Details */}
       <Dialog open={Boolean(detail)} onOpenChange={(open) => !open && setDetail(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[88vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Order {detail?.order_id}</DialogTitle>
+            <DialogTitle className="flex items-center gap-3">
+              <span>Order {detail?.order_id}</span>
+              {detail ? (
+                <Badge
+                  variant="outline"
+                  className={cn("text-[11px] font-semibold", statusClass(detail.status))}
+                >
+                  {detail.status}
+                </Badge>
+              ) : null}
+            </DialogTitle>
             <DialogDescription>
               {detail ? formatDateTime(detail.created_at) : null}
             </DialogDescription>
           </DialogHeader>
           {detail ? (
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              {[
-                ["प्रत्याशी (हिंदी)", detail.candidate_name_hindi],
-                ["Candidate (English)", detail.candidate_name_english],
-                ["Phone", detail.contact_number],
-                ["District", detail.district],
-                ["Panchayat Samiti", detail.panchayat_samiti],
-                ["Gram Panchayat", detail.gram_panchayat],
-                ["Ward Number", detail.ward_number],
-                ["Election Symbol", detail.election_symbol],
-                ["Slogan", detail.slogan ?? "—"],
-                ["IP Address", detail.ip_address ?? "—"],
-                ["Status", detail.status],
-              ].map(([label, value]) => (
-                <div key={label}>
+            <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+              <div className="space-y-2">
+                {detail.photo_url ? (
+                  <button
+                    type="button"
+                    onClick={() => setPreview(detail)}
+                    title="Open full-size photo"
+                    className="block w-full overflow-hidden rounded-lg border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <img
+                      src={detail.photo_url}
+                      alt={`${detail.candidate_name_english} candidate photo`}
+                      className="aspect-[3/4] w-full object-cover"
+                    />
+                  </button>
+                ) : (
+                  <div className="grid aspect-[3/4] w-full place-items-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground">
+                    <ImageOff className="size-6" />
+                    <span className="text-xs">No photo uploaded</span>
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  disabled={busyPhoto || !detail.photo_path}
+                  onClick={() => void download(detail)}
+                >
+                  {busyPhoto ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}{" "}
+                  Download photo
+                </Button>
+              </div>
+
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+                {[
+                  ["Order ID", detail.order_id],
+                  ["Created", formatDateTime(detail.created_at)],
+                  ["प्रत्याशी (हिंदी)", detail.candidate_name_hindi],
+                  ["Candidate (English)", detail.candidate_name_english],
+                  ["Phone", detail.contact_number],
+                  ["District", detail.district],
+                  ["Panchayat Samiti", detail.panchayat_samiti],
+                  ["Gram Panchayat", detail.gram_panchayat],
+                  ["Ward Number", detail.ward_number],
+                  ["Election Symbol", detail.election_symbol],
+                  ["IP Address", detail.ip_address ?? "—"],
+                  ["Status", detail.status],
+                ].map(([label, value]) => (
+                  <div key={label} className="min-w-0">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {label}
+                    </dt>
+                    <dd className="mt-0.5 break-words font-medium">{value}</dd>
+                  </div>
+                ))}
+                <div className="min-w-0 sm:col-span-2">
                   <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {label}
+                    Slogan
                   </dt>
-                  <dd className="mt-0.5 font-medium">{value}</dd>
+                  <dd className="mt-0.5 whitespace-pre-wrap break-words font-medium">
+                    {detail.slogan?.trim() ? detail.slogan : "—"}
+                  </dd>
                 </div>
-              ))}
-            </dl>
+              </dl>
+            </div>
           ) : null}
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:justify-start">
+            {detail && telLink(detail.contact_number) ? (
+              <Button asChild variant="outline">
+                <a href={telLink(detail.contact_number)!}>
+                  <Phone className="size-4" /> Call {detail.contact_number}
+                </a>
+              </Button>
+            ) : null}
             {detail && waLink(detail.contact_number) ? (
               <Button asChild variant="success">
                 <a href={waLink(detail.contact_number)!} target="_blank" rel="noopener noreferrer">

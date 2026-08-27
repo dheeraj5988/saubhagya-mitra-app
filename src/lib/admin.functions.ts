@@ -76,11 +76,23 @@ export const adminLogin = createServerFn({ method: "POST" })
 export const adminLogout = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => tokenSchema.parse(data))
   .handler(async ({ data }) => {
-    const { destroySession } = await import("./admin.server");
-    // Deleting by token hash is itself the authorization check: only the holder
-    // of the real token can remove that row.
+    const { assertSession, destroySession, UNAUTHORIZED } = await import("./admin.server");
+
+    // Validate server-side first so logout is a deliberate act on a real
+    // session, not an unauthenticated way to probe/delete arbitrary rows.
+    try {
+      await assertSession(data.token);
+    } catch (err) {
+      // An already-expired or unknown session is not an error worth surfacing:
+      // the caller wants to be signed out and the client clears its token
+      // regardless. Anything else is a genuine failure.
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes(UNAUTHORIZED)) return { ok: true as const, already_expired: true };
+      throw err;
+    }
+
     await destroySession(data.token);
-    return { ok: true };
+    return { ok: true as const, already_expired: false };
   });
 
 /** KPI counts computed by the database — never derived from a partial page. */
@@ -102,7 +114,9 @@ export const adminOverview = createServerFn({ method: "POST" })
       countOrders("In-Process"),
       countOrders("Completed"),
       db.from("visitor_leads").select("id", { count: "exact", head: true }),
-      db.from("orders").select("ward_number").limit(2000),
+      // DISTINCT across the whole table via a security-definer function, so the
+      // ward list stays complete past any row limit.
+      db.rpc("admin_distinct_wards"),
     ]);
 
     const kpis: AdminKpis = {
@@ -113,9 +127,10 @@ export const adminOverview = createServerFn({ method: "POST" })
       leads: leads.count ?? 0,
     };
 
-    const wards = Array.from(
-      new Set((wardRows.data ?? []).map((r) => r.ward_number).filter(Boolean)),
-    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const wards = ((wardRows.data ?? []) as { ward_number: string }[])
+      .map((r) => r.ward_number)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
     return { kpis, wards };
   });
@@ -183,7 +198,7 @@ type LeadsQuery = ReturnType<typeof leadsQuerySchema.parse>;
 
 async function selectLeads(
   db: Awaited<ReturnType<(typeof import("./admin.server"))["assertSession"]>>,
-  filters: Pick<LeadsQuery, "search" | "date">,
+  filters: Pick<LeadsQuery, "search" | "date" | "tz_offset">,
   range: { from: number; to: number },
   withCount: boolean,
 ) {
@@ -194,7 +209,11 @@ async function selectLeads(
     .order("visited_at", { ascending: false });
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
-    const start = new Date(`${filters.date}T00:00:00.000Z`);
+    // Resolve the picked day against the operator's local midnight. Their
+    // offset (minutes to add to local time to reach UTC, e.g. -330 for IST)
+    // converts local midnight into the correct UTC instant.
+    const localMidnightUtc = Date.parse(`${filters.date}T00:00:00.000Z`);
+    const start = new Date(localMidnightUtc + filters.tz_offset * 60_000);
     const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
     query = query.gte("visited_at", start.toISOString()).lt("visited_at", end.toISOString());
   }
@@ -225,16 +244,26 @@ export const adminLeads = createServerFn({ method: "POST" })
     };
   });
 
-/** Export honours the exact same filters as the visible table. */
+/**
+ * Export honours the exact same filters as the visible table. It returns the
+ * matched total alongside the rows so the UI can say plainly when the download
+ * was truncated at EXPORT_LIMIT rather than implying it holds every record.
+ */
 export const adminExportOrders = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => ordersExportSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
-    const res = await selectOrders(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, false);
+    const res = await selectOrders(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, true);
     if (res.error) throw new Error(res.error.message);
+    const matched = res.count ?? (res.data?.length ?? 0);
     // photo_path is intentionally omitted: it is an internal storage key.
-    return { orders: (res.data ?? []) as unknown as AdminOrder[] };
+    return {
+      orders: (res.data ?? []) as unknown as AdminOrder[],
+      matched,
+      limit: EXPORT_LIMIT,
+      capped: matched > EXPORT_LIMIT,
+    };
   });
 
 export const adminExportLeads = createServerFn({ method: "POST" })
@@ -242,9 +271,15 @@ export const adminExportLeads = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
-    const res = await selectLeads(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, false);
+    const res = await selectLeads(db, data, { from: 0, to: EXPORT_LIMIT - 1 }, true);
     if (res.error) throw new Error(res.error.message);
-    return { leads: (res.data ?? []) as unknown as AdminLead[] };
+    const matched = res.count ?? (res.data?.length ?? 0);
+    return {
+      leads: (res.data ?? []) as unknown as AdminLead[],
+      matched,
+      limit: EXPORT_LIMIT,
+      capped: matched > EXPORT_LIMIT,
+    };
   });
 
 export const adminUpdateStatus = createServerFn({ method: "POST" })
