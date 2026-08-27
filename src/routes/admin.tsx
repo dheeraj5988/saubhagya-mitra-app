@@ -1021,9 +1021,18 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   No leads captured yet.
                 </p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="relative max-h-[calc(100vh-24rem)] overflow-auto">
                   <table className="w-full border-collapse text-sm">
-                    <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <colgroup>
+                      <col className="w-[150px]" />
+                      <col className="w-[160px]" />
+                      <col className="w-[140px]" />
+                      <col className="w-[130px]" />
+                      <col className="w-[130px]" />
+                      <col className="w-[130px]" />
+                      <col className="w-[110px]" />
+                    </colgroup>
+                    <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
                       <tr>
                         {[
                           "IP Address",
@@ -1034,7 +1043,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "Order ID",
                           "Actions",
                         ].map((h) => (
-                          <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
+                          <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">
                             {h}
                           </th>
                         ))}
@@ -1042,36 +1051,69 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                     </thead>
                     <tbody>
                       {leads.map((l) => (
-                        <tr key={l.id} className="border-t border-border/70 hover:bg-muted/40">
-                          <td className="px-3 py-2.5 text-xs">{l.ip_address ?? "—"}</td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
+                        <tr
+                          key={l.id}
+                          className="border-t border-border/70 transition-colors hover:bg-saffron/[0.06]"
+                        >
+                          <td
+                            className="px-3 py-2 text-xs"
+                            title={l.ip_address ?? undefined}
+                          >
+                            <span className="block truncate">{l.ip_address ?? "—"}</span>
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
                             {formatDateTime(l.visited_at)}
                           </td>
-                          <td className="px-3 py-2.5 text-xs font-medium">{l.phone ?? "—"}</td>
-                          <td className="px-3 py-2.5">
-                            <Badge variant="outline" className="text-[11px]">
+                          <td className="px-3 py-2 text-xs font-medium tabular-nums">
+                            {l.phone ?? "—"}
+                          </td>
+                          <td className="px-3 py-2">
+                            <Badge
+                              variant="outline"
+                              className={cn("text-[11px] font-semibold", leadTypeClass(l.lead_type))}
+                            >
                               {leadTypeLabel(l.lead_type)}
                             </Badge>
                           </td>
-                          <td className="px-3 py-2.5 text-xs">{l.status}</td>
-                          <td className="px-3 py-2.5 text-xs font-semibold text-navy">
+                          <td className="px-3 py-2">
+                            <Badge
+                              variant="outline"
+                              className={cn("text-[11px] font-semibold", leadStatusClass(l.status))}
+                            >
+                              {l.status}
+                            </Badge>
+                          </td>
+                          <td className="px-3 py-2 text-xs font-semibold text-navy">
                             {l.order_id ?? "—"}
                           </td>
-                          <td className="px-3 py-2.5">
-                            <div className="flex gap-1">
+                          <td className="px-3 py-2">
+                            <div className="flex gap-0.5">
                               {telLink(l.phone) ? (
-                                <Button asChild size="icon" variant="ghost" title="Call">
-                                  <a href={telLink(l.phone)!}>
+                                <Button
+                                  asChild
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                  title={`Call ${l.phone}`}
+                                >
+                                  <a href={telLink(l.phone)!} aria-label={`Call ${l.phone}`}>
                                     <Phone className="size-4" />
                                   </a>
                                 </Button>
                               ) : null}
                               {waLink(l.phone) ? (
-                                <Button asChild size="icon" variant="ghost" title="WhatsApp">
+                                <Button
+                                  asChild
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                  title={`WhatsApp ${l.phone}`}
+                                >
                                   <a
                                     href={waLink(l.phone)!}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={`WhatsApp ${l.phone}`}
                                   >
                                     <MessageCircle className="size-4 text-success" />
                                   </a>
@@ -1093,19 +1135,23 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   Showing {(leadPage - 1) * PAGE_SIZE + 1}–
                   {Math.min(leadPage * PAGE_SIZE, leadTotal)} of {leadTotal}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={leadPage === 1}
+                    disabled={loading || leadPage === 1}
                     onClick={() => setLeadPage((p) => p - 1)}
                   >
                     Previous
                   </Button>
+                  <span className="tabular-nums">
+                    Page {leadPage} / {leadPageCount}
+                  </span>
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={leadPage >= leadPageCount}
+                    disabled={loading || leadPage >= leadPageCount}
                     onClick={() => setLeadPage((p) => p + 1)}
                   >
                     Next
