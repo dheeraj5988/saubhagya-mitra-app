@@ -37,6 +37,24 @@ export function leadTypeLabel(type: string) {
   return "Visitor";
 }
 
+/** Badge colours mirror the dashboard system: purple visitor, orange abandoned, emerald submitted. */
+export function leadTypeClass(type: string) {
+  if (type === "submitted") return "border-success/30 bg-success/12 text-success";
+  if (type === "abandoned") return "border-saffron/30 bg-saffron/12 text-saffron-deep";
+  return "border-[oklch(0.55_0.2_300)]/30 bg-[oklch(0.55_0.2_300)]/12 text-[oklch(0.45_0.2_300)]";
+}
+
+export function leadStatusClass(status: string) {
+  if (status === "Submitted") return "border-success/30 bg-success/12 text-success";
+  if (status === "Partial") return "border-saffron/30 bg-saffron/12 text-saffron-deep";
+  return "border-info/30 bg-info/12 text-info";
+}
+
+/** Local-day boundary hint for the server so date filters aren't read as UTC. */
+export function localTzOffset() {
+  return new Date().getTimezoneOffset();
+}
+
 export function downloadCsv(filename: string, rows: (string | number | null)[][]) {
   // Prefix formula-leading cells so spreadsheets cannot execute exported text.
   const escape = (v: string | number | null) => {
