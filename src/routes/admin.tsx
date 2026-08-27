@@ -1200,38 +1200,102 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
 
       {/* Details */}
       <Dialog open={Boolean(detail)} onOpenChange={(open) => !open && setDetail(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[88vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Order {detail?.order_id}</DialogTitle>
+            <DialogTitle className="flex items-center gap-3">
+              <span>Order {detail?.order_id}</span>
+              {detail ? (
+                <Badge
+                  variant="outline"
+                  className={cn("text-[11px] font-semibold", statusClass(detail.status))}
+                >
+                  {detail.status}
+                </Badge>
+              ) : null}
+            </DialogTitle>
             <DialogDescription>
               {detail ? formatDateTime(detail.created_at) : null}
             </DialogDescription>
           </DialogHeader>
           {detail ? (
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              {[
-                ["प्रत्याशी (हिंदी)", detail.candidate_name_hindi],
-                ["Candidate (English)", detail.candidate_name_english],
-                ["Phone", detail.contact_number],
-                ["District", detail.district],
-                ["Panchayat Samiti", detail.panchayat_samiti],
-                ["Gram Panchayat", detail.gram_panchayat],
-                ["Ward Number", detail.ward_number],
-                ["Election Symbol", detail.election_symbol],
-                ["Slogan", detail.slogan ?? "—"],
-                ["IP Address", detail.ip_address ?? "—"],
-                ["Status", detail.status],
-              ].map(([label, value]) => (
-                <div key={label}>
+            <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+              <div className="space-y-2">
+                {detail.photo_url ? (
+                  <button
+                    type="button"
+                    onClick={() => setPreview(detail)}
+                    title="Open full-size photo"
+                    className="block w-full overflow-hidden rounded-lg border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <img
+                      src={detail.photo_url}
+                      alt={`${detail.candidate_name_english} candidate photo`}
+                      className="aspect-[3/4] w-full object-cover"
+                    />
+                  </button>
+                ) : (
+                  <div className="grid aspect-[3/4] w-full place-items-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground">
+                    <ImageOff className="size-6" />
+                    <span className="text-xs">No photo uploaded</span>
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  disabled={busyPhoto || !detail.photo_path}
+                  onClick={() => void download(detail)}
+                >
+                  {busyPhoto ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}{" "}
+                  Download photo
+                </Button>
+              </div>
+
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+                {[
+                  ["Order ID", detail.order_id],
+                  ["Created", formatDateTime(detail.created_at)],
+                  ["प्रत्याशी (हिंदी)", detail.candidate_name_hindi],
+                  ["Candidate (English)", detail.candidate_name_english],
+                  ["Phone", detail.contact_number],
+                  ["District", detail.district],
+                  ["Panchayat Samiti", detail.panchayat_samiti],
+                  ["Gram Panchayat", detail.gram_panchayat],
+                  ["Ward Number", detail.ward_number],
+                  ["Election Symbol", detail.election_symbol],
+                  ["IP Address", detail.ip_address ?? "—"],
+                  ["Status", detail.status],
+                ].map(([label, value]) => (
+                  <div key={label} className="min-w-0">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {label}
+                    </dt>
+                    <dd className="mt-0.5 break-words font-medium">{value}</dd>
+                  </div>
+                ))}
+                <div className="min-w-0 sm:col-span-2">
                   <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {label}
+                    Slogan
                   </dt>
-                  <dd className="mt-0.5 font-medium">{value}</dd>
+                  <dd className="mt-0.5 whitespace-pre-wrap break-words font-medium">
+                    {detail.slogan?.trim() ? detail.slogan : "—"}
+                  </dd>
                 </div>
-              ))}
-            </dl>
+              </dl>
+            </div>
           ) : null}
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:justify-start">
+            {detail && telLink(detail.contact_number) ? (
+              <Button asChild variant="outline">
+                <a href={telLink(detail.contact_number)!}>
+                  <Phone className="size-4" /> Call {detail.contact_number}
+                </a>
+              </Button>
+            ) : null}
             {detail && waLink(detail.contact_number) ? (
               <Button asChild variant="success">
                 <a href={waLink(detail.contact_number)!} target="_blank" rel="noopener noreferrer">
