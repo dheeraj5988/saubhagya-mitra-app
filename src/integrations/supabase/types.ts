@@ -160,7 +160,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_distinct_wards: {
+        Args: never
+        Returns: {
+          ward_number: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
