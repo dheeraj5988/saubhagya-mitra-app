@@ -504,7 +504,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           o.status,
         ]),
       ]);
-      toast.success(`Exported ${rows.length} order(s).`);
+      if (capped) {
+        toast.warning(
+          `Export capped at ${limit} rows — ${matched} orders match these filters. Narrow the filters to reach the rest.`,
+        );
+      } else {
+        toast.success(`Exported ${rows.length} order(s).`);
+      }
     } catch (err) {
       handleError(err, "Export failed. Please retry.");
     } finally {
