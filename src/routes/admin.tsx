@@ -539,7 +539,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           l.order_id,
         ]),
       ]);
-      toast.success(`Exported ${rows.length} lead(s).`);
+      if (capped) {
+        toast.warning(
+          `Export capped at ${limit} rows — ${matched} leads match these filters. Narrow the filters to reach the rest.`,
+        );
+      } else {
+        toast.success(`Exported ${rows.length} lead(s).`);
+      }
     } catch (err) {
       handleError(err, "Export failed. Please retry.");
     } finally {
