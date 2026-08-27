@@ -19,6 +19,23 @@
  */
 
 @theme inline {
+  --font-sans:
+    "Noto Sans Devanagari", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Tiro Devanagari Hindi", "Noto Sans Devanagari", serif;
+  --color-saffron: var(--saffron);
+  --color-saffron-foreground: var(--saffron-foreground);
+  --color-saffron-deep: var(--saffron-deep);
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --shadow-card: var(--shadow-card);
+  --shadow-elevated: var(--shadow-elevated);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -95,7 +112,23 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+
+  /* Campaign design system */
+  --navy: oklch(0.208 0.042 265.755);
+  --navy-foreground: oklch(0.984 0.003 247.858);
+  --saffron: oklch(0.677 0.187 45.1);
+  --saffron-deep: oklch(0.588 0.202 44.5);
+  --saffron-foreground: oklch(0.99 0.005 80);
+  --success: oklch(0.596 0.145 163.2);
+  --success-foreground: oklch(0.99 0.01 160);
+  --warning: oklch(0.795 0.161 82);
+  --warning-foreground: oklch(0.24 0.05 60);
+  --info: oklch(0.58 0.13 250);
+  --info-foreground: oklch(0.99 0.003 250);
+  --shadow-card: 0 1px 2px oklch(0.208 0.042 265.755 / 0.06), 0 8px 24px -12px oklch(0.208 0.042 265.755 / 0.18);
+  --shadow-elevated: 0 20px 50px -24px oklch(0.208 0.042 265.755 / 0.4);
 }
+
 
 .dark {
   --background: oklch(0.129 0.042 264.695);
@@ -141,4 +174,32 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility bg-hero-navy {
+  background-image:
+    radial-gradient(90% 60% at 15% 0%, oklch(0.677 0.187 45.1 / 0.28) 0%, transparent 60%),
+    radial-gradient(70% 60% at 100% 20%, oklch(0.588 0.202 44.5 / 0.22) 0%, transparent 65%),
+    linear-gradient(165deg, oklch(0.24 0.05 266) 0%, oklch(0.16 0.04 265) 100%);
+}
+
+@utility bg-saffron-gradient {
+  background-image: linear-gradient(135deg, var(--saffron) 0%, var(--saffron-deep) 100%);
+}
+
+@utility text-balance-hi {
+  text-wrap: balance;
 }
