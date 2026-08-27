@@ -27,6 +27,9 @@ const ORDER_SEARCH_COLUMNS = [
   "gram_panchayat",
   "election_symbol",
   "ward_number",
+  "party_name_snapshot",
+  "symbol_name_snapshot",
+  "payment_txn_id",
 ] as const;
 const EXPORT_LIMIT = 5000;
 
@@ -139,7 +142,7 @@ type OrdersQuery = ReturnType<typeof ordersQuerySchema.parse>;
 
 async function selectOrders(
   db: Awaited<ReturnType<(typeof import("./admin.server"))["assertSession"]>>,
-  filters: Pick<OrdersQuery, "search" | "ward" | "status">,
+  filters: Pick<OrdersQuery, "search" | "ward" | "status" | "payment_status">,
   range: { from: number; to: number },
   withCount: boolean,
 ) {
@@ -151,6 +154,7 @@ async function selectOrders(
 
   if (filters.ward !== "all") query = query.eq("ward_number", filters.ward);
   if (filters.status !== "all") query = query.eq("status", filters.status);
+  if (filters.payment_status !== "all") query = query.eq("payment_status", filters.payment_status);
 
   const term = sanitizeSearch(filters.search);
   if (term) {

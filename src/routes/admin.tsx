@@ -4,7 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
   CheckCircle2,
+  CreditCard,
   Download,
+  Eraser,
   Eye,
   ImageOff,
   Laptop,
@@ -12,10 +14,12 @@ import {
   LogOut,
   MessageCircle,
   Phone,
+  Receipt,
   RefreshCw,
   Search,
   Trash2,
   Users,
+  Vote,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -62,6 +66,15 @@ import {
   adminPhotoUrl,
   adminUpdateStatus,
 } from "@/lib/admin.functions";
+import {
+  adminClearLeads,
+  adminDeleteLead,
+  adminScreenshotUrl,
+  adminUpdatePaymentStatus,
+} from "@/lib/admin-catalog.functions";
+import { SymbolsTab } from "@/components/admin/SymbolsTab";
+import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
+import { PAYMENT_STATUSES, type PaymentStatus } from "@/lib/catalog.schema";
 import type { AdminKpis, AdminLead, AdminOrder } from "@/lib/admin.schema";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/orders.schema";
 import {
@@ -125,6 +138,15 @@ function statusClass(status: string) {
   if (status === "Completed") return "bg-success/12 text-success border-success/30";
   if (status === "In-Process") return "bg-info/12 text-info border-info/30";
   return "bg-saffron/12 text-saffron-deep border-saffron/30";
+}
+
+function paymentClass(status: string) {
+  if (status === "Payment Verified") return "border-success/40 bg-success/10 text-success";
+  if (status === "Payment Rejected")
+    return "border-destructive/40 bg-destructive/10 text-destructive";
+  if (status === "Payment Screenshot Received")
+    return "border-saffron/40 bg-saffron/10 text-saffron-deep";
+  return "border-border bg-muted text-muted-foreground";
 }
 
 function AdminPage() {
@@ -286,6 +308,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const updateStatus = useServerFn(adminUpdateStatus);
   const deleteOrder = useServerFn(adminDeleteOrder);
   const photoUrl = useServerFn(adminPhotoUrl);
+  const updatePaymentStatus = useServerFn(adminUpdatePaymentStatus);
+  const screenshotUrl = useServerFn(adminScreenshotUrl);
+  const deleteLead = useServerFn(adminDeleteLead);
+  const clearLeads = useServerFn(adminClearLeads);
 
   const [kpis, setKpis] = useState<AdminKpis>(EMPTY_KPIS);
   const [wards, setWards] = useState<string[]>([]);
@@ -305,6 +331,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [search, setSearch] = useState("");
   const [ward, setWard] = useState("all");
   const [status, setStatus] = useState<OrderStatus | "all">("all");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | "all">("all");
   const [page, setPage] = useState(1);
 
   const [leadSearch, setLeadSearch] = useState("");
@@ -314,6 +341,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [detail, setDetail] = useState<AdminOrder | null>(null);
   const [preview, setPreview] = useState<AdminOrder | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminOrder | null>(null);
+  const [pendingLeadDelete, setPendingLeadDelete] = useState<AdminLead | null>(null);
+  const [clearingLeads, setClearingLeads] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const debouncedSearch = useDebounced(search);
   const debouncedLeadSearch = useDebounced(leadSearch);
@@ -337,12 +367,19 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     [signOut],
   );
 
-  useEffect(() => setPage(1), [debouncedSearch, ward, status]);
+  useEffect(() => setPage(1), [debouncedSearch, ward, status, paymentStatus]);
   useEffect(() => setLeadPage(1), [debouncedLeadSearch, leadDate]);
 
   const ordersQuery = useMemo(
-    () => ({ search: debouncedSearch, ward, status, page, page_size: PAGE_SIZE }),
-    [debouncedSearch, ward, status, page],
+    () => ({
+      search: debouncedSearch,
+      ward,
+      status,
+      payment_status: paymentStatus,
+      page,
+      page_size: PAGE_SIZE,
+    }),
+    [debouncedSearch, ward, status, paymentStatus, page],
   );
   const leadsQuery = useMemo(
     () => ({
@@ -421,6 +458,61 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     }
   }
 
+  async function changePaymentStatus(order: AdminOrder, next: PaymentStatus) {
+    const prev = orders;
+    setOrders((rows) => rows.map((r) => (r.id === order.id ? { ...r, payment_status: next } : r)));
+    try {
+      await updatePaymentStatus({ data: { token, order_id: order.order_id, payment_status: next } });
+      toast.success(`${order.order_id} payment → ${next}`);
+      void load(true);
+    } catch (err) {
+      setOrders(prev);
+      handleError(err, "Payment status update failed.");
+    }
+  }
+
+  async function openScreenshot(order: AdminOrder, download = false) {
+    if (!order.payment_screenshot_path) return;
+    setBusyPhoto(true);
+    try {
+      const { url } = await screenshotUrl({
+        data: { token, path: order.payment_screenshot_path, download },
+      });
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      handleError(err, "Could not open the payment screenshot.");
+    } finally {
+      setBusyPhoto(false);
+    }
+  }
+
+  async function confirmLeadDelete() {
+    const lead = pendingLeadDelete;
+    if (!lead) return;
+    try {
+      await deleteLead({ data: { token, id: lead.id } });
+      setPendingLeadDelete(null);
+      toast.success("IP log entry deleted.");
+      void load(true);
+    } catch (err) {
+      handleError(err, "Could not delete this lead.");
+    }
+  }
+
+  async function confirmClearLeads() {
+    setClearingLeads(true);
+    try {
+      const { deleted } = await clearLeads({ data: { token, confirm: "DELETE" } });
+      setConfirmClear(false);
+      toast.success(`Cleared ${deleted} IP log entr${deleted === 1 ? "y" : "ies"}.`);
+      void load(true);
+    } catch (err) {
+      handleError(err, "Could not clear the IP logs.");
+    } finally {
+      setClearingLeads(false);
+    }
+  }
+
   async function download(order: AdminOrder) {
     if (!order.photo_path) {
       toast.error("No photo stored for this order.");
@@ -466,7 +558,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     setExporting(true);
     try {
       const { orders: rows, matched, limit, capped } = await exportOrdersFn({
-        data: { token, search: debouncedSearch, ward, status },
+        data: { token, search: debouncedSearch, ward, status, payment_status: paymentStatus },
       });
       if (!rows.length) {
         toast.error("Nothing to export for the current filters.");
@@ -487,6 +579,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           "Slogan",
           "IP",
           "Status",
+          "Payment Status",
+          "Payment Txn",
+          "Payment Amount",
         ],
         ...rows.map((o) => [
           o.order_id,
@@ -502,6 +597,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           o.slogan,
           o.ip_address,
           o.status,
+          o.payment_status,
+          o.payment_txn_id,
+          o.payment_amount,
         ]),
       ]);
       if (capped) {
@@ -610,6 +708,12 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               <TabsTrigger value="leads">
                 <Users className="mr-1.5 size-4" /> Visitor &amp; Lead Tracker
               </TabsTrigger>
+              <TabsTrigger value="symbols">
+                <Vote className="mr-1.5 size-4" /> Party &amp; Symbols
+              </TabsTrigger>
+              <TabsTrigger value="payments">
+                <CreditCard className="mr-1.5 size-4" /> Payment Settings
+              </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground">
@@ -674,6 +778,22 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ))}
                 </SelectContent>
               </Select>
+              <Select
+                value={paymentStatus}
+                onValueChange={(v) => setPaymentStatus(v as PaymentStatus | "all")}
+              >
+                <SelectTrigger className="h-10 w-[210px]">
+                  <SelectValue placeholder="Payment" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All payment states</SelectItem>
+                  {PAYMENT_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 variant="ghost"
                 size="sm"
@@ -681,6 +801,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   setSearch("");
                   setWard("all");
                   setStatus("all");
+                  setPaymentStatus("all");
                 }}
               >
                 <X className="size-4" /> Clear filters
@@ -732,6 +853,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                       <col className="w-[68px]" />
                       <col className="w-[150px]" />
                       <col className="w-[190px]" />
+                      <col className="w-[190px]" />
                     </colgroup>
                     <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
                       <tr>
@@ -745,6 +867,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "IP",
                           "Photo",
                           "Status",
+                          "Payment",
                           "Actions",
                         ].map((h) => (
                           <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">
@@ -860,6 +983,46 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 ))}
                               </SelectContent>
                             </Select>
+                          </td>
+                          <td className="px-3 py-2">
+                            <div className="flex items-center gap-1">
+                              <Select
+                                value={o.payment_status}
+                                onValueChange={(v) =>
+                                  void changePaymentStatus(o, v as PaymentStatus)
+                                }
+                              >
+                                <SelectTrigger
+                                  title={`Change payment status for ${o.order_id}`}
+                                  className={cn(
+                                    "h-8 w-[150px] border text-xs font-semibold",
+                                    paymentClass(o.payment_status),
+                                  )}
+                                >
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {PAYMENT_STATUSES.map((s) => (
+                                    <SelectItem key={s} value={s}>
+                                      {s}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {o.payment_screenshot_path ? (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                  title={`View payment screenshot for ${o.order_id}`}
+                                  aria-label={`View payment screenshot for ${o.order_id}`}
+                                  disabled={busyPhoto}
+                                  onClick={() => void openScreenshot(o)}
+                                >
+                                  <Receipt className="size-4 text-saffron-deep" />
+                                </Button>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="px-3 py-2">
                             <div className="flex items-center gap-0.5">
@@ -1013,6 +1176,15 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 )}{" "}
                 Export CSV
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                disabled={clearingLeads || !leadTotal}
+                onClick={() => setConfirmClear(true)}
+              >
+                <Eraser className="size-4" /> Clear IP logs
+              </Button>
             </div>
 
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
@@ -1123,6 +1295,16 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                   </a>
                                 </Button>
                               ) : null}
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8"
+                                title="Delete this IP log entry"
+                                aria-label="Delete this IP log entry"
+                                onClick={() => setPendingLeadDelete(l)}
+                              >
+                                <Trash2 className="size-4 text-destructive" />
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -1163,6 +1345,14 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 </div>
               </div>
             ) : null}
+          </TabsContent>
+
+          <TabsContent value="symbols">
+            <SymbolsTab token={token} onError={handleError} />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentSettingsTab token={token} onError={handleError} />
           </TabsContent>
         </Tabs>
       </main>
@@ -1269,6 +1459,12 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ["Election Symbol", detail.election_symbol],
                   ["IP Address", detail.ip_address ?? "—"],
                   ["Status", detail.status],
+                  ["Party", detail.party_name_snapshot ?? "—"],
+                  ["Symbol", detail.symbol_name_snapshot ?? "—"],
+                  ["Payment Status", detail.payment_status],
+                  ["Payment Txn ID", detail.payment_txn_id ?? "—"],
+                  ["Payment Amount", detail.payment_amount == null ? "—" : `₹${detail.payment_amount}`],
+                  ["Payment Updated", detail.payment_updated_at ? formatDateTime(detail.payment_updated_at) : "—"],
                 ].map(([label, value]) => (
                   <div key={label} className="min-w-0">
                     <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -1294,6 +1490,11 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <a href={telLink(detail.contact_number)!}>
                   <Phone className="size-4" /> Call {detail.contact_number}
                 </a>
+              </Button>
+            ) : null}
+            {detail?.payment_screenshot_path ? (
+              <Button variant="outline" disabled={busyPhoto} onClick={() => void openScreenshot(detail)}>
+                <Receipt className="size-4" /> Payment screenshot
               </Button>
             ) : null}
             {detail && waLink(detail.contact_number) ? (
@@ -1331,6 +1532,63 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleting ? <Loader2 className="size-4 animate-spin" /> : null} Delete order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Lead row delete */}
+      <AlertDialog
+        open={Boolean(pendingLeadDelete)}
+        onOpenChange={(open) => !open && setPendingLeadDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this IP log entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the visitor/lead record ({pendingLeadDelete?.ip_address ?? "unknown IP"}).
+              Orders are not affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmLeadDelete();
+              }}
+            >
+              Delete entry
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Clear all IP logs */}
+      <AlertDialog
+        open={confirmClear}
+        onOpenChange={(open) => !open && !clearingLeads && setConfirmClear(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear every IP log?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All {leadTotal} visitor and lead records will be permanently deleted. Orders and
+              candidate data are not affected. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={clearingLeads}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={clearingLeads}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmClearLeads();
+              }}
+            >
+              {clearingLeads ? <Loader2 className="size-4 animate-spin" /> : null} Clear all logs
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
