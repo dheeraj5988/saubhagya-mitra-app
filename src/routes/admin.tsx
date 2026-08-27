@@ -698,9 +698,21 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   No orders match your filters.
                 </p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="relative max-h-[calc(100vh-24rem)] overflow-auto">
                   <table className="w-full border-collapse text-sm">
-                    <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <colgroup>
+                      <col className="w-[110px]" />
+                      <col className="w-[140px]" />
+                      <col className="w-[200px]" />
+                      <col className="w-[190px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[68px]" />
+                      <col className="w-[150px]" />
+                      <col className="w-[190px]" />
+                    </colgroup>
+                    <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
                       <tr>
                         {[
                           "Order ID",
@@ -714,7 +726,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "Status",
                           "Actions",
                         ].map((h) => (
-                          <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
+                          <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">
                             {h}
                           </th>
                         ))}
@@ -724,38 +736,70 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                       {orders.map((o) => (
                         <tr
                           key={o.id}
-                          className="border-t border-border/70 align-top hover:bg-muted/40"
+                          className="border-t border-border/70 align-middle transition-colors hover:bg-saffron/[0.06]"
                         >
-                          <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-navy">
-                            {o.order_id}
+                          <td className="px-3 py-2 font-semibold text-navy">
+                            <button
+                              type="button"
+                              onClick={() => setDetail(o)}
+                              className="rounded underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              title={`Open details for ${o.order_id}`}
+                            >
+                              {o.order_id}
+                            </button>
                           </td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
+                          <td
+                            className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground"
+                            title={formatDateTime(o.created_at)}
+                          >
                             {formatDateTime(o.created_at)}
                           </td>
-                          <td className="px-3 py-2.5">
-                            <p className="font-medium">{o.candidate_name_hindi}</p>
-                            <p className="text-xs text-muted-foreground">
+                          <td className="px-3 py-2">
+                            <p
+                              className="truncate font-medium"
+                              title={o.candidate_name_hindi}
+                            >
+                              {o.candidate_name_hindi}
+                            </p>
+                            <p
+                              className="truncate text-xs text-muted-foreground"
+                              title={o.candidate_name_english}
+                            >
                               {o.candidate_name_english}
                             </p>
                           </td>
-                          <td className="px-3 py-2.5 text-xs">
-                            {o.gram_panchayat} / वार्ड {o.ward_number}
-                            <br />
-                            <span className="text-muted-foreground">{o.district}</span>
+                          <td className="px-3 py-2 text-xs">
+                            <p
+                              className="truncate"
+                              title={`${o.gram_panchayat} / वार्ड ${o.ward_number}`}
+                            >
+                              {o.gram_panchayat} / वार्ड {o.ward_number}
+                            </p>
+                            <p className="truncate text-muted-foreground" title={o.district}>
+                              {o.district}
+                            </p>
                           </td>
-                          <td className="px-3 py-2.5 text-xs">{o.election_symbol}</td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs">
+                          <td className="px-3 py-2 text-xs">
+                            <span className="block truncate" title={o.election_symbol}>
+                              {o.election_symbol}
+                            </span>
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-2 text-xs tabular-nums">
                             {o.contact_number}
                           </td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground">
-                            {o.ip_address ?? "—"}
+                          <td
+                            className="px-3 py-2 text-xs text-muted-foreground"
+                            title={o.ip_address ?? undefined}
+                          >
+                            <span className="block truncate">{o.ip_address ?? "—"}</span>
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2">
                             {o.photo_url ? (
                               <button
                                 type="button"
                                 onClick={() => setPreview(o)}
-                                className="size-10 overflow-hidden rounded-md border border-border focus-visible:ring-2 focus-visible:ring-ring"
+                                title={`Preview photo for ${o.order_id}`}
+                                className="size-9 overflow-hidden rounded-md border border-border transition-shadow hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <img
                                   src={o.photo_url}
@@ -765,18 +809,25 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 />
                               </button>
                             ) : (
-                              <span className="grid size-10 place-items-center rounded-md border border-dashed border-border text-muted-foreground">
+                              <span
+                                title="No photo uploaded"
+                                className="grid size-9 place-items-center rounded-md border border-dashed border-border text-muted-foreground"
+                              >
                                 <ImageOff className="size-4" />
                               </span>
                             )}
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2">
                             <Select
                               value={o.status}
                               onValueChange={(v) => void changeStatus(o, v as OrderStatus)}
                             >
                               <SelectTrigger
-                                className={cn("h-8 w-[130px] text-xs", statusClass(o.status))}
+                                title={`Change status for ${o.order_id}`}
+                                className={cn(
+                                  "h-8 w-[128px] border text-xs font-semibold",
+                                  statusClass(o.status),
+                                )}
                               >
                                 <SelectValue />
                               </SelectTrigger>
@@ -789,12 +840,14 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               </SelectContent>
                             </Select>
                           </td>
-                          <td className="px-3 py-2.5">
-                            <div className="flex items-center gap-1">
+                          <td className="px-3 py-2">
+                            <div className="flex items-center gap-0.5">
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="View details"
+                                className="size-8"
+                                title={`View full details for ${o.order_id}`}
+                                aria-label={`View full details for ${o.order_id}`}
                                 onClick={() => setDetail(o)}
                               >
                                 <Eye className="size-4" />
@@ -802,18 +855,31 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="Download photo"
+                                className="size-8"
+                                title={
+                                  o.photo_path
+                                    ? `Download photo for ${o.order_id}`
+                                    : "No photo to download"
+                                }
+                                aria-label={`Download photo for ${o.order_id}`}
                                 disabled={busyPhoto || !o.photo_path}
                                 onClick={() => void download(o)}
                               >
                                 <Download className="size-4" />
                               </Button>
                               {waLink(o.contact_number) ? (
-                                <Button asChild size="icon" variant="ghost" title="WhatsApp chat">
+                                <Button
+                                  asChild
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                  title={`WhatsApp ${o.contact_number}`}
+                                >
                                   <a
                                     href={waLink(o.contact_number)!}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={`WhatsApp ${o.contact_number}`}
                                   >
                                     <MessageCircle className="size-4 text-success" />
                                   </a>
@@ -822,7 +888,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="Mark complete"
+                                className="size-8"
+                                title={
+                                  o.status === "Completed"
+                                    ? "Already completed"
+                                    : `Mark ${o.order_id} complete`
+                                }
+                                aria-label={`Mark ${o.order_id} complete`}
                                 disabled={o.status === "Completed"}
                                 onClick={() => void changeStatus(o, "Completed")}
                               >
@@ -831,7 +903,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                title="Delete order"
+                                className="size-8"
+                                title={`Delete ${o.order_id}`}
+                                aria-label={`Delete ${o.order_id}`}
                                 onClick={() => setPendingDelete(o)}
                               >
                                 <Trash2 className="size-4 text-destructive" />
