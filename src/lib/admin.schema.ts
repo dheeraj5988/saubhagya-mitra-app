@@ -37,6 +37,13 @@ export const leadsQuerySchema = z.object({
   token,
   search: z.string().max(120).default(""),
   date: z.string().max(20).default(""),
+  /**
+   * Minutes returned by `Date.prototype.getTimezoneOffset()` on the operator's
+   * machine. The day filter is resolved against their local midnight rather
+   * than silently assuming UTC, which otherwise shifts IST evening leads onto
+   * the following day.
+   */
+  tz_offset: z.number().int().min(-840).max(840).default(0),
   page: z.number().int().min(1).max(10_000).default(1),
   page_size: z.number().int().min(1).max(100).default(25),
 });
