@@ -125,7 +125,7 @@ function Index() {
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-navy-foreground/85">
               <span className="inline-flex items-center gap-1.5">
-                <BadgeCheck className="size-4" /> 500+ प्रत्याशियों का भरोसा
+                <BadgeCheck className="size-4" /> प्रत्याशियों का भरोसा
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Truck className="size-4" /> पूरे राजस्थान में डिलीवरी
