@@ -521,8 +521,8 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   async function exportLeads() {
     setExporting(true);
     try {
-      const { leads: rows } = await exportLeadsFn({
-        data: { token, search: debouncedLeadSearch, date: leadDate },
+      const { leads: rows, matched, limit, capped } = await exportLeadsFn({
+        data: { token, search: debouncedLeadSearch, date: leadDate, tz_offset: localTzOffset() },
       });
       if (!rows.length) {
         toast.error("Nothing to export for the current filters.");
