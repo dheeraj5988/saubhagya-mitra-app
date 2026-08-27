@@ -1,6 +1,5 @@
 export const WHATSAPP_NUMBER = "919828555751";
 export const CONTACT_DISPLAY = "+91 98285 55751";
-export const PRICE_PER_1000 = 1500;
 
 export type WhatsAppOrderPayload = {
   order_id: string;

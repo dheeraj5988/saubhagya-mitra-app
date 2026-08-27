@@ -3,7 +3,6 @@ import {
   BadgeCheck,
   Clock3,
   FileText,
-  IndianRupee,
   MessageCircle,
   Phone,
   ShieldCheck,
@@ -14,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { OrderForm } from "@/components/OrderForm";
-import { CONTACT_DISPLAY, PRICE_PER_1000, buildEnquiryWhatsAppUrl } from "@/lib/campaign";
+import { CONTACT_DISPLAY, buildEnquiryWhatsAppUrl } from "@/lib/campaign";
 
 const TITLE = "सौभाग्य मतदाता पर्ची सेवा | Saubhagya Matdata Parchi";
 const DESCRIPTION =
