@@ -109,7 +109,7 @@ function Index() {
             </h1>
             <p className="mt-4 text-base leading-relaxed text-navy-foreground/90 sm:text-lg">
               सरपंच एवं वार्ड पंच प्रत्याशियों के लिए फोटो, चुनाव चिन्ह और नारे सहित प्रोफेशनल मतदाता
-              पर्ची — बूथवार व्यवस्था के साथ, मात्र 24 घंटे में।
+              पर्ची — बूथवार व्यवस्था के साथ, ड्राफ्ट अप्रूवल के बाद शीघ्र डिलीवरी।
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild variant="hero" size="xl">
