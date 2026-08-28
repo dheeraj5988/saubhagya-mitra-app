@@ -74,7 +74,14 @@ import {
 } from "@/lib/admin-catalog.functions";
 import { SymbolsTab } from "@/components/admin/SymbolsTab";
 import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
-import { PAYMENT_STATUSES, type PaymentStatus } from "@/lib/catalog.schema";
+import {
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUSES,
+  type PaymentMethod,
+  type PaymentStatus,
+} from "@/lib/catalog.schema";
+
 import type { AdminKpis, AdminLead, AdminOrder } from "@/lib/admin.schema";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/orders.schema";
 import {
