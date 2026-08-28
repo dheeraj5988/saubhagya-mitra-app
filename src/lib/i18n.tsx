@@ -154,7 +154,7 @@ export const DICTIONARY = {
   "pay.instructions": { hi: "निर्देश", en: "Instructions" },
   "pay.upload": { hi: "भुगतान स्क्रीनशॉट अपलोड करें", en: "Upload payment screenshot" },
   "pay.uploading": { hi: "अपलोड हो रहा है…", en: "Uploading…" },
-  "pay.uploaded": { hi: "स्क्रीनशॉट प्राप्त हुआ — सत्यापन प्रतीक्षारत", en: "Screenshot received — awaiting verification" },
+  "pay.uploaded": { hi: "स्क्रीनशॉट प्राप्त हुआ — सत्यापन प्रतीक्षारत", en: "Screenshot received — verification pending" },
   "pay.upload.error": { hi: "स्क्रीनशॉट अपलोड नहीं हो सका।", en: "Could not upload the screenshot." },
   "pay.upload.type": { hi: "केवल JPG, PNG या WebP फाइल अपलोड करें (अधिकतम 5MB)।", en: "Upload a JPG, PNG or WebP file (max 5MB)." },
   "pay.whatsapp": { hi: "WhatsApp पर विवरण भेजें", en: "Send details on WhatsApp" },
