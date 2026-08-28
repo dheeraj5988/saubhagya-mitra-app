@@ -1676,7 +1676,18 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ["Status", detail.status],
                   ["Party", detail.party_name_snapshot ?? "—"],
                   ["Symbol", detail.symbol_name_snapshot ?? "—"],
-                  ["Payment Status", detail.payment_status],
+                  [
+                    "Payment Status",
+                    PAYMENT_STATUS_LABELS[detail.payment_status as PaymentStatus] ??
+                      detail.payment_status,
+                  ],
+                  [
+                    "Payment Method",
+                    detail.payment_method
+                      ? (PAYMENT_METHOD_LABELS[detail.payment_method as PaymentMethod] ??
+                        detail.payment_method)
+                      : "—",
+                  ],
                   ["Payment Txn ID", detail.payment_txn_id ?? "—"],
                   ["Payment Amount", detail.payment_amount == null ? "—" : `₹${detail.payment_amount}`],
                   ["Payment Updated", detail.payment_updated_at ? formatDateTime(detail.payment_updated_at) : "—"],
