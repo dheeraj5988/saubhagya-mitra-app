@@ -810,7 +810,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   <SelectItem value="all">All payment states</SelectItem>
                   {PAYMENT_STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {PAYMENT_STATUS_LABELS[s]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1025,7 +1025,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 <SelectContent>
                                   {PAYMENT_STATUSES.map((s) => (
                                     <SelectItem key={s} value={s}>
-                                      {s}
+                                      {PAYMENT_STATUS_LABELS[s]}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
