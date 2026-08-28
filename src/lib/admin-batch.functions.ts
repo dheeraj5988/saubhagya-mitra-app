@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 
+import { z } from "zod";
+
 import { batchSchema, type BatchExport, type BatchOrder } from "./admin-batch.schema";
+
+const paypurStatusSchema = z.object({
+  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid session token"),
+  txn_id: z.string().trim().min(1).max(120),
+});
 
 /** Asset links inside an export are deliberately short-lived. */
 const SIGNED_TTL = 900;
@@ -82,18 +89,7 @@ export const adminBatchExport = createServerFn({ method: "POST" })
 
 /** Optional PayPur reconciliation lookup — key and HMAC stay server-side. */
 export const adminPaypurStatus = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => {
-    const parsed = batchSchema
-      .pick({ token: true })
-      .extend(
-        (
-          batchSchema.shape as unknown as Record<string, never>
-        ) as Record<string, never>,
-      )
-      .safeParse(data);
-    void parsed;
-    return data as { token: string; txn_id: string };
-  })
+  .inputValidator((data: unknown) => paypurStatusSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     await assertSession(data.token);
