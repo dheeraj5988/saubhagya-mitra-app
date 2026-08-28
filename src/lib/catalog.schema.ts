@@ -1,12 +1,31 @@
 import { z } from "zod";
 
+/** Normalized payment states. Kept separate from the order workflow status. */
 export const PAYMENT_STATUSES = [
-  "Unpaid",
-  "Payment Screenshot Received",
-  "Payment Verified",
-  "Payment Rejected",
+  "UNPAID",
+  "VERIFICATION_PENDING",
+  "PAID_VERIFIED",
+  "SUSPICIOUS",
+  "MANUAL_APPROVED",
 ] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+export const PAYMENT_METHODS = ["MANUAL_QR", "PAYPUR_GATEWAY"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  UNPAID: "Unpaid",
+  VERIFICATION_PENDING: "Verification Pending",
+  PAID_VERIFIED: "Paid (Ready to Process)",
+  SUSPICIOUS: "Suspicious",
+  MANUAL_APPROVED: "Manual Approved",
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  MANUAL_QR: "Manual QR",
+  PAYPUR_GATEWAY: "PayPur Gateway",
+};
+
 
 /** Storage keys the anon upload policy permits for payment screenshots. */
 export const SCREENSHOT_PATH_RE = /^screenshots\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$/;
