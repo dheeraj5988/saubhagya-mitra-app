@@ -292,6 +292,7 @@ export function OrderForm() {
           symbol_name_snapshot: chosen.symbol_name,
           photo_path: path,
           ip_address: ipRef.current,
+          user_agent: typeof navigator === "undefined" ? null : navigator.userAgent.slice(0, 400),
           lead_id: leadIdRef.current,
         },
       });

@@ -31,6 +31,7 @@ export const orderSchema = z.object({
   // Must match the shape the storage upload policy permits.
   photo_path: z.string().regex(/^orders\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png)$/, "Invalid photo path"),
   ip_address: z.string().trim().max(64).optional().nullable(),
+  user_agent: z.string().trim().max(400).optional().nullable(),
   lead_id: z.string().uuid().nullable().optional(),
 });
 
