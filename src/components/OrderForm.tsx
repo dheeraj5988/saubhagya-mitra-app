@@ -248,12 +248,14 @@ export function OrderForm() {
       candidate_name_hindi: source.candidate_name_hindi.trim(),
       candidate_name_english: source.candidate_name_english.trim(),
       gram_panchayat: source.gram_panchayat.trim(),
+      panchayat_samiti: source.panchayat_samiti.trim(),
       ward_number: source.ward_number.trim(),
       district: source.district.trim(),
       election_symbol: symbol ? `${symbol.party_name} — ${symbol.symbol_name}` : "",
+      slogan: source.slogan?.trim() ?? "",
       contact_number: source.contact_number.trim(),
       payment_screenshot_sent: screenshotUploaded,
-      lang,
+      payment_method: "MANUAL_QR",
     });
   }
 
@@ -290,6 +292,7 @@ export function OrderForm() {
           symbol_name_snapshot: chosen.symbol_name,
           photo_path: path,
           ip_address: ipRef.current,
+          user_agent: typeof navigator === "undefined" ? null : navigator.userAgent.slice(0, 400),
           lead_id: leadIdRef.current,
         },
       });

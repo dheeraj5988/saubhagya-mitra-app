@@ -48,8 +48,8 @@ export const Route = createFileRoute("/api/public/paypur/callback")({
         const normalized = data.status.toLowerCase();
         const paymentStatus =
           normalized === "success" || normalized === "paid" || normalized === "completed"
-            ? "Payment Verified"
-            : "Payment Rejected";
+            ? "PAID_VERIFIED"
+            : "UNPAID";
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { error } = await supabaseAdmin
@@ -57,6 +57,7 @@ export const Route = createFileRoute("/api/public/paypur/callback")({
           .update({
             payment_status: paymentStatus,
             payment_txn_id: data.txn_id,
+            payment_method: "PAYPUR_GATEWAY",
             payment_amount: Number(data.amount),
             payment_updated_at: new Date().toISOString(),
           })

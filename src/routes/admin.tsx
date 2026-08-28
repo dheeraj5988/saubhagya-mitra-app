@@ -14,8 +14,12 @@ import {
   LogOut,
   MessageCircle,
   Phone,
+  FileJson,
+  FolderArchive,
   Receipt,
   RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
   Search,
   Trash2,
   Users,
@@ -28,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -66,6 +71,8 @@ import {
   adminPhotoUrl,
   adminUpdateStatus,
 } from "@/lib/admin.functions";
+import { adminBatchExport } from "@/lib/admin-batch.functions";
+import { BATCH_MAX } from "@/lib/admin-batch.schema";
 import {
   adminClearLeads,
   adminDeleteLead,
@@ -74,7 +81,14 @@ import {
 } from "@/lib/admin-catalog.functions";
 import { SymbolsTab } from "@/components/admin/SymbolsTab";
 import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
-import { PAYMENT_STATUSES, type PaymentStatus } from "@/lib/catalog.schema";
+import {
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUSES,
+  type PaymentMethod,
+  type PaymentStatus,
+} from "@/lib/catalog.schema";
+
 import type { AdminKpis, AdminLead, AdminOrder } from "@/lib/admin.schema";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/orders.schema";
 import {
@@ -141,13 +155,14 @@ function statusClass(status: string) {
 }
 
 function paymentClass(status: string) {
-  if (status === "Payment Verified") return "border-success/40 bg-success/10 text-success";
-  if (status === "Payment Rejected")
-    return "border-destructive/40 bg-destructive/10 text-destructive";
-  if (status === "Payment Screenshot Received")
+  if (status === "PAID_VERIFIED" || status === "MANUAL_APPROVED")
+    return "border-success/40 bg-success/10 text-success";
+  if (status === "SUSPICIOUS") return "border-destructive/40 bg-destructive/10 text-destructive";
+  if (status === "VERIFICATION_PENDING")
     return "border-saffron/40 bg-saffron/10 text-saffron-deep";
   return "border-border bg-muted text-muted-foreground";
 }
+
 
 function AdminPage() {
   const isDesktop = useIsDesktop();
@@ -312,6 +327,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const screenshotUrl = useServerFn(adminScreenshotUrl);
   const deleteLead = useServerFn(adminDeleteLead);
   const clearLeads = useServerFn(adminClearLeads);
+  const batchExport = useServerFn(adminBatchExport);
 
   const [kpis, setKpis] = useState<AdminKpis>(EMPTY_KPIS);
   const [wards, setWards] = useState<string[]>([]);
@@ -343,6 +359,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [pendingDelete, setPendingDelete] = useState<AdminOrder | null>(null);
   const [pendingLeadDelete, setPendingLeadDelete] = useState<AdminLead | null>(null);
   const [clearingLeads, setClearingLeads] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [batchSize, setBatchSize] = useState("200");
+  const [batchBusy, setBatchBusy] = useState<"json" | "zip" | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
 
   const debouncedSearch = useDebounced(search);
@@ -553,6 +572,101 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     }
   }
 
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+  const allOnPageSelected = orders.length > 0 && orders.every((o) => selectedSet.has(o.order_id));
+
+  function toggleOne(orderId: string) {
+    setSelected((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId].slice(0, BATCH_MAX),
+    );
+  }
+
+  function togglePage() {
+    setSelected((prev) => {
+      const ids = orders.map((o) => o.order_id);
+      if (ids.every((id) => prev.includes(id))) return prev.filter((id) => !ids.includes(id));
+      return Array.from(new Set([...prev, ...ids])).slice(0, BATCH_MAX);
+    });
+  }
+
+  /**
+   * Ticked rows win over the filter set; otherwise the batch is the current
+   * filters capped at the chosen size. Either way the server re-applies the
+   * same bounds, so the UI can never widen the export.
+   */
+  function batchPayload() {
+    return {
+      token,
+      order_ids: selected.slice(0, BATCH_MAX),
+      search: debouncedSearch,
+      ward,
+      status,
+      payment_status: paymentStatus,
+      limit: selected.length ? Math.min(selected.length, BATCH_MAX) : Number(batchSize),
+    };
+  }
+
+  function saveBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function exportBatchForClaude() {
+    setBatchBusy("json");
+    try {
+      const payload = await batchExport({ data: batchPayload() });
+      if (!payload.total_orders) {
+        toast.error("Nothing to export for the current batch.");
+        return;
+      }
+      saveBlob(
+        new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
+        `${payload.batch_id}.json`,
+      );
+      toast.success(
+        payload.capped
+          ? `Exported ${payload.total_orders} of ${payload.matched} matching orders (batch cap ${payload.limit}).`
+          : `Exported ${payload.total_orders} orders. Asset links expire in 1 hour.`,
+      );
+    } catch (err) {
+      handleError(err, "Batch export failed. Please retry.");
+    } finally {
+      setBatchBusy(null);
+    }
+  }
+
+  async function downloadAssetsZip() {
+    setBatchBusy("zip");
+    try {
+      const res = await fetch("/api/public/admin/batch-zip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(batchPayload()),
+      });
+      if (res.status === 401) {
+        handleError(new Error("UNAUTHORIZED"), "Session expired.");
+        return;
+      }
+      if (!res.ok) throw new Error(await res.text());
+      const missing = Number(res.headers.get("X-Batch-Missing") ?? "0");
+      const name =
+        /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ??
+        "saubhagya-assets.zip";
+      saveBlob(await res.blob(), name);
+      toast.success(
+        missing ? `ZIP ready — ${missing} asset(s) were missing (see manifest.json).` : "ZIP ready.",
+      );
+    } catch (err) {
+      handleError(err, "Asset ZIP failed. Please retry.");
+    } finally {
+      setBatchBusy(null);
+    }
+  }
+
   /** Exports pull the full filtered set from the server, not just this page. */
   async function exportOrders() {
     setExporting(true);
@@ -576,12 +690,17 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           "Gram Panchayat",
           "Ward",
           "Election Symbol",
+          "Party (snapshot)",
+          "Symbol (snapshot)",
           "Slogan",
           "IP",
           "Status",
           "Payment Status",
+          "Payment Method",
           "Payment Txn",
           "Payment Amount",
+          "Payment Updated",
+          "Screenshot Uploaded",
         ],
         ...rows.map((o) => [
           o.order_id,
@@ -594,14 +713,22 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           o.gram_panchayat,
           o.ward_number,
           o.election_symbol,
+          o.party_name_snapshot,
+          o.symbol_name_snapshot,
           o.slogan,
           o.ip_address,
           o.status,
-          o.payment_status,
+          PAYMENT_STATUS_LABELS[o.payment_status as PaymentStatus] ?? o.payment_status,
+          o.payment_method
+            ? (PAYMENT_METHOD_LABELS[o.payment_method as PaymentMethod] ?? o.payment_method)
+            : "",
           o.payment_txn_id,
           o.payment_amount,
+          o.payment_updated_at ? formatDateTime(o.payment_updated_at) : "",
+          o.payment_screenshot_path ? "Yes" : "No",
         ]),
       ]);
+
       if (capped) {
         toast.warning(
           `Export capped at ${limit} rows — ${matched} orders match these filters. Narrow the filters to reach the rest.`,
@@ -789,7 +916,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   <SelectItem value="all">All payment states</SelectItem>
                   {PAYMENT_STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {PAYMENT_STATUS_LABELS[s]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -821,6 +948,57 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               </Button>
             </div>
 
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-saffron/30 bg-saffron/[0.06] p-3">
+              <span className="text-sm font-semibold text-navy">Claude batch</span>
+              <span className="text-xs text-muted-foreground">
+                {selected.length
+                  ? `${selected.length} order(s) selected`
+                  : `Current filters, newest first (max ${batchSize})`}
+              </span>
+              <Select value={batchSize} onValueChange={setBatchSize} disabled={!!selected.length}>
+                <SelectTrigger className="h-9 w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["50", "100", "200"].map((n) => (
+                    <SelectItem key={n} value={n}>
+                      Last {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                onClick={() => void exportBatchForClaude()}
+                disabled={batchBusy !== null || !orderTotal}
+              >
+                {batchBusy === "json" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <FileJson className="size-4" />
+                )}{" "}
+                Export Batch for Claude
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void downloadAssetsZip()}
+                disabled={batchBusy !== null || !orderTotal}
+              >
+                {batchBusy === "zip" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <FolderArchive className="size-4" />
+                )}{" "}
+                Download All Assets as ZIP
+              </Button>
+              {selected.length ? (
+                <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                  <X className="size-4" /> Clear selection
+                </Button>
+              ) : null}
+            </div>
+
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
               {loading ? (
                 <div className="grid place-items-center gap-2 py-16 text-muted-foreground">
@@ -843,6 +1021,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <div className="relative max-h-[calc(100vh-24rem)] overflow-auto">
                   <table className="w-full border-collapse text-sm">
                     <colgroup>
+                      <col className="w-[40px]" />
                       <col className="w-[110px]" />
                       <col className="w-[140px]" />
                       <col className="w-[200px]" />
@@ -857,6 +1036,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                     </colgroup>
                     <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
                       <tr>
+                        <th className="px-3 py-2">
+                          <Checkbox
+                            checked={allOnPageSelected}
+                            onCheckedChange={() => togglePage()}
+                            aria-label="Select all orders on this page"
+                          />
+                        </th>
                         {[
                           "Order ID",
                           "Date / Time",
@@ -882,6 +1068,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           key={o.id}
                           className="border-t border-border/70 align-middle transition-colors hover:bg-saffron/[0.06]"
                         >
+                          <td className="px-3 py-2">
+                            <Checkbox
+                              checked={selectedSet.has(o.order_id)}
+                              onCheckedChange={() => toggleOne(o.order_id)}
+                              aria-label={`Select ${o.order_id}`}
+                            />
+                          </td>
                           <td className="px-3 py-2 font-semibold text-navy">
                             <button
                               type="button"
@@ -1004,7 +1197,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 <SelectContent>
                                   {PAYMENT_STATUSES.map((s) => (
                                     <SelectItem key={s} value={s}>
-                                      {s}
+                                      {PAYMENT_STATUS_LABELS[s]}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -1083,6 +1276,28 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 onClick={() => void changeStatus(o, "Completed")}
                               >
                                 <CheckCircle2 className="size-4 text-success" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8"
+                                title={`Approve manual payment for ${o.order_id}`}
+                                aria-label={`Approve manual payment for ${o.order_id}`}
+                                disabled={o.payment_status === "MANUAL_APPROVED"}
+                                onClick={() => void changePaymentStatus(o, "MANUAL_APPROVED")}
+                              >
+                                <ShieldCheck className="size-4 text-success" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8"
+                                title={`Flag ${o.order_id} payment as suspicious`}
+                                aria-label={`Flag ${o.order_id} payment as suspicious`}
+                                disabled={o.payment_status === "SUSPICIOUS"}
+                                onClick={() => void changePaymentStatus(o, "SUSPICIOUS")}
+                              >
+                                <ShieldAlert className="size-4 text-destructive" />
                               </Button>
                               <Button
                                 size="icon"
@@ -1461,7 +1676,18 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ["Status", detail.status],
                   ["Party", detail.party_name_snapshot ?? "—"],
                   ["Symbol", detail.symbol_name_snapshot ?? "—"],
-                  ["Payment Status", detail.payment_status],
+                  [
+                    "Payment Status",
+                    PAYMENT_STATUS_LABELS[detail.payment_status as PaymentStatus] ??
+                      detail.payment_status,
+                  ],
+                  [
+                    "Payment Method",
+                    detail.payment_method
+                      ? (PAYMENT_METHOD_LABELS[detail.payment_method as PaymentMethod] ??
+                        detail.payment_method)
+                      : "—",
+                  ],
                   ["Payment Txn ID", detail.payment_txn_id ?? "—"],
                   ["Payment Amount", detail.payment_amount == null ? "—" : `₹${detail.payment_amount}`],
                   ["Payment Updated", detail.payment_updated_at ? formatDateTime(detail.payment_updated_at) : "—"],

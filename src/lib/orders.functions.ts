@@ -116,6 +116,7 @@ export const createOrder = createServerFn({ method: "POST" })
         slogan: data.slogan || null,
         photo_path: data.photo_path,
         ip_address: data.ip_address ?? null,
+        user_agent: data.user_agent ?? null,
         status: "Pending",
       });
 

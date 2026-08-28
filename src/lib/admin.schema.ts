@@ -74,10 +74,13 @@ export type AdminOrder = {
   party_name_snapshot: string | null;
   symbol_name_snapshot: string | null;
   payment_status: string;
+  payment_method: string | null;
   payment_screenshot_path: string | null;
   payment_txn_id: string | null;
   payment_amount: number | null;
   payment_updated_at: string | null;
+  user_agent: string | null;
+
 };
 
 export type AdminLead = {

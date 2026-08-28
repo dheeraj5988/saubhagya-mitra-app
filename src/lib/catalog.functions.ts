@@ -80,7 +80,8 @@ export const attachPaymentScreenshot = createServerFn({ method: "POST" })
       .from("orders")
       .update({
         payment_screenshot_path: data.path,
-        payment_status: "Payment Screenshot Received",
+        payment_status: "VERIFICATION_PENDING",
+        payment_method: "MANUAL_QR",
         payment_updated_at: new Date().toISOString(),
       })
       .eq("order_id", data.order_id)
@@ -130,6 +131,7 @@ export const startPaypurPayment = createServerFn({ method: "POST" })
         .update({
           payment_txn_id: json.txn_id ?? null,
           payment_amount: cfg.amount,
+          payment_method: "PAYPUR_GATEWAY",
           payment_updated_at: new Date().toISOString(),
         })
         .eq("order_id", data.order_id);

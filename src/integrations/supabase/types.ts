@@ -117,6 +117,7 @@ export type Database = {
           panchayat_samiti: string
           party_name_snapshot: string | null
           payment_amount: number | null
+          payment_method: string | null
           payment_screenshot_path: string | null
           payment_status: string
           payment_txn_id: string | null
@@ -125,6 +126,7 @@ export type Database = {
           slogan: string | null
           status: string
           symbol_name_snapshot: string | null
+          user_agent: string | null
           ward_number: string
         }
         Insert: {
@@ -142,6 +144,7 @@ export type Database = {
           panchayat_samiti: string
           party_name_snapshot?: string | null
           payment_amount?: number | null
+          payment_method?: string | null
           payment_screenshot_path?: string | null
           payment_status?: string
           payment_txn_id?: string | null
@@ -150,6 +153,7 @@ export type Database = {
           slogan?: string | null
           status?: string
           symbol_name_snapshot?: string | null
+          user_agent?: string | null
           ward_number: string
         }
         Update: {
@@ -167,6 +171,7 @@ export type Database = {
           panchayat_samiti?: string
           party_name_snapshot?: string | null
           payment_amount?: number | null
+          payment_method?: string | null
           payment_screenshot_path?: string | null
           payment_status?: string
           payment_txn_id?: string | null
@@ -175,6 +180,7 @@ export type Database = {
           slogan?: string | null
           status?: string
           symbol_name_snapshot?: string | null
+          user_agent?: string | null
           ward_number?: string
         }
         Relationships: [
