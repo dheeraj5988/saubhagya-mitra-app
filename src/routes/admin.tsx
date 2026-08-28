@@ -148,13 +148,14 @@ function statusClass(status: string) {
 }
 
 function paymentClass(status: string) {
-  if (status === "Payment Verified") return "border-success/40 bg-success/10 text-success";
-  if (status === "Payment Rejected")
-    return "border-destructive/40 bg-destructive/10 text-destructive";
-  if (status === "Payment Screenshot Received")
+  if (status === "PAID_VERIFIED" || status === "MANUAL_APPROVED")
+    return "border-success/40 bg-success/10 text-success";
+  if (status === "SUSPICIOUS") return "border-destructive/40 bg-destructive/10 text-destructive";
+  if (status === "VERIFICATION_PENDING")
     return "border-saffron/40 bg-saffron/10 text-saffron-deep";
   return "border-border bg-muted text-muted-foreground";
 }
+
 
 function AdminPage() {
   const isDesktop = useIsDesktop();
