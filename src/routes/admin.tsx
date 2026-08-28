@@ -14,8 +14,12 @@ import {
   LogOut,
   MessageCircle,
   Phone,
+  FileJson,
+  FolderArchive,
   Receipt,
   RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
   Search,
   Trash2,
   Users,
@@ -28,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -943,6 +948,57 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               </Button>
             </div>
 
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-saffron/30 bg-saffron/[0.06] p-3">
+              <span className="text-sm font-semibold text-navy">Claude batch</span>
+              <span className="text-xs text-muted-foreground">
+                {selected.length
+                  ? `${selected.length} order(s) selected`
+                  : `Current filters, newest first (max ${batchSize})`}
+              </span>
+              <Select value={batchSize} onValueChange={setBatchSize} disabled={!!selected.length}>
+                <SelectTrigger className="h-9 w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["50", "100", "200"].map((n) => (
+                    <SelectItem key={n} value={n}>
+                      Last {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                onClick={() => void exportBatchForClaude()}
+                disabled={batchBusy !== null || !orderTotal}
+              >
+                {batchBusy === "json" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <FileJson className="size-4" />
+                )}{" "}
+                Export Batch for Claude
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void downloadAssetsZip()}
+                disabled={batchBusy !== null || !orderTotal}
+              >
+                {batchBusy === "zip" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <FolderArchive className="size-4" />
+                )}{" "}
+                Download All Assets as ZIP
+              </Button>
+              {selected.length ? (
+                <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                  <X className="size-4" /> Clear selection
+                </Button>
+              ) : null}
+            </div>
+
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
               {loading ? (
                 <div className="grid place-items-center gap-2 py-16 text-muted-foreground">
@@ -965,6 +1021,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <div className="relative max-h-[calc(100vh-24rem)] overflow-auto">
                   <table className="w-full border-collapse text-sm">
                     <colgroup>
+                      <col className="w-[40px]" />
                       <col className="w-[110px]" />
                       <col className="w-[140px]" />
                       <col className="w-[200px]" />
@@ -979,6 +1036,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                     </colgroup>
                     <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
                       <tr>
+                        <th className="px-3 py-2">
+                          <Checkbox
+                            checked={allOnPageSelected}
+                            onCheckedChange={() => togglePage()}
+                            aria-label="Select all orders on this page"
+                          />
+                        </th>
                         {[
                           "Order ID",
                           "Date / Time",
@@ -1004,6 +1068,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           key={o.id}
                           className="border-t border-border/70 align-middle transition-colors hover:bg-saffron/[0.06]"
                         >
+                          <td className="px-3 py-2">
+                            <Checkbox
+                              checked={selectedSet.has(o.order_id)}
+                              onCheckedChange={() => toggleOne(o.order_id)}
+                              aria-label={`Select ${o.order_id}`}
+                            />
+                          </td>
                           <td className="px-3 py-2 font-semibold text-navy">
                             <button
                               type="button"
@@ -1205,6 +1276,28 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 onClick={() => void changeStatus(o, "Completed")}
                               >
                                 <CheckCircle2 className="size-4 text-success" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8"
+                                title={`Approve manual payment for ${o.order_id}`}
+                                aria-label={`Approve manual payment for ${o.order_id}`}
+                                disabled={o.payment_status === "MANUAL_APPROVED"}
+                                onClick={() => void changePaymentStatus(o, "MANUAL_APPROVED")}
+                              >
+                                <ShieldCheck className="size-4 text-success" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8"
+                                title={`Flag ${o.order_id} payment as suspicious`}
+                                aria-label={`Flag ${o.order_id} payment as suspicious`}
+                                disabled={o.payment_status === "SUSPICIOUS"}
+                                onClick={() => void changePaymentStatus(o, "SUSPICIOUS")}
+                              >
+                                <ShieldAlert className="size-4 text-destructive" />
                               </Button>
                               <Button
                                 size="icon"
