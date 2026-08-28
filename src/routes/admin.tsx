@@ -66,6 +66,8 @@ import {
   adminPhotoUrl,
   adminUpdateStatus,
 } from "@/lib/admin.functions";
+import { adminBatchExport } from "@/lib/admin-batch.functions";
+import { BATCH_MAX } from "@/lib/admin-batch.schema";
 import {
   adminClearLeads,
   adminDeleteLead,
@@ -320,6 +322,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const screenshotUrl = useServerFn(adminScreenshotUrl);
   const deleteLead = useServerFn(adminDeleteLead);
   const clearLeads = useServerFn(adminClearLeads);
+  const batchExport = useServerFn(adminBatchExport);
 
   const [kpis, setKpis] = useState<AdminKpis>(EMPTY_KPIS);
   const [wards, setWards] = useState<string[]>([]);
@@ -351,6 +354,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [pendingDelete, setPendingDelete] = useState<AdminOrder | null>(null);
   const [pendingLeadDelete, setPendingLeadDelete] = useState<AdminLead | null>(null);
   const [clearingLeads, setClearingLeads] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [batchSize, setBatchSize] = useState("200");
+  const [batchBusy, setBatchBusy] = useState<"json" | "zip" | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
 
   const debouncedSearch = useDebounced(search);
@@ -558,6 +564,101 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       handleError(err, "Delete failed. Please retry.");
     } finally {
       setDeleting(false);
+    }
+  }
+
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+  const allOnPageSelected = orders.length > 0 && orders.every((o) => selectedSet.has(o.order_id));
+
+  function toggleOne(orderId: string) {
+    setSelected((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId].slice(0, BATCH_MAX),
+    );
+  }
+
+  function togglePage() {
+    setSelected((prev) => {
+      const ids = orders.map((o) => o.order_id);
+      if (ids.every((id) => prev.includes(id))) return prev.filter((id) => !ids.includes(id));
+      return Array.from(new Set([...prev, ...ids])).slice(0, BATCH_MAX);
+    });
+  }
+
+  /**
+   * Ticked rows win over the filter set; otherwise the batch is the current
+   * filters capped at the chosen size. Either way the server re-applies the
+   * same bounds, so the UI can never widen the export.
+   */
+  function batchPayload() {
+    return {
+      token,
+      order_ids: selected.slice(0, BATCH_MAX),
+      search: debouncedSearch,
+      ward,
+      status,
+      payment_status: paymentStatus,
+      limit: selected.length ? Math.min(selected.length, BATCH_MAX) : Number(batchSize),
+    };
+  }
+
+  function saveBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function exportBatchForClaude() {
+    setBatchBusy("json");
+    try {
+      const payload = await batchExport({ data: batchPayload() });
+      if (!payload.total_orders) {
+        toast.error("Nothing to export for the current batch.");
+        return;
+      }
+      saveBlob(
+        new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
+        `${payload.batch_id}.json`,
+      );
+      toast.success(
+        payload.capped
+          ? `Exported ${payload.total_orders} of ${payload.matched} matching orders (batch cap ${payload.limit}).`
+          : `Exported ${payload.total_orders} orders. Asset links expire in 1 hour.`,
+      );
+    } catch (err) {
+      handleError(err, "Batch export failed. Please retry.");
+    } finally {
+      setBatchBusy(null);
+    }
+  }
+
+  async function downloadAssetsZip() {
+    setBatchBusy("zip");
+    try {
+      const res = await fetch("/api/public/admin/batch-zip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(batchPayload()),
+      });
+      if (res.status === 401) {
+        handleError(new Error("UNAUTHORIZED"), "Session expired.");
+        return;
+      }
+      if (!res.ok) throw new Error(await res.text());
+      const missing = Number(res.headers.get("X-Batch-Missing") ?? "0");
+      const name =
+        /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ??
+        "saubhagya-assets.zip";
+      saveBlob(await res.blob(), name);
+      toast.success(
+        missing ? `ZIP ready — ${missing} asset(s) were missing (see manifest.json).` : "ZIP ready.",
+      );
+    } catch (err) {
+      handleError(err, "Asset ZIP failed. Please retry.");
+    } finally {
+      setBatchBusy(null);
     }
   }
 
