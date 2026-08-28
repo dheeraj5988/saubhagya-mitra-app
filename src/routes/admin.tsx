@@ -576,12 +576,17 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           "Gram Panchayat",
           "Ward",
           "Election Symbol",
+          "Party (snapshot)",
+          "Symbol (snapshot)",
           "Slogan",
           "IP",
           "Status",
           "Payment Status",
+          "Payment Method",
           "Payment Txn",
           "Payment Amount",
+          "Payment Updated",
+          "Screenshot Uploaded",
         ],
         ...rows.map((o) => [
           o.order_id,
@@ -594,14 +599,22 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           o.gram_panchayat,
           o.ward_number,
           o.election_symbol,
+          o.party_name_snapshot,
+          o.symbol_name_snapshot,
           o.slogan,
           o.ip_address,
           o.status,
-          o.payment_status,
+          PAYMENT_STATUS_LABELS[o.payment_status as PaymentStatus] ?? o.payment_status,
+          o.payment_method
+            ? (PAYMENT_METHOD_LABELS[o.payment_method as PaymentMethod] ?? o.payment_method)
+            : "",
           o.payment_txn_id,
           o.payment_amount,
+          o.payment_updated_at ? formatDateTime(o.payment_updated_at) : "",
+          o.payment_screenshot_path ? "Yes" : "No",
         ]),
       ]);
+
       if (capped) {
         toast.warning(
           `Export capped at ${limit} rows — ${matched} orders match these filters. Narrow the filters to reach the rest.`,
