@@ -7,57 +7,53 @@ export type WhatsAppOrderPayload = {
   order_id: string;
   candidate_name_hindi: string;
   candidate_name_english: string;
+  district: string;
+  panchayat_samiti: string;
   gram_panchayat: string;
   ward_number: string;
-  district: string;
   election_symbol: string;
+  slogan?: string | null;
   contact_number: string;
   /** Whether the candidate has already uploaded a payment screenshot. */
   payment_screenshot_sent?: boolean;
-  lang?: Lang;
+  /** Chosen payment route, used verbatim in the message. */
+  payment_method?: "MANUAL_QR" | "PAYPUR_GATEWAY";
 };
 
+/** Exact wording required by the campaign team for uploaded screenshots. */
+export const SCREENSHOT_UPLOADED_TEXT = "अपलोड कर दिया गया (Verification Pending)";
+const SCREENSHOT_PENDING_TEXT = "अभी अपलोड नहीं किया";
+
+/**
+ * The WhatsApp handover message is a fixed Hindi template agreed with the
+ * campaign desk. It is intentionally not translated: the receiving team reads
+ * it in Hindi regardless of the visitor's UI language.
+ */
 export function buildWhatsAppUrl(payload: WhatsAppOrderPayload) {
-  const en = payload.lang === "en";
-  const paymentLine = payload.payment_screenshot_sent
-    ? en
-      ? "Payment screenshot: uploaded (awaiting verification)"
-      : "भुगतान स्क्रीनशॉट: अपलोड कर दिया गया (सत्यापन प्रतीक्षारत)"
-    : en
-      ? "Payment screenshot: not uploaded yet"
-      : "भुगतान स्क्रीनशॉट: अभी अपलोड नहीं किया";
+  const paymentMethod =
+    payload.payment_method === "PAYPUR_GATEWAY" ? "PayPur (ऑनलाइन UPI)" : "QR / UPI (मैनुअल)";
+  const screenshotStatus = payload.payment_screenshot_sent
+    ? SCREENSHOT_UPLOADED_TEXT
+    : SCREENSHOT_PENDING_TEXT;
 
-  const message = en
-    ? [
-        `Hello! My request for the Saubhagya Matdata Parchi service:`,
-        ``,
-        `Order ID: ${payload.order_id}`,
-        `Candidate: ${payload.candidate_name_english} (${payload.candidate_name_hindi})`,
-        `District: ${payload.district}`,
-        `Gram Panchayat: ${payload.gram_panchayat}`,
-        `Ward number: ${payload.ward_number}`,
-        `Election symbol: ${payload.election_symbol}`,
-        `Mobile: ${payload.contact_number}`,
-        paymentLine,
-        ``,
-        `Please share the next steps.`,
-      ]
-    : [
-        `नमस्ते! सौभाग्य मतदाता पर्ची सेवा हेतु मेरा आवेदन:`,
-        ``,
-        `ऑर्डर आईडी: ${payload.order_id}`,
-        `प्रत्याशी: ${payload.candidate_name_hindi} (${payload.candidate_name_english})`,
-        `जिला: ${payload.district}`,
-        `ग्राम पंचायत: ${payload.gram_panchayat}`,
-        `वार्ड नंबर: ${payload.ward_number}`,
-        `चुनाव चिन्ह: ${payload.election_symbol}`,
-        `मोबाइल: ${payload.contact_number}`,
-        paymentLine,
-        ``,
-        `कृपया आगे की प्रक्रिया की जानकारी भेजें।`,
-      ];
+  const message = [
+    `नमस्ते सौभाग्य टीम, मैंने मतदाता पर्ची के लिए आवेदन किया है।`,
+    `📋 *ऑर्डर आईडी:* ${payload.order_id}`,
+    `👤 *उम्मीदवार:* ${payload.candidate_name_hindi} (${payload.candidate_name_english})`,
+    `📍 *जिला:* ${payload.district}`,
+    `🏛️ *पंचायत समिति:* ${payload.panchayat_samiti}`,
+    `🏡 *ग्राम पंचायत:* ${payload.gram_panchayat}`,
+    `🔢 *वार्ड नंबर:* ${payload.ward_number}`,
+    `🗳️ *चुनाव चिन्ह:* ${payload.election_symbol}`,
+    `📢 *नारा / संदेश:* ${payload.slogan?.trim() || "—"}`,
+    `📞 *मोबाइल:* ${payload.contact_number}`,
+    `💳 *भुगतान प्रकार:* ${paymentMethod}`,
+    `📸 *भुगतान स्क्रीनशॉट:* ${screenshotStatus}`,
+    ``,
+    `कृपया मेरा ऑर्डर ड्राफ्ट और पुष्टिकरण भेजें।`,
+  ].join("\n");
 
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message.join("\n"))}`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
 export function buildEnquiryWhatsAppUrl(lang: Lang = "hi") {
