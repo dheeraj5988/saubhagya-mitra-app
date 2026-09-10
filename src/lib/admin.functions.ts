@@ -105,18 +105,21 @@ export const adminOverview = createServerFn({ method: "POST" })
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const countOrders = (status?: string) => {
+    const countPayments = (paymentStatus?: string) => {
       let q = db.from("orders").select("id", { count: "exact", head: true });
-      if (status) q = q.eq("status", status);
+      if (paymentStatus) q = q.eq("payment_status", paymentStatus);
       return q;
     };
 
-    const [total, pending, process, completed, leads, wardRows] = await Promise.all([
-      countOrders(),
-      countOrders("Pending"),
-      countOrders("In-Process"),
-      countOrders("Completed"),
+    const [total, paid, pending, samples, leads, revenue, wardRows] = await Promise.all([
+      countPayments(),
+      countPayments("PAID"),
+      countPayments("PENDING"),
+      db.from("sample_requests").select("id", { count: "exact", head: true }),
       db.from("visitor_leads").select("id", { count: "exact", head: true }),
+      // Revenue is summed in the database so it covers every paid order, not
+      // just the rows on the current page.
+      db.rpc("admin_revenue"),
       // DISTINCT across the whole table via a security-definer function, so the
       // ward list stays complete past any row limit.
       db.rpc("admin_distinct_wards"),
@@ -124,9 +127,10 @@ export const adminOverview = createServerFn({ method: "POST" })
 
     const kpis: AdminKpis = {
       total: total.count ?? 0,
+      paid: paid.count ?? 0,
       pending: pending.count ?? 0,
-      process: process.count ?? 0,
-      completed: completed.count ?? 0,
+      revenue: Number(revenue.data ?? 0),
+      samples: samples.count ?? 0,
       leads: leads.count ?? 0,
     };
 

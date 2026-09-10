@@ -1,62 +1,35 @@
-import { z } from "zod";
-
-/** Normalized payment states. Kept separate from the order workflow status. */
-export const PAYMENT_STATUSES = [
-  "UNPAID",
-  "VERIFICATION_PENDING",
-  "PAID_VERIFIED",
-  "SUSPICIOUS",
-  "MANUAL_APPROVED",
-] as const;
+/**
+ * Payment states used across the app. PhonePe is the only planned gateway;
+ * manual QR / screenshot verification has been removed.
+ */
+export const PAYMENT_STATUSES = ["PENDING", "PAID", "FAILED", "REFUNDED"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export const PAYMENT_METHODS = ["MANUAL_QR", "PAYPUR_GATEWAY"] as const;
+export const PAYMENT_METHODS = ["PHONEPE"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
-  UNPAID: "Unpaid",
-  VERIFICATION_PENDING: "Verification Pending",
-  PAID_VERIFIED: "Paid (Ready to Process)",
-  SUSPICIOUS: "Suspicious",
-  MANUAL_APPROVED: "Manual Approved",
+  PENDING: "Pending",
+  PAID: "Paid",
+  FAILED: "Failed",
+  REFUNDED: "Refunded",
 };
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  MANUAL_QR: "Manual QR",
-  PAYPUR_GATEWAY: "PayPur Gateway",
+  PHONEPE: "PhonePe",
 };
 
+export const PHONEPE_ENVIRONMENTS = ["SANDBOX", "PRODUCTION"] as const;
+export type PhonePeEnvironment = (typeof PHONEPE_ENVIRONMENTS)[number];
 
-/** Storage keys the anon upload policy permits for payment screenshots. */
-export const SCREENSHOT_PATH_RE = /^screenshots\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$/;
 /** Storage keys used for admin-managed symbol icons. */
 export const SYMBOL_PATH_RE = /^symbols\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$/;
-/** Storage key for the single payment QR image. */
-export const QR_PATH_RE = /^qr\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$/;
-
-export const orderIdSchema = z.string().trim().min(1).max(40);
-
-export const screenshotSchema = z.object({
-  order_id: orderIdSchema,
-  path: z.string().regex(SCREENSHOT_PATH_RE, "Invalid screenshot path"),
-});
-
-export const paypurStartSchema = z.object({ order_id: orderIdSchema });
 
 export type PublicSymbol = {
   id: string;
   party_name: string;
   symbol_name: string;
   image_url: string | null;
-};
-
-export type PublicPaymentPanel = {
-  display_name: string | null;
-  upi_id: string | null;
-  instructions: string | null;
-  amount: number | null;
-  qr_url: string | null;
-  paypur_enabled: boolean;
 };
 
 export type AdminSymbol = {
@@ -71,19 +44,20 @@ export type AdminSymbol = {
   updated_at: string;
 };
 
-export type AdminPaymentSettings = {
-  display_name: string | null;
-  upi_id: string | null;
-  instructions: string | null;
-  amount: number | null;
-  qr_image_path: string | null;
-  qr_url: string | null;
-  paypur_enabled: boolean;
-  paypur_base_url: string;
-  paypur_amount: number | null;
-  paypur_success_url: string | null;
-  paypur_failure_url: string | null;
-  /** Never the values themselves — only whether a secret is on file. */
-  has_api_key: boolean;
-  has_signing_secret: boolean;
+/**
+ * Admin-visible payment configuration. Secrets are never returned — only
+ * whether one is currently on file.
+ */
+export type AdminPaymentConfig = {
+  rate_per_voter: number;
+  min_order_amount: number | null;
+  free_sample_voter_count: number;
+  phonepe_enabled: boolean;
+  phonepe_environment: PhonePeEnvironment;
+  phonepe_merchant_id: string | null;
+  phonepe_client_id: string | null;
+  phonepe_redirect_url: string | null;
+  phonepe_callback_url: string | null;
+  has_client_secret: boolean;
+  has_salt_key: boolean;
 };

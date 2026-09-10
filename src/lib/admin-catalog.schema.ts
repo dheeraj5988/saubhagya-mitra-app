@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { PAYMENT_STATUSES, QR_PATH_RE, SCREENSHOT_PATH_RE, SYMBOL_PATH_RE } from "./catalog.schema";
+import { PAYMENT_STATUSES, PHONEPE_ENVIRONMENTS, SYMBOL_PATH_RE } from "./catalog.schema";
+import { SAMPLE_STATUSES } from "./orders.schema";
 
 const token = z.string().regex(/^[0-9a-f]{64}$/, "Invalid session token");
 
@@ -20,29 +21,31 @@ export const symbolIdSchema = z.object({ token, id: z.string().uuid() });
 
 export const uploadTargetSchema = z.object({
   token,
-  bucket: z.enum(["election-symbols", "payment-assets"]),
-  kind: z.enum(["symbol", "qr"]),
+  bucket: z.literal("election-symbols"),
+  kind: z.literal("symbol"),
   ext: z.enum(["jpg", "jpeg", "png", "webp"]),
 });
 
-export const paymentSettingsSchema = z.object({
+/** Non-secret payment/pricing configuration. */
+export const paymentConfigSchema = z.object({
   token,
-  display_name: z.string().trim().max(120).nullable().optional(),
-  upi_id: z.string().trim().max(120).nullable().optional(),
-  instructions: z.string().trim().max(1000).nullable().optional(),
-  amount: z.number().min(0).max(10_000_000).nullable().optional(),
-  qr_image_path: z.string().regex(QR_PATH_RE).nullable().optional(),
-  paypur_enabled: z.boolean().default(false),
-  paypur_base_url: z.string().trim().url().max(200).default("https://upi.paypur.in"),
-  paypur_amount: z.number().min(0).max(10_000_000).nullable().optional(),
-  paypur_success_url: z.string().trim().url().max(300).nullable().optional(),
-  paypur_failure_url: z.string().trim().url().max(300).nullable().optional(),
+  rate_per_voter: z.number().min(0).max(1000),
+  min_order_amount: z.number().min(0).max(10_000_000).nullable().optional(),
+  free_sample_voter_count: z.number().int().min(1).max(1000),
+  phonepe_enabled: z.boolean().default(false),
+  phonepe_environment: z.enum(PHONEPE_ENVIRONMENTS).default("SANDBOX"),
+  phonepe_merchant_id: z.string().trim().max(120).nullable().optional(),
+  phonepe_client_id: z.string().trim().max(200).nullable().optional(),
+  phonepe_redirect_url: z.string().trim().url().max(300).nullable().optional(),
+  phonepe_callback_url: z.string().trim().url().max(300).nullable().optional(),
 });
 
-export const paypurSecretsSchema = z.object({
+/** Secrets are write-only: they go in and are never read back to a browser. */
+export const phonepeSecretsSchema = z.object({
   token,
-  api_key: z.string().trim().min(1).max(300).nullable().optional(),
-  signing_secret: z.string().trim().min(1).max(300).nullable().optional(),
+  client_secret: z.string().trim().min(1).max(400).nullable().optional(),
+  salt_key: z.string().trim().min(1).max(400).nullable().optional(),
+  salt_index: z.string().trim().min(1).max(20).nullable().optional(),
 });
 
 export const paymentStatusSchema = z.object({
@@ -51,10 +54,17 @@ export const paymentStatusSchema = z.object({
   payment_status: z.enum(PAYMENT_STATUSES),
 });
 
-export const screenshotUrlSchema = z.object({
+export const sampleStatusSchema = z.object({
   token,
-  path: z.string().regex(SCREENSHOT_PATH_RE),
-  download: z.boolean().default(false),
+  id: z.string().uuid(),
+  status: z.enum(SAMPLE_STATUSES),
+});
+
+export const sampleQuerySchema = z.object({
+  token,
+  search: z.string().max(120).default(""),
+  page: z.number().int().min(1).max(10_000).default(1),
+  page_size: z.number().int().min(1).max(100).default(25),
 });
 
 export const leadIdSchema = z.object({ token, id: z.string().uuid() });
