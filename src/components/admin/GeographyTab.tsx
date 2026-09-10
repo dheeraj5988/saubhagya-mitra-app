@@ -105,6 +105,11 @@ export function GeographyTab({
     void load();
   }, [load]);
 
+  useEffect(() => {
+    void loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function addDistrict() {
     if (!newDistrict.trim()) return;
     try {
