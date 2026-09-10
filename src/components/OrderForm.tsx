@@ -192,7 +192,8 @@ export function OrderForm() {
 
   // Section 3 / 4.
   const [design, setDesign] = useState<DesignCode | "">("");
-  const [lists, setLists] = useState<ListOption[]>(["slip"]);
+  // All four list options start selected; the candidate can uncheck any.
+  const [lists, setLists] = useState<ListOption[]>([...LIST_OPTIONS]);
 
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string | undefined>>>({});
   const [submitting, setSubmitting] = useState(false);

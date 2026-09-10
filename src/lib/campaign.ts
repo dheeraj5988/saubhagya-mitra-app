@@ -2,7 +2,10 @@ import type { Lang } from "./i18n";
 
 export const WHATSAPP_NUMBER = "919983333119";
 export const CONTACT_DISPLAY = "+91 99833 33119";
-export const SUPPORT_EMAIL = "support@saubhagya.net";
+export const SUPPORT_EMAIL = "saubhagyansaubhagya@gmail.com";
+export const BUSINESS_NAME = "Saubhagya Voter Connect / सौभाग्य मतदाता पर्ची सेवा";
+export const BUSINESS_ADDRESS =
+  "Saubhagya Mishra Market, Bank Street, Lachhmangarh, Sikar, Rajasthan - 332311, India";
 
 export type WhatsAppOrderPayload = {
   order_id: string;

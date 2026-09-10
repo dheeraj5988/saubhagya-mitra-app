@@ -3,7 +3,12 @@ import { ArrowLeft, Mail, MessageCircle, Phone } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { CONTACT_DISPLAY, SUPPORT_EMAIL, buildEnquiryWhatsAppUrl } from "@/lib/campaign";
+import {
+  BUSINESS_ADDRESS,
+  CONTACT_DISPLAY,
+  SUPPORT_EMAIL,
+  buildEnquiryWhatsAppUrl,
+} from "@/lib/campaign";
 
 export function LegalSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -53,6 +58,7 @@ export function LegalPage({
 
         <section className="rounded-xl border border-border bg-card p-4 shadow-card">
           <h2 className="font-display text-lg font-bold text-navy">Reach us</h2>
+          <p className="mt-2 text-sm text-foreground/85">{BUSINESS_ADDRESS}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button asChild variant="success" size="sm">
               <a href={buildEnquiryWhatsAppUrl()} target="_blank" rel="noopener noreferrer">

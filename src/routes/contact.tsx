@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { LegalPage, LegalSection } from "@/components/LegalPage";
-import { CONTACT_DISPLAY, SUPPORT_EMAIL } from "@/lib/campaign";
+import { BUSINESS_ADDRESS, BUSINESS_NAME, CONTACT_DISPLAY, SUPPORT_EMAIL } from "@/lib/campaign";
 
 const TITLE = "Contact Us | Saubhagya Matdata Parchi";
 const DESCRIPTION =
@@ -30,7 +30,14 @@ function Contact() {
           <br />
           Email: {SUPPORT_EMAIL}
         </p>
-        <p>Working hours: Monday to Saturday, 9:00 AM to 8:00 PM IST.</p>
+      </LegalSection>
+
+      <LegalSection title="Business address">
+        <p>
+          {BUSINESS_NAME}
+          <br />
+          {BUSINESS_ADDRESS}
+        </p>
       </LegalSection>
 
       <LegalSection title="Service area">
