@@ -76,11 +76,13 @@ import { BATCH_MAX } from "@/lib/admin-batch.schema";
 import {
   adminClearLeads,
   adminDeleteLead,
-  adminScreenshotUrl,
   adminUpdatePaymentStatus,
 } from "@/lib/admin-catalog.functions";
 import { SymbolsTab } from "@/components/admin/SymbolsTab";
 import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
+import { GeographyTab } from "@/components/admin/GeographyTab";
+import { SampleRequestsTab } from "@/components/admin/SampleRequestsTab";
+import { formatInr } from "@/lib/pricing";
 import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
@@ -311,7 +313,14 @@ function Kpi({
   );
 }
 
-const EMPTY_KPIS: AdminKpis = { total: 0, pending: 0, process: 0, completed: 0, leads: 0 };
+const EMPTY_KPIS: AdminKpis = {
+  total: 0,
+  paid: 0,
+  pending: 0,
+  revenue: 0,
+  samples: 0,
+  leads: 0,
+};
 
 function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => void }) {
   const fetchOverview = useServerFn(adminOverview);
