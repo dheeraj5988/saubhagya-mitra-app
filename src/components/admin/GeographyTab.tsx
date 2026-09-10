@@ -317,10 +317,31 @@ export function GeographyTab({
         <p className="text-sm text-muted-foreground">
           Voter counts entered here drive the price shown to candidates.
         </p>
-        <Button variant="outline" size="sm" onClick={() => void load()}>
-          <RefreshCw className="size-4" /> Reload
-        </Button>
+        <div className="flex items-center gap-4">
+          {stats ? (
+            <p className="text-xs text-muted-foreground">
+              {stats.districts.toLocaleString("en-IN")} districts ·{" "}
+              {stats.samitis.toLocaleString("en-IN")} samitis ·{" "}
+              {stats.gram_panchayats.toLocaleString("en-IN")} gram panchayats ·{" "}
+              <span className="font-semibold text-navy">{stats.wards.toLocaleString("en-IN")} wards</span>
+              {stats.last_import
+                ? ` · last import ${new Date(stats.last_import).toLocaleString("en-IN")}`
+                : ""}
+            </p>
+          ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void load();
+              void loadStats();
+            }}
+          >
+            <RefreshCw className="size-4" /> Reload
+          </Button>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-4 gap-4">
         <Column title="Districts">
