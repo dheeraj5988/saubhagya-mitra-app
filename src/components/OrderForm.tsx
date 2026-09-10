@@ -176,7 +176,7 @@ function DesignPreview({ meta }: { meta: DesignMeta }) {
     </div>
   );
   return (
-    <div className="flex h-16 w-full gap-[2px] rounded-md border border-border bg-muted/40 p-1" aria-hidden>
+    <div className="flex aspect-[3/4] w-full gap-[2px] rounded-md border border-border bg-muted/40 p-1" aria-hidden>
       {meta.ad === "left" ? <div className="w-2 shrink-0">{adBand}</div> : null}
       {meta.ad === "top" ? (
         <div className="flex flex-1 flex-col gap-[2px]">
@@ -887,21 +887,23 @@ export function OrderForm() {
                     setErrors((p) => ({ ...p, design: undefined }));
                   }}
                   className={cn(
-                    "rounded-xl border-2 p-2.5 text-left transition-colors",
+                    "flex flex-row items-center gap-3 rounded-xl border-2 p-3 text-left transition-colors",
                     active
                       ? "border-saffron bg-saffron/10 shadow-card"
                       : "border-border bg-card hover:border-saffron/50",
                   )}
                 >
-                  <p className="flex items-center gap-1.5">
-                    <span className="rounded bg-navy px-1.5 py-0.5 text-[10px] font-black text-navy-foreground">
-                      {meta.label}
-                    </span>
-                    {active ? <Check className="ml-auto size-4 shrink-0 text-success" /> : null}
-                  </p>
-                  <p className="mt-1.5 text-sm font-bold leading-snug text-navy">{meta.desc}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{meta.spec}</p>
-                  <div className="mt-2">
+                  <div className="flex min-w-0 flex-1 flex-col justify-center">
+                    <p className="flex items-center gap-1.5">
+                      <span className="rounded bg-navy px-1.5 py-0.5 text-[10px] font-black text-navy-foreground">
+                        {meta.label}
+                      </span>
+                      {active ? <Check className="ml-auto size-4 shrink-0 text-success" /> : null}
+                    </p>
+                    <p className="mt-1 text-sm font-bold leading-snug text-navy">{meta.desc}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">{meta.spec}</p>
+                  </div>
+                  <div className="w-[30%] min-w-[3.5rem] max-w-[5rem] shrink-0">
                     <DesignPreview meta={meta} />
                   </div>
                 </button>
