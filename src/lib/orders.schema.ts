@@ -17,9 +17,14 @@ export const leadSchema = z.object({
   phone: phoneSchema,
 });
 
+/** Extra slip lists a candidate can ask for alongside the voter slips. */
+export const LIST_OPTIONS = ["slip", "hindi_alpha", "english_alpha", "family"] as const;
+export type ListOption = (typeof LIST_OPTIONS)[number];
+
 export const orderSchema = z.object({
-  candidate_name_hindi: z.string().trim().min(1).max(120),
-  candidate_name_english: z.string().trim().min(1).max(120),
+  // Section 2 is optional: only the area, design and mobile number are required.
+  candidate_name_hindi: z.string().trim().max(120).default(""),
+  candidate_name_english: z.string().trim().max(120).default(""),
   contact_number: phoneSchema,
   district: z.string().trim().min(1).max(120),
   panchayat_samiti: z.string().trim().min(1).max(120),
@@ -28,13 +33,21 @@ export const orderSchema = z.object({
   /** Set when the ward came from the geography master data. */
   ward_id: z.string().uuid().nullable().optional(),
   design_code: z.enum(DESIGN_CODES),
-  election_symbol: z.string().trim().min(1).max(240),
+  election_symbol: z.string().trim().max(240).default(""),
   election_symbol_id: z.string().uuid().nullable().optional(),
   party_name_snapshot: z.string().trim().max(120).nullable().optional(),
   symbol_name_snapshot: z.string().trim().max(120).nullable().optional(),
   slogan: z.string().trim().max(200).optional().nullable(),
+  body_name: z.string().trim().max(160).nullable().optional(),
+  evm_serial: z.string().trim().max(20).nullable().optional(),
+  poll_date: z.string().trim().max(40).nullable().optional(),
+  list_options: z.array(z.enum(LIST_OPTIONS)).max(4).default([]),
   // Must match the shape the storage upload policy permits.
-  photo_path: z.string().regex(/^orders\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png)$/, "Invalid photo path"),
+  photo_path: z
+    .string()
+    .regex(/^orders\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png)$/, "Invalid photo path")
+    .nullable()
+    .optional(),
   ip_address: z.string().trim().max(64).optional().nullable(),
   user_agent: z.string().trim().max(400).optional().nullable(),
   lead_id: z.string().uuid().nullable().optional(),
