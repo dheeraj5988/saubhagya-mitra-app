@@ -502,37 +502,109 @@ export function OrderForm() {
               </Select>
             </Field>
 
-            <Field id="ward_number" label={t("form.ward")} required error={errors.ward}>
-              <Select
-                value={wardId ?? ""}
-                disabled={!gpId}
-                onValueChange={(value) => {
-                  setWardId(value);
-                  setErrors((p) => ({ ...p, ward: undefined }));
-                }}
-              >
-                <SelectTrigger id="ward_number" className="h-12 text-base">
-                  <SelectValue placeholder={t("form.ward.ph")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(wardsQuery.data?.options ?? []).map((w) => (
-                    <SelectItem key={w.id} value={w.id}>
-                      {w.ward_number}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field
+              id="ward_number"
+              label={t("form.ward")}
+              hint={t("form.ward.multi")}
+              required
+              error={errors.ward}
+            >
+              <Popover open={wardOpen} onOpenChange={setWardOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    id="ward_number"
+                    type="button"
+                    role="combobox"
+                    aria-expanded={wardOpen}
+                    disabled={!gpId}
+                    className="flex h-12 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-left text-base disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="min-w-0 truncate">
+                      {selectedWards.length ? (
+                        wardNumbersLabel
+                      ) : (
+                        <span className="text-muted-foreground">{t("form.ward.ph")}</span>
+                      )}
+                    </span>
+                    <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[min(92vw,22rem)] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={t("form.ward.search")} />
+                    <div className="flex gap-2 border-b border-border p-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setWardIds(wardOptions.map((w) => w.id));
+                          setErrors((p) => ({ ...p, ward: undefined }));
+                        }}
+                      >
+                        {t("form.ward.selectall")}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="flex-1"
+                        onClick={() => setWardIds([])}
+                      >
+                        {t("form.ward.clear")}
+                      </Button>
+                    </div>
+                    <CommandList>
+                      <CommandEmpty>{t("form.ward.empty")}</CommandEmpty>
+                      <CommandGroup>
+                        {wardOptions.map((w) => {
+                          const checked = wardIds.includes(w.id);
+                          return (
+                            <CommandItem
+                              key={w.id}
+                              value={`ward ${w.ward_number}`}
+                              onSelect={() => {
+                                setWardIds((prev) =>
+                                  prev.includes(w.id)
+                                    ? prev.filter((id) => id !== w.id)
+                                    : [...prev, w.id],
+                                );
+                                setErrors((p) => ({ ...p, ward: undefined }));
+                              }}
+                              className="gap-3 py-3"
+                            >
+                              <Checkbox checked={checked} className="pointer-events-none" />
+                              <span className="flex-1 font-semibold">{w.ward_number}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {w.voter_count.toLocaleString("en-IN")}
+                              </span>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </Field>
           </div>
 
-          {selectedWard ? (
+          {noGeoData ? (
+            <p className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm font-medium text-destructive">
+              {t("form.data.empty")}
+            </p>
+          ) : null}
+
+          {selectedWards.length ? (
             <div className="space-y-2 rounded-xl border border-saffron/30 bg-saffron/5 p-3">
               <p className="text-sm font-bold text-navy">
-                {t("form.voters.total")}: {selectedWard.voter_count.toLocaleString("en-IN")}
+                {t("form.ward.selected")}: {selectedWards.length} · {t("form.voters.total")}:{" "}
+                {totalVoters.toLocaleString("en-IN")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t("form.area.summary")}: {label(selectedDistrict)} › {label(selectedSamiti)} ›{" "}
-                {label(selectedGp)} › {t("form.ward")} {selectedWard.ward_number}
+                {label(selectedGp)} › {t("form.ward")} {wardNumbersLabel}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t("form.rate")}: {rate == null ? "—" : formatInr(rate)} · {t("form.amount")}:{" "}
