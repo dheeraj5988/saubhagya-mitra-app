@@ -837,6 +837,12 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               <TabsTrigger value="leads">
                 <Users className="mr-1.5 size-4" /> Visitor &amp; Lead Tracker
               </TabsTrigger>
+              <TabsTrigger value="samples">
+                <Gift className="mr-1.5 size-4" /> Sample Requests
+              </TabsTrigger>
+              <TabsTrigger value="geography">
+                <MapPin className="mr-1.5 size-4" /> Geography Data
+              </TabsTrigger>
               <TabsTrigger value="symbols">
                 <Vote className="mr-1.5 size-4" /> Party &amp; Symbols
               </TabsTrigger>
@@ -1553,6 +1559,14 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
 
           <TabsContent value="symbols">
             <SymbolsTab token={token} onError={handleError} />
+          </TabsContent>
+
+          <TabsContent value="geography">
+            <GeographyTab token={token} onError={handleError} />
+          </TabsContent>
+
+          <TabsContent value="samples">
+            <SampleRequestsTab token={token} onError={handleError} />
           </TabsContent>
 
           <TabsContent value="payments">
