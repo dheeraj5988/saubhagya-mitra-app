@@ -29,9 +29,11 @@ export const orderSchema = z.object({
   district: z.string().trim().min(1).max(120),
   panchayat_samiti: z.string().trim().min(1).max(120),
   gram_panchayat: z.string().trim().min(1).max(120),
-  ward_number: z.string().trim().min(1).max(20),
+  ward_number: z.string().trim().min(1).max(200),
   /** Set when the ward came from the geography master data. */
   ward_id: z.string().uuid().nullable().optional(),
+  /** Every ward the candidate selected; the price is summed over these. */
+  ward_ids: z.array(z.string().uuid()).min(1).max(200),
   design_code: z.enum(DESIGN_CODES),
   election_symbol: z.string().trim().max(240).default(""),
   election_symbol_id: z.string().uuid().nullable().optional(),
