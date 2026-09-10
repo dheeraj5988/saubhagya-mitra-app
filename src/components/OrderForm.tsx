@@ -873,8 +873,9 @@ export function OrderForm() {
 
         {/* SECTION 3 — 8 designs, two columns of four */}
         <Section icon={LayoutGrid} title={t("form.section.design")} hint={t("form.design.hint")}>
-          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2.5 min-[380px]:grid-cols-2">
             {DESIGN_CODES.map((code) => {
+              const meta = DESIGN_META[code];
               const active = design === code;
               return (
                 <button
@@ -886,23 +887,23 @@ export function OrderForm() {
                     setErrors((p) => ({ ...p, design: undefined }));
                   }}
                   className={cn(
-                    "rounded-xl border-2 p-3 text-left transition-colors",
+                    "rounded-xl border-2 p-2.5 text-left transition-colors",
                     active
                       ? "border-saffron bg-saffron/10 shadow-card"
                       : "border-border bg-card hover:border-saffron/50",
                   )}
                 >
-                  <DesignPreview code={code} />
-                  <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-navy">
+                  <p className="flex items-center gap-1.5">
                     <span className="rounded bg-navy px-1.5 py-0.5 text-[10px] font-black text-navy-foreground">
-                      {code}
+                      {meta.label}
                     </span>
-                    {t(`design.${code}.title` as TKey)}
-                    {active ? <Check className="ml-auto size-4 text-success" /> : null}
+                    {active ? <Check className="ml-auto size-4 shrink-0 text-success" /> : null}
                   </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {t(`design.${code}.desc` as TKey)}
-                  </p>
+                  <p className="mt-1.5 text-sm font-bold leading-snug text-navy">{meta.desc}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{meta.spec}</p>
+                  <div className="mt-2">
+                    <DesignPreview meta={meta} />
+                  </div>
                 </button>
               );
             })}
