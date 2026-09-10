@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BadgeCheck,
   Clock3,
@@ -229,7 +229,27 @@ function Index() {
               </a>
             </Button>
           </div>
-          <p className="mt-8 text-xs text-navy-foreground/60">
+          <nav
+            aria-label={t("footer.legal")}
+            className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm"
+          >
+            <Link to="/terms" className="underline-offset-4 hover:underline">
+              {t("legal.terms")}
+            </Link>
+            <Link to="/privacy" className="underline-offset-4 hover:underline">
+              {t("legal.privacy")}
+            </Link>
+            <Link to="/refund" className="underline-offset-4 hover:underline">
+              {t("legal.refund")}
+            </Link>
+            <Link to="/shipping" className="underline-offset-4 hover:underline">
+              {t("legal.shipping")}
+            </Link>
+            <Link to="/contact" className="underline-offset-4 hover:underline">
+              {t("legal.contact")}
+            </Link>
+          </nav>
+          <p className="mt-6 text-xs text-navy-foreground/60">
             © {new Date().getFullYear()} {t("brand.full")}. {t("footer.rights")}
           </p>
         </div>

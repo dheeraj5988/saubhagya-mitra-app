@@ -262,7 +262,6 @@ export type Database = {
           party_name_snapshot: string | null
           payment_amount: number | null
           payment_method: string | null
-          payment_screenshot_path: string | null
           payment_status: string
           payment_txn_id: string | null
           payment_updated_at: string | null
@@ -295,7 +294,6 @@ export type Database = {
           party_name_snapshot?: string | null
           payment_amount?: number | null
           payment_method?: string | null
-          payment_screenshot_path?: string | null
           payment_status?: string
           payment_txn_id?: string | null
           payment_updated_at?: string | null
@@ -328,7 +326,6 @@ export type Database = {
           party_name_snapshot?: string | null
           payment_amount?: number | null
           payment_method?: string | null
-          payment_screenshot_path?: string | null
           payment_status?: string
           payment_txn_id?: string | null
           payment_updated_at?: string | null
@@ -434,84 +431,6 @@ export type Database = {
           phonepe_salt_key?: string | null
           singleton?: boolean
           updated_at?: string
-        }
-        Relationships: []
-      }
-      payment_secrets: {
-        Row: {
-          created_at: string
-          id: string
-          paypur_api_key: string | null
-          paypur_signing_secret: string | null
-          singleton: boolean
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          paypur_api_key?: string | null
-          paypur_signing_secret?: string | null
-          singleton?: boolean
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          paypur_api_key?: string | null
-          paypur_signing_secret?: string | null
-          singleton?: boolean
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      payment_settings: {
-        Row: {
-          amount: number | null
-          created_at: string
-          display_name: string | null
-          id: string
-          instructions: string | null
-          paypur_amount: number | null
-          paypur_base_url: string
-          paypur_enabled: boolean
-          paypur_failure_url: string | null
-          paypur_success_url: string | null
-          qr_image_path: string | null
-          singleton: boolean
-          updated_at: string
-          upi_id: string | null
-        }
-        Insert: {
-          amount?: number | null
-          created_at?: string
-          display_name?: string | null
-          id?: string
-          instructions?: string | null
-          paypur_amount?: number | null
-          paypur_base_url?: string
-          paypur_enabled?: boolean
-          paypur_failure_url?: string | null
-          paypur_success_url?: string | null
-          qr_image_path?: string | null
-          singleton?: boolean
-          updated_at?: string
-          upi_id?: string | null
-        }
-        Update: {
-          amount?: number | null
-          created_at?: string
-          display_name?: string | null
-          id?: string
-          instructions?: string | null
-          paypur_amount?: number | null
-          paypur_base_url?: string
-          paypur_enabled?: boolean
-          paypur_failure_url?: string | null
-          paypur_success_url?: string | null
-          qr_image_path?: string | null
-          singleton?: boolean
-          updated_at?: string
-          upi_id?: string | null
         }
         Relationships: []
       }
