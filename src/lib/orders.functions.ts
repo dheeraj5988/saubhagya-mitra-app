@@ -8,6 +8,7 @@ import {
   sampleRequestSchema,
   visitSchema,
 } from "./orders.schema";
+import { compareWardNumbers } from "./csv";
 import { computeAmount } from "./pricing";
 
 /**
@@ -116,7 +117,9 @@ export const createOrder = createServerFn({ method: "POST" })
     if (wardError) throw new Error(wardError.message);
     if (!wardRows?.length) throw new Error("Selected wards are not available");
 
-    const wardSnapshots = wardRows.map((w) => ({
+    const wardSnapshots = [...wardRows]
+      .sort((a, b) => compareWardNumbers(a.ward_number as string, b.ward_number as string))
+      .map((w) => ({
       ward_id: w.id as string,
       ward_number: w.ward_number as string,
       voter_count: w.voter_count as number,
