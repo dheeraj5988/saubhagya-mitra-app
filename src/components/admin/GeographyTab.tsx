@@ -205,28 +205,86 @@ export function GeographyTab({
     }
   }
 
-  async function runImport() {
-    const rows = parseCsv(csv);
-    if (!rows.length) {
-      toast.error("Paste rows as: District, Panchayat Samiti, Gram Panchayat, Ward, Voters");
+  const loadStats = useCallback(async () => {
+    try {
+      setStats(await fetchStats({ data: { token } }));
+    } catch {
+      /* the panel is informational only */
+    }
+  }, [fetchStats, token]);
+
+  async function onPickFile(file: File | null) {
+    setSummary(null);
+    if (!file) {
+      setFileName(null);
+      setParsed(null);
       return;
     }
-    if (rows.length > 5000) {
-      toast.error("Import at most 5000 rows at a time.");
+    setFileName(file.name);
+    const text = await file.text();
+    setParsed(parseGeoCsv(text));
+  }
+
+  function downloadTemplate() {
+    const body = `${GEO_CSV_HEADER}\nAjmer,केकडी नगर पालिका,केकडी नगर पालिका,1,867\n`;
+    const url = URL.createObjectURL(new Blob(["\ufeff" + body], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "geography-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /** Chunked so a 10,000+ row sheet never exceeds one request's limits. */
+  async function importRows(result: GeoCsvResult, clear: () => void) {
+    const rows = result.rows;
+    if (!rows.length) {
+      toast.error("No valid rows to import.");
+      return;
+    }
+    if (rows.length > MAX_ROWS) {
+      toast.error(`Import at most ${MAX_ROWS.toLocaleString("en-IN")} rows at a time.`);
       return;
     }
     setImporting(true);
+    setSummary(null);
+    const districtNames = new Set<string>();
+    const samitiKeys = new Set<string>();
+    const gpKeys = new Set<string>();
+    let inserted = 0;
+    let updated = 0;
     try {
-      const res = await importGeo({ data: { token, rows } });
-      setCsv("");
-      toast.success(
-        `Imported ${res.wards} ward(s) across ${res.districts} district(s), ${res.samitis} samiti(s), ${res.gram_panchayats} gram panchayat(s).`,
-      );
+      const chunks = Math.ceil(rows.length / CHUNK_SIZE);
+      for (let i = 0; i < chunks; i++) {
+        const slice = rows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+        setProgress({ done: i * CHUNK_SIZE, total: rows.length });
+        const res = await importGeo({ data: { token, rows: slice } });
+        inserted += res.inserted;
+        updated += res.updated;
+        for (const row of slice) {
+          districtNames.add(row.district);
+          samitiKeys.add(`${row.district}|${row.panchayat_samiti}`);
+          gpKeys.add(`${row.district}|${row.panchayat_samiti}|${row.gram_panchayat}`);
+        }
+      }
+      setSummary({
+        districts: districtNames.size,
+        samitis: samitiKeys.size,
+        gram_panchayats: gpKeys.size,
+        wards: inserted + updated,
+        inserted,
+        updated,
+        rejected: result.errors.length,
+      });
+      clear();
+      toast.success(`Imported ${(inserted + updated).toLocaleString("en-IN")} ward row(s).`);
       void load();
+      void loadStats();
     } catch (err) {
       onError(err, "Import failed.");
     } finally {
       setImporting(false);
+      setProgress(null);
     }
   }
 
