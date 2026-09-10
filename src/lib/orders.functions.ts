@@ -8,6 +8,7 @@ import {
   sampleRequestSchema,
   visitSchema,
 } from "./orders.schema";
+import { compareWardNumbers } from "./csv";
 import { computeAmount } from "./pricing";
 
 /**
@@ -105,16 +106,27 @@ export const createOrder = createServerFn({ method: "POST" })
     // Price is always derived server-side: the ward's stored voter count times
     // the configured rate. A browser can never dictate the amount.
     const config = await loadPaymentConfig();
-    let voterCount: number | null = null;
-    if (data.ward_id) {
-      const { data: ward } = await supabaseAdmin
-        .from("geo_wards")
-        .select("voter_count")
-        .eq("id", data.ward_id)
-        .maybeSingle();
-      voterCount = ward?.voter_count ?? null;
-    }
-    const amount = voterCount == null ? null : computeAmount(voterCount, config.rate_per_voter);
+
+    // The selected wards are re-read from master data; the browser's numbers
+    // are never trusted for either the voter total or the amount.
+    const { data: wardRows, error: wardError } = await supabaseAdmin
+      .from("geo_wards")
+      .select("id, ward_number, voter_count")
+      .in("id", data.ward_ids)
+      .eq("active", true);
+    if (wardError) throw new Error(wardError.message);
+    if (!wardRows?.length) throw new Error("Selected wards are not available");
+
+    const wardSnapshots = [...wardRows]
+      .sort((a, b) => compareWardNumbers(a.ward_number as string, b.ward_number as string))
+      .map((w) => ({
+      ward_id: w.id as string,
+      ward_number: w.ward_number as string,
+      voter_count: w.voter_count as number,
+    }));
+    const voterCount = wardSnapshots.reduce((sum, w) => sum + w.voter_count, 0);
+    const wardNumbers = wardSnapshots.map((w) => w.ward_number).join(", ");
+    const amount = computeAmount(voterCount, config.rate_per_voter);
 
     // The unique index on orders.order_id is the source of truth: we insert and
     // retry on a 23505 conflict rather than checking-then-inserting, so two
@@ -131,8 +143,10 @@ export const createOrder = createServerFn({ method: "POST" })
         district: data.district,
         panchayat_samiti: data.panchayat_samiti,
         gram_panchayat: data.gram_panchayat,
-        ward_number: data.ward_number,
-        ward_id: data.ward_id ?? null,
+        ward_number: wardNumbers.slice(0, 200),
+        ward_id: wardSnapshots[0]?.ward_id ?? null,
+        ward_ids: wardSnapshots.map((w) => w.ward_id),
+        ward_snapshots: wardSnapshots,
         design_code: data.design_code,
         voter_count: voterCount,
         rate_per_voter: config.rate_per_voter,

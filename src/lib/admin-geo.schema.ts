@@ -57,8 +57,11 @@ export const geoImportSchema = z.object({
       }),
     )
     .min(1)
-    .max(5000),
+    // The admin UI streams a large sheet in chunks; one call stays bounded.
+    .max(1000),
 });
+
+export const geoStatsSchema = z.object({ token });
 
 export type GeoRow = { id: string; name: string; name_hindi: string | null; active: boolean };
 export type GeoWardRow = {

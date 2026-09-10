@@ -60,6 +60,7 @@ import {
 import type { PublicSymbol } from "@/lib/catalog.schema";
 import { buildWhatsAppUrl } from "@/lib/campaign";
 import { DESIGN_CODES, computeAmount, formatInr, type DesignCode } from "@/lib/pricing";
+import { compareWardNumbers } from "@/lib/csv";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -173,7 +174,8 @@ export function OrderForm() {
   const [districtId, setDistrictId] = useState<string | null>(null);
   const [samitiId, setSamitiId] = useState<string | null>(null);
   const [gpId, setGpId] = useState<string | null>(null);
-  const [wardId, setWardId] = useState<string | null>(null);
+  const [wardIds, setWardIds] = useState<string[]>([]);
+  const [wardOpen, setWardOpen] = useState(false);
 
   // Section 2 — optional slip details.
   const [bodyName, setBodyName] = useState("");
@@ -248,12 +250,22 @@ export function OrderForm() {
   const selectedDistrict = districts.find((d) => d.id === districtId);
   const selectedSamiti = (samitisQuery.data?.options ?? []).find((s) => s.id === samitiId);
   const selectedGp = (gpsQuery.data?.options ?? []).find((g) => g.id === gpId);
-  const selectedWard = useMemo(
-    () => (wardsQuery.data?.options ?? []).find((w) => w.id === wardId) ?? null,
-    [wardsQuery.data, wardId],
+  const wardOptions = useMemo(
+    () =>
+      [...(wardsQuery.data?.options ?? [])].sort((a, b) =>
+        compareWardNumbers(a.ward_number, b.ward_number),
+      ),
+    [wardsQuery.data],
   );
+  const selectedWards = useMemo(
+    () => wardOptions.filter((w) => wardIds.includes(w.id)),
+    [wardOptions, wardIds],
+  );
+  const totalVoters = selectedWards.reduce((sum, w) => sum + w.voter_count, 0);
   const estimatedAmount =
-    selectedWard && rate != null ? computeAmount(selectedWard.voter_count, rate) : null;
+    selectedWards.length && rate != null ? computeAmount(totalVoters, rate) : null;
+  const wardNumbersLabel = selectedWards.map((w) => w.ward_number).join(", ");
+  const noGeoData = !districtsQuery.isLoading && districts.length === 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -325,7 +337,7 @@ export function OrderForm() {
     if (!districtId) next.district = t("err.required.district");
     if (!samitiId) next.samiti = t("err.required.samiti");
     if (!gpId) next.gp = t("err.required.gp");
-    if (!wardId) next.ward = t("err.required.ward");
+    if (!wardIds.length) next.ward = t("err.required.ward");
     if (!PHONE_RE.test(contact.trim())) next.contact_number = t("err.phone");
     if (!design) next.design = t("err.required.design");
     setErrors(next);
@@ -339,7 +351,7 @@ export function OrderForm() {
       candidate_name_english: nameEn.trim(),
       gram_panchayat: label(selectedGp),
       panchayat_samiti: label(selectedSamiti),
-      ward_number: selectedWard?.ward_number ?? "",
+      ward_number: wardNumbersLabel,
       district: label(selectedDistrict),
       election_symbol: symbol ? `${symbol.party_name} — ${symbol.symbol_name}` : "",
       slogan: slogan.trim(),
@@ -379,8 +391,9 @@ export function OrderForm() {
           district: label(selectedDistrict),
           panchayat_samiti: label(selectedSamiti),
           gram_panchayat: label(selectedGp),
-          ward_number: selectedWard?.ward_number ?? "",
-          ward_id: wardId,
+          ward_number: wardNumbersLabel,
+          ward_id: wardIds[0] ?? null,
+          ward_ids: wardIds,
           design_code: design as DesignCode,
           election_symbol: symbol ? `${symbol.party_name} — ${symbol.symbol_name}` : "",
           election_symbol_id: symbol?.id ?? null,
@@ -425,7 +438,7 @@ export function OrderForm() {
                   setDistrictId(value);
                   setSamitiId(null);
                   setGpId(null);
-                  setWardId(null);
+                  setWardIds([]);
                   setErrors((p) => ({ ...p, district: undefined }));
                 }}
               >
@@ -449,7 +462,7 @@ export function OrderForm() {
                 onValueChange={(value) => {
                   setSamitiId(value);
                   setGpId(null);
-                  setWardId(null);
+                  setWardIds([]);
                   setErrors((p) => ({ ...p, samiti: undefined }));
                 }}
               >
@@ -472,7 +485,7 @@ export function OrderForm() {
                 disabled={!samitiId}
                 onValueChange={(value) => {
                   setGpId(value);
-                  setWardId(null);
+                  setWardIds([]);
                   setErrors((p) => ({ ...p, gp: undefined }));
                 }}
               >
@@ -489,37 +502,109 @@ export function OrderForm() {
               </Select>
             </Field>
 
-            <Field id="ward_number" label={t("form.ward")} required error={errors.ward}>
-              <Select
-                value={wardId ?? ""}
-                disabled={!gpId}
-                onValueChange={(value) => {
-                  setWardId(value);
-                  setErrors((p) => ({ ...p, ward: undefined }));
-                }}
-              >
-                <SelectTrigger id="ward_number" className="h-12 text-base">
-                  <SelectValue placeholder={t("form.ward.ph")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(wardsQuery.data?.options ?? []).map((w) => (
-                    <SelectItem key={w.id} value={w.id}>
-                      {w.ward_number}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field
+              id="ward_number"
+              label={t("form.ward")}
+              hint={t("form.ward.multi")}
+              required
+              error={errors.ward}
+            >
+              <Popover open={wardOpen} onOpenChange={setWardOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    id="ward_number"
+                    type="button"
+                    role="combobox"
+                    aria-expanded={wardOpen}
+                    disabled={!gpId}
+                    className="flex h-12 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-left text-base disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="min-w-0 truncate">
+                      {selectedWards.length ? (
+                        wardNumbersLabel
+                      ) : (
+                        <span className="text-muted-foreground">{t("form.ward.ph")}</span>
+                      )}
+                    </span>
+                    <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[min(92vw,22rem)] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={t("form.ward.search")} />
+                    <div className="flex gap-2 border-b border-border p-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setWardIds(wardOptions.map((w) => w.id));
+                          setErrors((p) => ({ ...p, ward: undefined }));
+                        }}
+                      >
+                        {t("form.ward.selectall")}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="flex-1"
+                        onClick={() => setWardIds([])}
+                      >
+                        {t("form.ward.clear")}
+                      </Button>
+                    </div>
+                    <CommandList>
+                      <CommandEmpty>{t("form.ward.empty")}</CommandEmpty>
+                      <CommandGroup>
+                        {wardOptions.map((w) => {
+                          const checked = wardIds.includes(w.id);
+                          return (
+                            <CommandItem
+                              key={w.id}
+                              value={`ward ${w.ward_number}`}
+                              onSelect={() => {
+                                setWardIds((prev) =>
+                                  prev.includes(w.id)
+                                    ? prev.filter((id) => id !== w.id)
+                                    : [...prev, w.id],
+                                );
+                                setErrors((p) => ({ ...p, ward: undefined }));
+                              }}
+                              className="gap-3 py-3"
+                            >
+                              <Checkbox checked={checked} className="pointer-events-none" />
+                              <span className="flex-1 font-semibold">{w.ward_number}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {w.voter_count.toLocaleString("en-IN")}
+                              </span>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </Field>
           </div>
 
-          {selectedWard ? (
+          {noGeoData ? (
+            <p className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm font-medium text-destructive">
+              {t("form.data.empty")}
+            </p>
+          ) : null}
+
+          {selectedWards.length ? (
             <div className="space-y-2 rounded-xl border border-saffron/30 bg-saffron/5 p-3">
               <p className="text-sm font-bold text-navy">
-                {t("form.voters.total")}: {selectedWard.voter_count.toLocaleString("en-IN")}
+                {t("form.ward.selected")}: {selectedWards.length} · {t("form.voters.total")}:{" "}
+                {totalVoters.toLocaleString("en-IN")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t("form.area.summary")}: {label(selectedDistrict)} › {label(selectedSamiti)} ›{" "}
-                {label(selectedGp)} › {t("form.ward")} {selectedWard.ward_number}
+                {label(selectedGp)} › {t("form.ward")} {wardNumbersLabel}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t("form.rate")}: {rate == null ? "—" : formatInr(rate)} · {t("form.amount")}:{" "}
@@ -546,7 +631,7 @@ export function OrderForm() {
               <Input
                 id="ward_auto"
                 readOnly
-                value={selectedWard?.ward_number ?? ""}
+                value={wardNumbersLabel}
                 placeholder="—"
                 className="h-12 bg-muted/50 text-base"
               />
@@ -826,7 +911,13 @@ export function OrderForm() {
         </Section>
 
         <div className="space-y-3 border-t border-border pt-5">
-          <Button type="submit" variant="hero" size="xl" className="w-full" disabled={submitting}>
+          <Button
+            type="submit"
+            variant="hero"
+            size="xl"
+            className="w-full"
+            disabled={submitting || noGeoData}
+          >
             {submitting ? (
               <>
                 <Loader2 className="size-5 animate-spin" /> {t("form.submitting")}

@@ -5,6 +5,7 @@ import {
   geoDeleteSchema,
   geoImportSchema,
   geoListSchema,
+  geoStatsSchema,
   gramPanchayatSaveSchema,
   samitiSaveSchema,
   wardSaveSchema,
@@ -164,8 +165,9 @@ export const adminDeleteGeo = createServerFn({ method: "POST" })
   });
 
 /**
- * Bulk CSV import. Existing rows are reused by name so re-importing a corrected
- * sheet updates voter counts instead of duplicating the hierarchy.
+ * Bulk CSV import for one chunk of rows. Every level is upserted on its unique
+ * key, so re-importing a corrected sheet updates voter counts instead of
+ * duplicating the hierarchy. The admin UI feeds large sheets in chunks.
  */
 export const adminImportGeography = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => geoImportSchema.parse(data))
@@ -173,116 +175,124 @@ export const adminImportGeography = createServerFn({ method: "POST" })
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const districtIds = new Map<string, string>();
-    const samitiIds = new Map<string, string>();
-    const gpIds = new Map<string, string>();
-    let wards = 0;
+    const uniq = <T,>(items: T[]) => Array.from(new Set(items));
 
-    async function ensureDistrict(name: string) {
-      const existing = await db
-        .from("geo_districts")
-        .select("id")
-        .eq("name", name)
-        .maybeSingle();
-      if (existing.data?.id) return existing.data.id;
-      const inserted = await db
-        .from("geo_districts")
-        .insert({ name, active: true })
-        .select("id")
-        .single();
-      if (inserted.error) throw new Error(inserted.error.message);
-      return inserted.data.id;
+    // 1. Districts
+    const districtNames = uniq(data.rows.map((r) => r.district));
+    const districtRes = await db
+      .from("geo_districts")
+      .upsert(
+        districtNames.map((name) => ({ name, active: true })),
+        { onConflict: "name" },
+      )
+      .select("id, name");
+    if (districtRes.error) throw new Error(districtRes.error.message);
+    const districtId = new Map((districtRes.data ?? []).map((d) => [d.name as string, d.id as string]));
+
+    // 2. Panchayat samitis
+    const samitiKeys = uniq(data.rows.map((r) => `${r.district}\u0000${r.panchayat_samiti}`));
+    const samitiRes = await db
+      .from("geo_panchayat_samitis")
+      .upsert(
+        samitiKeys.map((key) => {
+          const [district, name] = key.split("\u0000") as [string, string];
+          return { district_id: districtId.get(district)!, name, active: true };
+        }),
+        { onConflict: "district_id,name" },
+      )
+      .select("id, district_id, name");
+    if (samitiRes.error) throw new Error(samitiRes.error.message);
+    const samitiId = new Map(
+      (samitiRes.data ?? []).map((s) => [`${s.district_id as string}\u0000${s.name as string}`, s.id as string]),
+    );
+
+    // 3. Gram panchayats
+    const gpKeys = uniq(
+      data.rows.map(
+        (r) => `${samitiId.get(`${districtId.get(r.district)}\u0000${r.panchayat_samiti}`)}\u0000${r.gram_panchayat}`,
+      ),
+    );
+    const gpRes = await db
+      .from("geo_gram_panchayats")
+      .upsert(
+        gpKeys.map((key) => {
+          const [samiti, name] = key.split("\u0000") as [string, string];
+          return { samiti_id: samiti, name, active: true };
+        }),
+        { onConflict: "samiti_id,name" },
+      )
+      .select("id, samiti_id, name");
+    if (gpRes.error) throw new Error(gpRes.error.message);
+    const gpId = new Map(
+      (gpRes.data ?? []).map((g) => [`${g.samiti_id as string}\u0000${g.name as string}`, g.id as string]),
+    );
+
+    // 4. Wards — count inserts vs updates before writing.
+    const wardRows = uniq(
+      data.rows.map((r) => {
+        const sId = samitiId.get(`${districtId.get(r.district)}\u0000${r.panchayat_samiti}`)!;
+        const gId = gpId.get(`${sId}\u0000${r.gram_panchayat}`)!;
+        return JSON.stringify([gId, r.ward_number, r.voter_count]);
+      }),
+    ).map((json) => {
+      const [gram_panchayat_id, ward_number, voter_count] = JSON.parse(json) as [string, string, number];
+      return { gram_panchayat_id, ward_number, voter_count, active: true };
+    });
+
+    const gpIdsTouched = uniq(wardRows.map((w) => w.gram_panchayat_id));
+    const existing = await db
+      .from("geo_wards")
+      .select("gram_panchayat_id, ward_number")
+      .in("gram_panchayat_id", gpIdsTouched)
+      .limit(50_000);
+    if (existing.error) throw new Error(existing.error.message);
+    const existingKeys = new Set(
+      (existing.data ?? []).map((w) => `${w.gram_panchayat_id as string}\u0000${w.ward_number as string}`),
+    );
+    let updated = 0;
+    for (const w of wardRows) {
+      if (existingKeys.has(`${w.gram_panchayat_id}\u0000${w.ward_number}`)) updated++;
     }
 
-    async function ensureSamiti(districtId: string, name: string) {
-      const existing = await db
-        .from("geo_panchayat_samitis")
-        .select("id")
-        .eq("district_id", districtId)
-        .eq("name", name)
-        .maybeSingle();
-      if (existing.data?.id) return existing.data.id;
-      const inserted = await db
-        .from("geo_panchayat_samitis")
-        .insert({ district_id: districtId, name, active: true })
-        .select("id")
-        .single();
-      if (inserted.error) throw new Error(inserted.error.message);
-      return inserted.data.id;
-    }
-
-    async function ensureGramPanchayat(samitiId: string, name: string) {
-      const existing = await db
-        .from("geo_gram_panchayats")
-        .select("id")
-        .eq("samiti_id", samitiId)
-        .eq("name", name)
-        .maybeSingle();
-      if (existing.data?.id) return existing.data.id;
-      const inserted = await db
-        .from("geo_gram_panchayats")
-        .insert({ samiti_id: samitiId, name, active: true })
-        .select("id")
-        .single();
-      if (inserted.error) throw new Error(inserted.error.message);
-      return inserted.data.id;
-    }
-
-    for (const row of data.rows) {
-      const dKey = row.district;
-      if (!districtIds.has(dKey)) {
-        districtIds.set(dKey, await ensureDistrict(row.district));
-      }
-      const districtId = districtIds.get(dKey)!;
-
-      const sKey = `${districtId}|${row.panchayat_samiti}`;
-      if (!samitiIds.has(sKey)) {
-        samitiIds.set(
-          sKey,
-          await ensureSamiti(districtId, row.panchayat_samiti),
-        );
-      }
-      const samitiId = samitiIds.get(sKey)!;
-
-      const gKey = `${samitiId}|${row.gram_panchayat}`;
-      if (!gpIds.has(gKey)) {
-        gpIds.set(
-          gKey,
-          await ensureGramPanchayat(samitiId, row.gram_panchayat),
-        );
-      }
-      const gpId = gpIds.get(gKey)!;
-
-      const existingWard = await db
-        .from("geo_wards")
-        .select("id")
-        .eq("gram_panchayat_id", gpId)
-        .eq("ward_number", row.ward_number)
-        .maybeSingle();
-
-      if (existingWard.data?.id) {
-        const { error } = await db
-          .from("geo_wards")
-          .update({ voter_count: row.voter_count, active: true })
-          .eq("id", existingWard.data.id);
-        if (error) throw new Error(error.message);
-      } else {
-        const { error } = await db.from("geo_wards").insert({
-          gram_panchayat_id: gpId,
-          ward_number: row.ward_number,
-          voter_count: row.voter_count,
-          active: true,
-        });
-        if (error) throw new Error(error.message);
-      }
-      wards++;
-    }
+    const wardRes = await db
+      .from("geo_wards")
+      .upsert(wardRows, { onConflict: "gram_panchayat_id,ward_number" })
+      .select("id");
+    if (wardRes.error) throw new Error(wardRes.error.message);
 
     return {
       ok: true as const,
-      districts: districtIds.size,
-      samitis: samitiIds.size,
-      gram_panchayats: gpIds.size,
-      wards,
+      districts: districtNames.length,
+      samitis: samitiKeys.length,
+      gram_panchayats: gpKeys.length,
+      wards: wardRows.length,
+      inserted: wardRows.length - updated,
+      updated,
+    };
+  });
+
+/** Data-integrity panel: how much master data exists and when it last changed. */
+export const adminGeoStats = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => geoStatsSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { assertSession } = await import("./admin.server");
+    const db = await assertSession(data.token);
+
+    const [districts, samitis, gps, wards, latest] = await Promise.all([
+      db.from("geo_districts").select("id", { count: "exact", head: true }),
+      db.from("geo_panchayat_samitis").select("id", { count: "exact", head: true }),
+      db.from("geo_gram_panchayats").select("id", { count: "exact", head: true }),
+      db.from("geo_wards").select("id", { count: "exact", head: true }),
+      db.from("geo_wards").select("updated_at").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
+      
+    ]);
+
+    return {
+      districts: districts.count ?? 0,
+      samitis: samitis.count ?? 0,
+      gram_panchayats: gps.count ?? 0,
+      wards: wards.count ?? 0,
+      
+      last_import: (latest.data?.updated_at as string | undefined) ?? null,
     };
   });
