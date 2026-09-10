@@ -176,7 +176,7 @@ function DesignPreview({ meta }: { meta: DesignMeta }) {
     </div>
   );
   return (
-    <div className="flex h-16 w-full gap-[2px] rounded-md border border-border bg-muted/40 p-1" aria-hidden>
+    <div className="flex aspect-[3/4] w-full gap-[2px] rounded-md border border-border bg-muted/40 p-1" aria-hidden>
       {meta.ad === "left" ? <div className="w-2 shrink-0">{adBand}</div> : null}
       {meta.ad === "top" ? (
         <div className="flex flex-1 flex-col gap-[2px]">
