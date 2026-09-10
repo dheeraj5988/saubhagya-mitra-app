@@ -1,9 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 
-import { LEAD_STATUSES, leadSchema, makeOrderId, orderSchema, visitSchema } from "./orders.schema";
+import {
+  LEAD_STATUSES,
+  leadSchema,
+  makeOrderId,
+  orderSchema,
+  sampleRequestSchema,
+  visitSchema,
+} from "./orders.schema";
+import { computeAmount } from "./pricing";
 
 /**
- * All three functions below are intentionally public (the order form is used by
+ * All functions below are intentionally public (the order form is used by
  * anonymous visitors). Each one only ever INSERTs or UPDATEs its own row and
  * returns nothing but a freshly created id — none of them can read existing
  * orders, other visitors' leads, admin sessions, or candidate photos.
@@ -92,6 +100,21 @@ export const createOrder = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => orderSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { loadPaymentConfig } = await import("./payment-config.server");
+
+    // Price is always derived server-side: the ward's stored voter count times
+    // the configured rate. A browser can never dictate the amount.
+    const config = await loadPaymentConfig();
+    let voterCount: number | null = null;
+    if (data.ward_id) {
+      const { data: ward } = await supabaseAdmin
+        .from("geo_wards")
+        .select("voter_count")
+        .eq("id", data.ward_id)
+        .maybeSingle();
+      voterCount = ward?.voter_count ?? null;
+    }
+    const amount = voterCount == null ? null : computeAmount(voterCount, config.rate_per_voter);
 
     // The unique index on orders.order_id is the source of truth: we insert and
     // retry on a 23505 conflict rather than checking-then-inserting, so two
@@ -109,6 +132,11 @@ export const createOrder = createServerFn({ method: "POST" })
         panchayat_samiti: data.panchayat_samiti,
         gram_panchayat: data.gram_panchayat,
         ward_number: data.ward_number,
+        ward_id: data.ward_id ?? null,
+        design_code: data.design_code,
+        voter_count: voterCount,
+        rate_per_voter: config.rate_per_voter,
+        amount,
         election_symbol: data.election_symbol,
         election_symbol_id: data.election_symbol_id ?? null,
         party_name_snapshot: data.party_name_snapshot ?? null,
@@ -117,7 +145,8 @@ export const createOrder = createServerFn({ method: "POST" })
         photo_path: data.photo_path,
         ip_address: data.ip_address ?? null,
         user_agent: data.user_agent ?? null,
-        status: "Pending",
+        status: "New",
+        payment_status: "PENDING",
       });
 
       if (!error) {
@@ -144,7 +173,9 @@ export const createOrder = createServerFn({ method: "POST" })
         .eq("id", data.lead_id)
         .select("id")
         .maybeSingle();
-      if (updated) return { order_id: orderId };
+      if (updated) {
+        return { order_id: orderId, voter_count: voterCount, amount };
+      }
     }
 
     await supabaseAdmin.from("visitor_leads").insert({
@@ -155,5 +186,36 @@ export const createOrder = createServerFn({ method: "POST" })
       order_id: orderId,
     });
 
-    return { order_id: orderId };
+    return { order_id: orderId, voter_count: voterCount, amount };
+  });
+
+/** Free 24-voter sample request — no payment, no photo, no account. */
+export const createSampleRequest = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => sampleRequestSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { loadPaymentConfig } = await import("./payment-config.server");
+    const config = await loadPaymentConfig();
+
+    let requestId = makeOrderId(0, "SMP");
+    for (let attempt = 0; attempt < 15; attempt++) {
+      const { error } = await supabaseAdmin.from("sample_requests").insert({
+        request_id: requestId,
+        candidate_name: data.candidate_name,
+        contact_number: data.contact_number,
+        district: data.district ?? null,
+        panchayat_samiti: data.panchayat_samiti ?? null,
+        gram_panchayat: data.gram_panchayat ?? null,
+        ward_number: data.ward_number ?? null,
+        ward_id: data.ward_id ?? null,
+        voter_count: config.free_sample_voter_count,
+        notes: data.notes ?? null,
+        ip_address: data.ip_address ?? null,
+        status: "New",
+      });
+      if (!error) return { request_id: requestId };
+      if (error.code !== "23505") throw new Error(error.message);
+      requestId = makeOrderId(attempt + 1, "SMP");
+    }
+    throw new Error("Could not generate a unique request id");
   });

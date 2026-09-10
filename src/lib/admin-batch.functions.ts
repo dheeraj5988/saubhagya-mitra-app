@@ -1,13 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 
-import { z } from "zod";
-
 import { batchSchema, type BatchExport, type BatchOrder } from "./admin-batch.schema";
-
-const paypurStatusSchema = z.object({
-  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid session token"),
-  txn_id: z.string().trim().min(1).max(120),
-});
 
 /** Asset links inside an export are deliberately short-lived. */
 const SIGNED_TTL = 900;
@@ -22,26 +15,20 @@ export const adminBatchExport = createServerFn({ method: "POST" })
     const { fetchBatchOrders, makeBatchId } = await import("./admin-batch.server");
     const { db, rows, matched, limit } = await fetchBatchOrders(data);
 
-    const sign = async (bucket: string, paths: string[]) => {
-      const map = new Map<string, string>();
-      if (!paths.length) return map;
-      const { data: urls } = await db.storage.from(bucket).createSignedUrls(paths, SIGNED_TTL);
-      for (const item of urls ?? []) {
-        if (item.path && item.signedUrl) map.set(item.path, item.signedUrl);
-      }
-      return map;
-    };
-
     const photoPaths = rows.map((r) => r["photo_path"]).filter(Boolean) as string[];
-    const shotPaths = rows.map((r) => r["payment_screenshot_path"]).filter(Boolean) as string[];
-    const [photos, shots] = await Promise.all([
-      sign("candidate-photos", photoPaths),
-      sign("payment-assets", shotPaths),
-    ]);
+    const photos = new Map<string, string>();
+    if (photoPaths.length) {
+      const { data: urls } = await db.storage
+        .from("candidate-photos")
+        .createSignedUrls(photoPaths, SIGNED_TTL);
+      for (const item of urls ?? []) {
+        if (item.path && item.signedUrl) photos.set(item.path, item.signedUrl);
+      }
+    }
 
     const orders: BatchOrder[] = rows.map((r) => {
       const photoPath = (r["photo_path"] as string | null) ?? null;
-      const shotPath = (r["payment_screenshot_path"] as string | null) ?? null;
+      const voterCount = r["voter_count"] == null ? null : Number(r["voter_count"]);
       return {
         order_id: r["order_id"] as string,
         timestamp: r["created_at"] as string,
@@ -60,13 +47,19 @@ export const adminBatchExport = createServerFn({ method: "POST" })
           panchayat_samiti: r["panchayat_samiti"] as string,
           gram_panchayat: r["gram_panchayat"] as string,
           ward_number: r["ward_number"] as string,
+          voter_count: voterCount,
+        },
+        product: {
+          design_code: (r["design_code"] as string | null) ?? null,
+          voter_count: voterCount,
+          rate_per_voter: r["rate_per_voter"] == null ? null : Number(r["rate_per_voter"]),
+          amount: r["amount"] == null ? null : Number(r["amount"]),
         },
         payment: {
           amount: r["payment_amount"] == null ? null : Number(r["payment_amount"]),
           method: (r["payment_method"] as string | null) ?? null,
           status: r["payment_status"] as string,
           transaction_id: (r["payment_txn_id"] as string | null) ?? null,
-          screenshot_url: shotPath ? (shots.get(shotPath) ?? null) : null,
         },
         metadata: {
           ip_address: (r["ip_address"] as string | null) ?? null,
@@ -85,27 +78,4 @@ export const adminBatchExport = createServerFn({ method: "POST" })
       capped: matched > limit,
       orders,
     };
-  });
-
-/** Optional PayPur reconciliation lookup — key and HMAC stay server-side. */
-export const adminPaypurStatus = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => paypurStatusSchema.parse(data))
-  .handler(async ({ data }) => {
-    const { assertSession } = await import("./admin.server");
-    await assertSession(data.token);
-    const { loadPaypurConfig, isPaypurReady } = await import("./payments.server");
-    const cfg = await loadPaypurConfig();
-    if (!isPaypurReady(cfg)) return { ok: false as const, status: null };
-    try {
-      const res = await fetch(
-        `${cfg.base_url}/api/merchant/status?txn_id=${encodeURIComponent(data.txn_id)}`,
-        { headers: { "X-PAYPUR-KEY": cfg.api_key! } },
-      );
-      if (!res.ok) return { ok: false as const, status: null };
-      const json = (await res.json()) as { status?: string };
-      return { ok: true as const, status: json.status ?? null };
-    } catch (error) {
-      console.error("PayPur status lookup failed", error);
-      return { ok: false as const, status: null };
-    }
   });

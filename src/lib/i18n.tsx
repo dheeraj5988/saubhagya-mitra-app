@@ -146,32 +146,52 @@ export const DICTIONARY = {
   "success.orderid": { hi: "आपका ऑर्डर आईडी", en: "Your order ID" },
   "success.toast": { hi: "ऑर्डर दर्ज हुआ", en: "Order recorded" },
 
-  "pay.heading": { hi: "भुगतान करें", en: "Make the payment" },
-  "pay.qr.hint": { hi: "किसी भी UPI ऐप से QR स्कैन करें", en: "Scan the QR with any UPI app" },
+  "form.design": { hi: "पर्ची डिज़ाइन", en: "Slip design" },
+  "form.design.hint": { hi: "8 डिज़ाइन में से चुनें", en: "Choose from 8 designs" },
+  "form.voters": { hi: "वार्ड में मतदाता", en: "Voters in ward" },
+  "form.amount": { hi: "अनुमानित राशि", en: "Estimated amount" },
+  "form.rate": { hi: "प्रति मतदाता दर", en: "Rate per voter" },
+  "form.amount.pending": {
+    hi: "मतदाता संख्या उपलब्ध होने पर राशि WhatsApp पर बताई जाएगी।",
+    en: "We will confirm the amount on WhatsApp once the voter count is available.",
+  },
+  "err.required.design": { hi: "डिज़ाइन चुनना आवश्यक है।", en: "Please choose a design." },
+
+  "sample.heading": { hi: "24 मतदाताओं का निःशुल्क सैंपल", en: "Free 24-voter sample" },
+  "sample.body": {
+    hi: "ऑर्डर से पहले अपनी पर्ची का नमूना देखें — पूरी तरह निःशुल्क।",
+    en: "See a sample of your slip before ordering — completely free.",
+  },
+  "sample.cta": { hi: "निःशुल्क सैंपल मंगाएँ", en: "Request free sample" },
+  "sample.name": { hi: "आपका नाम", en: "Your name" },
+  "sample.submit": { hi: "सैंपल रिक्वेस्ट भेजें", en: "Send sample request" },
+  "sample.success": { hi: "सैंपल रिक्वेस्ट दर्ज हुई", en: "Sample request recorded" },
+  "sample.error": { hi: "रिक्वेस्ट दर्ज नहीं हो सकी।", en: "Could not record the request." },
+
+  "pay.heading": { hi: "अगला कदम", en: "Next step" },
   "pay.amount": { hi: "राशि", en: "Amount" },
-  "pay.upi": { hi: "UPI आईडी", en: "UPI ID" },
-  "pay.account": { hi: "खाता / नाम", en: "Account / name" },
-  "pay.instructions": { hi: "निर्देश", en: "Instructions" },
-  "pay.upload": { hi: "भुगतान स्क्रीनशॉट अपलोड करें", en: "Upload payment screenshot" },
-  "pay.uploading": { hi: "अपलोड हो रहा है…", en: "Uploading…" },
-  "pay.uploaded": { hi: "स्क्रीनशॉट प्राप्त हुआ — सत्यापन प्रतीक्षारत", en: "Screenshot received — verification pending" },
-  "pay.upload.error": { hi: "स्क्रीनशॉट अपलोड नहीं हो सका।", en: "Could not upload the screenshot." },
-  "pay.upload.type": { hi: "केवल JPG, PNG या WebP फाइल अपलोड करें (अधिकतम 5MB)।", en: "Upload a JPG, PNG or WebP file (max 5MB)." },
+  "pay.status": { hi: "भुगतान स्थिति", en: "Payment status" },
+  "pay.pending": { hi: "भुगतान शेष", en: "Payment pending" },
+  "pay.soon": {
+    hi: "सुरक्षित ऑनलाइन भुगतान शीघ्र उपलब्ध होगा। तब तक हमारी टीम WhatsApp पर भुगतान लिंक भेजेगी।",
+    en: "Secure online payment is coming soon. Until then our team shares a payment link on WhatsApp.",
+  },
   "pay.whatsapp": { hi: "WhatsApp पर विवरण भेजें", en: "Send details on WhatsApp" },
   "pay.call": { hi: "कॉल करें", en: "Call us" },
-  "pay.none": {
-    hi: "भुगतान विवरण WhatsApp पर भेजा जाएगा।",
-    en: "Payment details will be shared on WhatsApp.",
-  },
-  "pay.paypur": { hi: "PayPur UPI से सुरक्षित भुगतान करें", en: "Pay securely with PayPur UPI" },
-  "pay.paypur.error": { hi: "ऑनलाइन भुगतान अभी उपलब्ध नहीं है — कृपया QR से भुगतान करें।", en: "Online payment is unavailable right now — please pay via QR." },
 
   "footer.tagline": {
     hi: "राजस्थान पंचायत चुनाव हेतु विश्वसनीय प्रिंटिंग एवं डिज़ाइन सेवा",
     en: "Reliable printing and design service for Rajasthan panchayat elections",
   },
+  "footer.contact": { hi: "संपर्क", en: "Contact" },
+  "footer.legal": { hi: "नीतियाँ", en: "Policies" },
   "footer.whatsapp": { hi: "WhatsApp पर संपर्क करें", en: "Contact on WhatsApp" },
   "footer.rights": { hi: "सर्वाधिकार सुरक्षित.", en: "All rights reserved." },
+  "legal.terms": { hi: "नियम एवं शर्तें", en: "Terms & Conditions" },
+  "legal.privacy": { hi: "गोपनीयता नीति", en: "Privacy Policy" },
+  "legal.refund": { hi: "रिफंड नीति", en: "Refund Policy" },
+  "legal.shipping": { hi: "शिपिंग एवं डिलीवरी", en: "Shipping & Delivery" },
+  "legal.contact": { hi: "संपर्क करें", en: "Contact Us" },
 } satisfies Record<string, Entry>;
 
 export type TKey = keyof typeof DICTIONARY;

@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApiPublicAdminBatchZipRouteImport } from './routes/api/public/admin/batch-zip'
-import { Route as ApiPublicPaypurCallbackRouteImport } from './routes/api/public/paypur/callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,57 +28,35 @@ const ApiPublicAdminBatchZipRoute = ApiPublicAdminBatchZipRouteImport.update({
   path: '/api/public/admin/batch-zip',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicPaypurCallbackRoute = ApiPublicPaypurCallbackRouteImport.update({
-  id: '/api/public/paypur/callback',
-  path: '/api/public/paypur/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
-  '/api/public/paypur/callback': typeof ApiPublicPaypurCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
-  '/api/public/paypur/callback': typeof ApiPublicPaypurCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
-  '/api/public/paypur/callback': typeof ApiPublicPaypurCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/admin'
-    | '/api/public/admin/batch-zip'
-    | '/api/public/paypur/callback'
+  fullPaths: '/' | '/admin' | '/api/public/admin/batch-zip'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/admin'
-    | '/api/public/admin/batch-zip'
-    | '/api/public/paypur/callback'
-  id:
-    | '__root__'
-    | '/'
-    | '/admin'
-    | '/api/public/admin/batch-zip'
-    | '/api/public/paypur/callback'
+  to: '/' | '/admin' | '/api/public/admin/batch-zip'
+  id: '__root__' | '/' | '/admin' | '/api/public/admin/batch-zip'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   ApiPublicAdminBatchZipRoute: typeof ApiPublicAdminBatchZipRoute
-  ApiPublicPaypurCallbackRoute: typeof ApiPublicPaypurCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -105,13 +82,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAdminBatchZipRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/paypur/callback': {
-      id: '/api/public/paypur/callback'
-      path: '/api/public/paypur/callback'
-      fullPath: '/api/public/paypur/callback'
-      preLoaderRoute: typeof ApiPublicPaypurCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -119,7 +89,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   ApiPublicAdminBatchZipRoute: ApiPublicAdminBatchZipRoute,
-  ApiPublicPaypurCallbackRoute: ApiPublicPaypurCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

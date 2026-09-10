@@ -4,15 +4,16 @@ import {
   adminTokenSchema,
   clearLeadsSchema,
   leadIdSchema,
-  paymentSettingsSchema,
+  paymentConfigSchema,
   paymentStatusSchema,
-  paypurSecretsSchema,
-  screenshotUrlSchema,
+  phonepeSecretsSchema,
+  sampleQuerySchema,
+  sampleStatusSchema,
   symbolIdSchema,
   symbolSaveSchema,
   uploadTargetSchema,
 } from "./admin-catalog.schema";
-import type { AdminPaymentSettings, AdminSymbol } from "./catalog.schema";
+import type { AdminPaymentConfig, AdminSymbol } from "./catalog.schema";
 
 const SIGNED_TTL = 300;
 
@@ -115,102 +116,64 @@ export const adminUploadTarget = createServerFn({ method: "POST" })
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const folder = data.kind === "symbol" ? "symbols" : "qr";
-    const path = `${folder}/${crypto.randomUUID()}.${data.ext}`;
-    const { data: signed, error } = await db.storage
-      .from(data.bucket)
-      .createSignedUploadUrl(path);
+    const path = `symbols/${crypto.randomUUID()}.${data.ext}`;
+    const { data: signed, error } = await db.storage.from(data.bucket).createSignedUploadUrl(path);
     if (error) throw new Error(error.message);
     return { path, token: signed.token, bucket: data.bucket };
   });
 
-export const adminPaymentSettings = createServerFn({ method: "POST" })
+/** Pricing + PhonePe onboarding settings. Secrets are reported as flags only. */
+export const adminPaymentConfig = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => adminTokenSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
-    const db = await assertSession(data.token);
-
-    const [{ data: settings }, { data: secrets }] = await Promise.all([
-      db.from("payment_settings").select("*").eq("singleton", true).maybeSingle(),
-      db.from("payment_secrets").select("paypur_api_key, paypur_signing_secret").eq("singleton", true).maybeSingle(),
-    ]);
-
-    let qrUrl: string | null = null;
-    if (settings?.qr_image_path) {
-      const { data: signed } = await db.storage
-        .from("payment-assets")
-        .createSignedUrl(settings.qr_image_path, SIGNED_TTL);
-      qrUrl = signed?.signedUrl ?? null;
-    }
-
-    const result: AdminPaymentSettings = {
-      display_name: settings?.display_name ?? null,
-      upi_id: settings?.upi_id ?? null,
-      instructions: settings?.instructions ?? null,
-      amount: settings?.amount == null ? null : Number(settings.amount),
-      qr_image_path: settings?.qr_image_path ?? null,
-      qr_url: qrUrl,
-      paypur_enabled: Boolean(settings?.paypur_enabled),
-      paypur_base_url: settings?.paypur_base_url ?? "https://upi.paypur.in",
-      paypur_amount: settings?.paypur_amount == null ? null : Number(settings.paypur_amount),
-      paypur_success_url: settings?.paypur_success_url ?? null,
-      paypur_failure_url: settings?.paypur_failure_url ?? null,
-      // Only presence is ever reported back — the values stay server-side.
-      has_api_key: Boolean(secrets?.paypur_api_key),
-      has_signing_secret: Boolean(secrets?.paypur_signing_secret),
-    };
+    await assertSession(data.token);
+    const { loadPaymentConfig, loadCredentialPresence } = await import("./payment-config.server");
+    const [cfg, presence] = await Promise.all([loadPaymentConfig(), loadCredentialPresence()]);
+    const result: AdminPaymentConfig = { ...cfg, ...presence };
     return result;
   });
 
-export const adminSavePaymentSettings = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => paymentSettingsSchema.parse(data))
+export const adminSavePaymentConfig = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => paymentConfigSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
-
-    const { data: existing } = await db
-      .from("payment_settings")
-      .select("qr_image_path")
-      .eq("singleton", true)
-      .maybeSingle();
-
     const { error } = await db
-      .from("payment_settings")
+      .from("payment_config")
       .update({
-        display_name: data.display_name ?? null,
-        upi_id: data.upi_id ?? null,
-        instructions: data.instructions ?? null,
-        amount: data.amount ?? null,
-        ...(data.qr_image_path !== undefined ? { qr_image_path: data.qr_image_path } : {}),
-        paypur_enabled: data.paypur_enabled,
-        paypur_base_url: data.paypur_base_url,
-        paypur_amount: data.paypur_amount ?? null,
-        paypur_success_url: data.paypur_success_url ?? null,
-        paypur_failure_url: data.paypur_failure_url ?? null,
+        rate_per_voter: data.rate_per_voter,
+        min_order_amount: data.min_order_amount ?? null,
+        free_sample_voter_count: data.free_sample_voter_count,
+        phonepe_enabled: data.phonepe_enabled,
+        phonepe_environment: data.phonepe_environment,
+        phonepe_merchant_id: data.phonepe_merchant_id ?? null,
+        phonepe_client_id: data.phonepe_client_id ?? null,
+        phonepe_redirect_url: data.phonepe_redirect_url ?? null,
+        phonepe_callback_url: data.phonepe_callback_url ?? null,
       })
       .eq("singleton", true);
     if (error) throw new Error(error.message);
-
-    // Drop a replaced QR image so old files don't linger in storage.
-    const previous = existing?.qr_image_path;
-    if (previous && data.qr_image_path !== undefined && data.qr_image_path !== previous) {
-      await db.storage.from("payment-assets").remove([previous]);
-    }
     return { ok: true as const };
   });
 
-export const adminSavePaypurSecrets = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => paypurSecretsSchema.parse(data))
+export const adminSavePhonePeSecrets = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => phonepeSecretsSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const patch: { paypur_api_key?: string | null; paypur_signing_secret?: string | null } = {};
-    if (data.api_key !== undefined) patch.paypur_api_key = data.api_key;
-    if (data.signing_secret !== undefined) patch.paypur_signing_secret = data.signing_secret;
+    const patch: {
+      phonepe_client_secret?: string | null;
+      phonepe_salt_key?: string | null;
+      phonepe_salt_index?: string | null;
+    } = {};
+    if (data.client_secret !== undefined) patch.phonepe_client_secret = data.client_secret ?? null;
+    if (data.salt_key !== undefined) patch.phonepe_salt_key = data.salt_key ?? null;
+    if (data.salt_index !== undefined) patch.phonepe_salt_index = data.salt_index ?? null;
     if (Object.keys(patch).length === 0) return { ok: true as const };
 
-    const { error } = await db.from("payment_secrets").update(patch).eq("singleton", true);
+    const { error } = await db.from("payment_credentials").update(patch).eq("singleton", true);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
@@ -228,16 +191,43 @@ export const adminUpdatePaymentStatus = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-export const adminScreenshotUrl = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => screenshotUrlSchema.parse(data))
+export const adminSampleRequests = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => sampleQuerySchema.parse(data))
+  .handler(async ({ data }) => {
+    const { assertSession, sanitizeSearch } = await import("./admin.server");
+    const db = await assertSession(data.token);
+
+    const from = (data.page - 1) * data.page_size;
+    let query = db
+      .from("sample_requests")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
+
+    const term = sanitizeSearch(data.search);
+    if (term) {
+      query = query.or(
+        ["request_id", "candidate_name", "contact_number", "district", "gram_panchayat"]
+          .map((c) => `${c}.ilike.%${term}%`)
+          .join(","),
+      );
+    }
+
+    const res = await query.range(from, from + data.page_size - 1);
+    if (res.error) throw new Error(res.error.message);
+    return { requests: res.data ?? [], total: res.count ?? (res.data?.length ?? 0) };
+  });
+
+export const adminUpdateSampleStatus = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => sampleStatusSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
-    const { data: signed, error } = await db.storage
-      .from("payment-assets")
-      .createSignedUrl(data.path, SIGNED_TTL, data.download ? { download: true } : undefined);
+    const { error } = await db
+      .from("sample_requests")
+      .update({ status: data.status })
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
-    return { url: signed.signedUrl };
+    return { ok: true as const };
   });
 
 /** Per-row removal of a visitor/IP log. Orders are never touched here. */

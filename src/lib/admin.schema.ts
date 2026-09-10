@@ -63,6 +63,12 @@ export type AdminOrder = {
   panchayat_samiti: string;
   gram_panchayat: string;
   ward_number: string;
+  ward_id: string | null;
+  design_code: string | null;
+  voter_count: number | null;
+  rate_per_voter: number | null;
+  amount: number | null;
+  is_sample: boolean | null;
   election_symbol: string;
   slogan: string | null;
   photo_path: string | null;
@@ -75,12 +81,10 @@ export type AdminOrder = {
   symbol_name_snapshot: string | null;
   payment_status: string;
   payment_method: string | null;
-  payment_screenshot_path: string | null;
   payment_txn_id: string | null;
   payment_amount: number | null;
   payment_updated_at: string | null;
   user_agent: string | null;
-
 };
 
 export type AdminLead = {
@@ -94,10 +98,26 @@ export type AdminLead = {
   updated_at: string;
 };
 
+export type AdminSampleRequest = {
+  id: string;
+  request_id: string;
+  candidate_name: string;
+  contact_number: string;
+  district: string | null;
+  panchayat_samiti: string | null;
+  gram_panchayat: string | null;
+  ward_number: string | null;
+  voter_count: number | null;
+  notes: string | null;
+  status: string;
+  created_at: string;
+};
+
 export type AdminKpis = {
   total: number;
+  paid: number;
   pending: number;
-  process: number;
-  completed: number;
+  revenue: number;
+  samples: number;
   leads: number;
 };

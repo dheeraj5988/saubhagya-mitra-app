@@ -101,18 +101,162 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_districts: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          name_hindi: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          name_hindi?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          name_hindi?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      geo_gram_panchayats: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          name_hindi: string | null
+          samiti_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          name_hindi?: string | null
+          samiti_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          name_hindi?: string | null
+          samiti_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_gram_panchayats_samiti_id_fkey"
+            columns: ["samiti_id"]
+            isOneToOne: false
+            referencedRelation: "geo_panchayat_samitis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_panchayat_samitis: {
+        Row: {
+          active: boolean
+          created_at: string
+          district_id: string
+          id: string
+          name: string
+          name_hindi: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          district_id: string
+          id?: string
+          name: string
+          name_hindi?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          district_id?: string
+          id?: string
+          name?: string
+          name_hindi?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_panchayat_samitis_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "geo_districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_wards: {
+        Row: {
+          active: boolean
+          created_at: string
+          gram_panchayat_id: string
+          id: string
+          updated_at: string
+          voter_count: number
+          ward_number: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          gram_panchayat_id: string
+          id?: string
+          updated_at?: string
+          voter_count?: number
+          ward_number: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          gram_panchayat_id?: string
+          id?: string
+          updated_at?: string
+          voter_count?: number
+          ward_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_wards_gram_panchayat_id_fkey"
+            columns: ["gram_panchayat_id"]
+            isOneToOne: false
+            referencedRelation: "geo_gram_panchayats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
+          amount: number | null
           candidate_name_english: string
           candidate_name_hindi: string
           contact_number: string
           created_at: string
+          design_code: string | null
           district: string
           election_symbol: string
           election_symbol_id: string | null
           gram_panchayat: string
           id: string
           ip_address: string | null
+          is_sample: boolean
           order_id: string
           panchayat_samiti: string
           party_name_snapshot: string | null
@@ -123,23 +267,29 @@ export type Database = {
           payment_txn_id: string | null
           payment_updated_at: string | null
           photo_path: string | null
+          rate_per_voter: number | null
           slogan: string | null
           status: string
           symbol_name_snapshot: string | null
           user_agent: string | null
+          voter_count: number | null
+          ward_id: string | null
           ward_number: string
         }
         Insert: {
+          amount?: number | null
           candidate_name_english: string
           candidate_name_hindi: string
           contact_number: string
           created_at?: string
+          design_code?: string | null
           district: string
           election_symbol: string
           election_symbol_id?: string | null
           gram_panchayat: string
           id?: string
           ip_address?: string | null
+          is_sample?: boolean
           order_id: string
           panchayat_samiti: string
           party_name_snapshot?: string | null
@@ -150,23 +300,29 @@ export type Database = {
           payment_txn_id?: string | null
           payment_updated_at?: string | null
           photo_path?: string | null
+          rate_per_voter?: number | null
           slogan?: string | null
           status?: string
           symbol_name_snapshot?: string | null
           user_agent?: string | null
+          voter_count?: number | null
+          ward_id?: string | null
           ward_number: string
         }
         Update: {
+          amount?: number | null
           candidate_name_english?: string
           candidate_name_hindi?: string
           contact_number?: string
           created_at?: string
+          design_code?: string | null
           district?: string
           election_symbol?: string
           election_symbol_id?: string | null
           gram_panchayat?: string
           id?: string
           ip_address?: string | null
+          is_sample?: boolean
           order_id?: string
           panchayat_samiti?: string
           party_name_snapshot?: string | null
@@ -177,10 +333,13 @@ export type Database = {
           payment_txn_id?: string | null
           payment_updated_at?: string | null
           photo_path?: string | null
+          rate_per_voter?: number | null
           slogan?: string | null
           status?: string
           symbol_name_snapshot?: string | null
           user_agent?: string | null
+          voter_count?: number | null
+          ward_id?: string | null
           ward_number?: string
         }
         Relationships: [
@@ -191,7 +350,92 @@ export type Database = {
             referencedRelation: "election_symbols"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_ward_id_fkey"
+            columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "geo_wards"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      payment_config: {
+        Row: {
+          created_at: string
+          free_sample_voter_count: number
+          id: string
+          min_order_amount: number | null
+          phonepe_callback_url: string | null
+          phonepe_client_id: string | null
+          phonepe_enabled: boolean
+          phonepe_environment: string
+          phonepe_merchant_id: string | null
+          phonepe_redirect_url: string | null
+          rate_per_voter: number
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          free_sample_voter_count?: number
+          id?: string
+          min_order_amount?: number | null
+          phonepe_callback_url?: string | null
+          phonepe_client_id?: string | null
+          phonepe_enabled?: boolean
+          phonepe_environment?: string
+          phonepe_merchant_id?: string | null
+          phonepe_redirect_url?: string | null
+          rate_per_voter?: number
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          free_sample_voter_count?: number
+          id?: string
+          min_order_amount?: number | null
+          phonepe_callback_url?: string | null
+          phonepe_client_id?: string | null
+          phonepe_enabled?: boolean
+          phonepe_environment?: string
+          phonepe_merchant_id?: string | null
+          phonepe_redirect_url?: string | null
+          rate_per_voter?: number
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_credentials: {
+        Row: {
+          created_at: string
+          id: string
+          phonepe_client_secret: string | null
+          phonepe_salt_index: string | null
+          phonepe_salt_key: string | null
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phonepe_client_secret?: string | null
+          phonepe_salt_index?: string | null
+          phonepe_salt_key?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phonepe_client_secret?: string | null
+          phonepe_salt_index?: string | null
+          phonepe_salt_key?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       payment_secrets: {
         Row: {
@@ -271,6 +515,68 @@ export type Database = {
         }
         Relationships: []
       }
+      sample_requests: {
+        Row: {
+          candidate_name: string
+          contact_number: string
+          created_at: string
+          district: string | null
+          gram_panchayat: string | null
+          id: string
+          ip_address: string | null
+          notes: string | null
+          panchayat_samiti: string | null
+          request_id: string
+          status: string
+          updated_at: string
+          voter_count: number | null
+          ward_id: string | null
+          ward_number: string | null
+        }
+        Insert: {
+          candidate_name: string
+          contact_number: string
+          created_at?: string
+          district?: string | null
+          gram_panchayat?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          panchayat_samiti?: string | null
+          request_id: string
+          status?: string
+          updated_at?: string
+          voter_count?: number | null
+          ward_id?: string | null
+          ward_number?: string | null
+        }
+        Update: {
+          candidate_name?: string
+          contact_number?: string
+          created_at?: string
+          district?: string | null
+          gram_panchayat?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          panchayat_samiti?: string | null
+          request_id?: string
+          status?: string
+          updated_at?: string
+          voter_count?: number | null
+          ward_id?: string | null
+          ward_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_requests_ward_id_fkey"
+            columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "geo_wards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitor_leads: {
         Row: {
           id: string
@@ -315,6 +621,7 @@ export type Database = {
           ward_number: string
         }[]
       }
+      admin_revenue: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never

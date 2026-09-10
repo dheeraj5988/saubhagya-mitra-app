@@ -1,28 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ImageOff, KeyRound, Loader2, RefreshCw, Save, Upload } from "lucide-react";
+import { KeyRound, Loader2, RefreshCw, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import {
-  adminPaymentSettings,
-  adminSavePaymentSettings,
-  adminSavePaypurSecrets,
-  adminUploadTarget,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  adminPaymentConfig,
+  adminSavePaymentConfig,
+  adminSavePhonePeSecrets,
 } from "@/lib/admin-catalog.functions";
-import type { AdminPaymentSettings } from "@/lib/catalog.schema";
-
-const MAX_BYTES = 5 * 1024 * 1024;
-const TYPES: Record<string, "jpg" | "png" | "webp"> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
+import type { AdminPaymentConfig, PhonePeEnvironment } from "@/lib/catalog.schema";
+import { formatInr } from "@/lib/pricing";
 
 function num(value: string) {
   const parsed = Number(value);
@@ -36,79 +34,48 @@ export function PaymentSettingsTab({
   token: string;
   onError: (err: unknown, fallback: string) => boolean;
 }) {
-  const fetchSettings = useServerFn(adminPaymentSettings);
-  const saveSettings = useServerFn(adminSavePaymentSettings);
-  const saveSecrets = useServerFn(adminSavePaypurSecrets);
-  const uploadTarget = useServerFn(adminUploadTarget);
+  const fetchConfig = useServerFn(adminPaymentConfig);
+  const saveConfig = useServerFn(adminSavePaymentConfig);
+  const saveSecrets = useServerFn(adminSavePhonePeSecrets);
 
-  const [settings, setSettings] = useState<AdminPaymentSettings | null>(null);
-  const [qrPreview, setQrPreview] = useState<string | null>(null);
+  const [cfg, setCfg] = useState<AdminPaymentConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [signingSecret, setSigningSecret] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [saltKey, setSaltKey] = useState("");
+  const [saltIndex, setSaltIndex] = useState("");
   const [savingSecrets, setSavingSecrets] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const res = await fetchSettings({ data: { token } });
-      setSettings(res);
-      setQrPreview(res.qr_url);
+      setCfg(await fetchConfig({ data: { token } }));
     } catch (err) {
       onError(err, "Could not load payment settings.");
     } finally {
       setLoading(false);
     }
-  }, [fetchSettings, token, onError]);
+  }, [fetchConfig, token, onError]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  async function pickQr(file: File | null) {
-    if (!file || !settings) return;
-    const ext = TYPES[file.type];
-    if (!ext || file.size > MAX_BYTES) {
-      toast.error("Upload a JPG, PNG or WebP image under 5MB.");
-      return;
-    }
-    setUploading(true);
-    try {
-      const target = await uploadTarget({
-        data: { token, bucket: "payment-assets", kind: "qr", ext },
-      });
-      const { error } = await supabase.storage
-        .from(target.bucket)
-        .uploadToSignedUrl(target.path, target.token, file, { contentType: file.type });
-      if (error) throw new Error(error.message);
-      setSettings({ ...settings, qr_image_path: target.path });
-      setQrPreview(URL.createObjectURL(file));
-      toast.success("QR uploaded — save to publish it.");
-    } catch (err) {
-      onError(err, "QR upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  }
-
   async function save() {
-    if (!settings) return;
+    if (!cfg) return;
     setSaving(true);
     try {
-      await saveSettings({
+      await saveConfig({
         data: {
           token,
-          display_name: settings.display_name,
-          upi_id: settings.upi_id,
-          instructions: settings.instructions,
-          amount: settings.amount,
-          qr_image_path: settings.qr_image_path,
-          paypur_enabled: settings.paypur_enabled,
-          paypur_base_url: settings.paypur_base_url || "https://upi.paypur.in",
-          paypur_amount: settings.paypur_amount,
-          paypur_success_url: settings.paypur_success_url,
-          paypur_failure_url: settings.paypur_failure_url,
+          rate_per_voter: cfg.rate_per_voter,
+          min_order_amount: cfg.min_order_amount,
+          free_sample_voter_count: cfg.free_sample_voter_count,
+          phonepe_enabled: cfg.phonepe_enabled,
+          phonepe_environment: cfg.phonepe_environment,
+          phonepe_merchant_id: cfg.phonepe_merchant_id,
+          phonepe_client_id: cfg.phonepe_client_id,
+          phonepe_redirect_url: cfg.phonepe_redirect_url,
+          phonepe_callback_url: cfg.phonepe_callback_url,
         },
       });
       toast.success("Payment settings saved.");
@@ -121,7 +88,7 @@ export function PaymentSettingsTab({
   }
 
   async function persistSecrets() {
-    if (!apiKey.trim() && !signingSecret.trim()) {
+    if (!clientSecret.trim() && !saltKey.trim() && !saltIndex.trim()) {
       toast.error("Enter at least one credential to update.");
       return;
     }
@@ -130,13 +97,15 @@ export function PaymentSettingsTab({
       await saveSecrets({
         data: {
           token,
-          ...(apiKey.trim() ? { api_key: apiKey.trim() } : {}),
-          ...(signingSecret.trim() ? { signing_secret: signingSecret.trim() } : {}),
+          ...(clientSecret.trim() ? { client_secret: clientSecret.trim() } : {}),
+          ...(saltKey.trim() ? { salt_key: saltKey.trim() } : {}),
+          ...(saltIndex.trim() ? { salt_index: saltIndex.trim() } : {}),
         },
       });
-      setApiKey("");
-      setSigningSecret("");
-      toast.success("PayPur credentials updated.");
+      setClientSecret("");
+      setSaltKey("");
+      setSaltIndex("");
+      toast.success("PhonePe credentials updated.");
       void load();
     } catch (err) {
       onError(err, "Could not update credentials.");
@@ -145,7 +114,7 @@ export function PaymentSettingsTab({
     }
   }
 
-  if (loading || !settings) {
+  if (loading || !cfg) {
     return (
       <div className="grid place-items-center rounded-xl border border-border bg-card py-16 text-muted-foreground shadow-card">
         <Loader2 className="size-6 animate-spin" />
@@ -153,158 +122,138 @@ export function PaymentSettingsTab({
     );
   }
 
+  const sampleOrder = Math.round(1000 * cfg.rate_per_voter * 100) / 100;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3 shadow-card">
         <p className="text-sm text-muted-foreground">
-          The QR panel below is what candidates see immediately after placing an order.
+          Pricing is applied when an order is created: ward voter count × rate per voter.
         </p>
         <div className="flex shrink-0 gap-2">
           <Button variant="outline" size="sm" onClick={() => void load()}>
             <RefreshCw className="size-4" /> Reload
           </Button>
-          <Button size="sm" disabled={saving || uploading} onClick={() => void save()}>
+          <Button size="sm" disabled={saving} onClick={() => void save()}>
             {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />} Save
             settings
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <section className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
-          <h3 className="text-sm font-bold text-navy">Payment QR</h3>
-          {qrPreview ? (
-            <img
-              src={qrPreview}
-              alt="Payment QR"
-              className="mx-auto size-56 rounded-lg border border-border object-contain p-2"
+      <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
+        <h3 className="text-sm font-bold text-navy">Pricing</h3>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label htmlFor="rate">Rate per voter (₹)</Label>
+            <Input
+              id="rate"
+              type="number"
+              step="0.01"
+              min={0}
+              value={cfg.rate_per_voter}
+              onChange={(e) => setCfg({ ...cfg, rate_per_voter: num(e.target.value) ?? 0 })}
             />
-          ) : (
-            <div className="mx-auto grid size-56 place-items-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground">
-              <ImageOff className="size-6" />
-              <span className="text-xs">No QR uploaded</span>
-            </div>
-          )}
-          <input
-            id="qr_file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="sr-only"
-            onChange={(e) => void pickQr(e.target.files?.[0] ?? null)}
-          />
-          <Button
-            variant="outline"
-            className="w-full"
-            disabled={uploading}
-            onClick={() => document.getElementById("qr_file")?.click()}
-          >
-            {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}{" "}
-            Upload QR image
-          </Button>
-        </section>
-
-        <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
-          <h3 className="text-sm font-bold text-navy">Payment panel details</h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="display_name">Account / display name</Label>
-              <Input
-                id="display_name"
-                value={settings.display_name ?? ""}
-                onChange={(e) => setSettings({ ...settings, display_name: e.target.value || null })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="upi_id">UPI ID</Label>
-              <Input
-                id="upi_id"
-                value={settings.upi_id ?? ""}
-                onChange={(e) => setSettings({ ...settings, upi_id: e.target.value || null })}
-                placeholder="name@bank"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount shown to candidate (₹)</Label>
-              <Input
-                id="amount"
-                type="number"
-                min={0}
-                value={settings.amount ?? ""}
-                onChange={(e) => setSettings({ ...settings, amount: num(e.target.value) })}
-              />
-            </div>
+            <p className="text-xs text-muted-foreground">
+              1,000 voters = {formatInr(sampleOrder)}
+            </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="instructions">Instructions</Label>
-            <Textarea
-              id="instructions"
-              rows={3}
-              maxLength={1000}
-              value={settings.instructions ?? ""}
-              onChange={(e) => setSettings({ ...settings, instructions: e.target.value || null })}
-              placeholder="भुगतान के बाद स्क्रीनशॉट अपलोड करें…"
+            <Label htmlFor="min_amount">Minimum order amount (₹)</Label>
+            <Input
+              id="min_amount"
+              type="number"
+              min={0}
+              value={cfg.min_order_amount ?? ""}
+              onChange={(e) => setCfg({ ...cfg, min_order_amount: num(e.target.value) })}
+              placeholder="Optional"
             />
           </div>
-        </section>
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="sample_count">Free sample voters</Label>
+            <Input
+              id="sample_count"
+              type="number"
+              min={1}
+              value={cfg.free_sample_voter_count}
+              onChange={(e) =>
+                setCfg({ ...cfg, free_sample_voter_count: num(e.target.value) ?? 24 })
+              }
+            />
+          </div>
+        </div>
+      </section>
 
       <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-bold text-navy">PayPur UPI gateway (optional)</h3>
+            <h3 className="text-sm font-bold text-navy">PhonePe payment gateway</h3>
             <p className="text-xs text-muted-foreground">
-              Disabled by default. Only callbacks with a valid signature can change a payment
-              status.
+              Disabled until onboarding is complete. Keys are stored server-side and never shown
+              again after saving.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Switch
-              id="paypur_enabled"
-              checked={settings.paypur_enabled}
-              onCheckedChange={(v) => setSettings({ ...settings, paypur_enabled: v })}
+              id="phonepe_enabled"
+              checked={cfg.phonepe_enabled}
+              onCheckedChange={(v) => setCfg({ ...cfg, phonepe_enabled: v })}
             />
-            <Label htmlFor="paypur_enabled">{settings.paypur_enabled ? "Enabled" : "Disabled"}</Label>
+            <Label htmlFor="phonepe_enabled">{cfg.phonepe_enabled ? "Enabled" : "Disabled"}</Label>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="paypur_base_url">Base URL</Label>
-            <Input
-              id="paypur_base_url"
-              value={settings.paypur_base_url}
-              onChange={(e) => setSettings({ ...settings, paypur_base_url: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="paypur_amount">Charge amount (₹)</Label>
-            <Input
-              id="paypur_amount"
-              type="number"
-              min={0}
-              value={settings.paypur_amount ?? ""}
-              onChange={(e) => setSettings({ ...settings, paypur_amount: num(e.target.value) })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="paypur_success_url">Success redirect URL</Label>
-            <Input
-              id="paypur_success_url"
-              value={settings.paypur_success_url ?? ""}
-              onChange={(e) =>
-                setSettings({ ...settings, paypur_success_url: e.target.value || null })
+            <Label htmlFor="phonepe_env">Environment</Label>
+            <Select
+              value={cfg.phonepe_environment}
+              onValueChange={(v) =>
+                setCfg({ ...cfg, phonepe_environment: v as PhonePeEnvironment })
               }
+            >
+              <SelectTrigger id="phonepe_env">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SANDBOX">Sandbox</SelectItem>
+                <SelectItem value="PRODUCTION">Production</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="merchant_id">Merchant ID</Label>
+            <Input
+              id="merchant_id"
+              value={cfg.phonepe_merchant_id ?? ""}
+              onChange={(e) =>
+                setCfg({ ...cfg, phonepe_merchant_id: e.target.value || null })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="client_id">Client ID</Label>
+            <Input
+              id="client_id"
+              value={cfg.phonepe_client_id ?? ""}
+              onChange={(e) => setCfg({ ...cfg, phonepe_client_id: e.target.value || null })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="redirect_url">Redirect URL</Label>
+            <Input
+              id="redirect_url"
+              value={cfg.phonepe_redirect_url ?? ""}
+              onChange={(e) => setCfg({ ...cfg, phonepe_redirect_url: e.target.value || null })}
               placeholder="https://…"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="paypur_failure_url">Failure redirect URL</Label>
+            <Label htmlFor="callback_url">Callback URL</Label>
             <Input
-              id="paypur_failure_url"
-              value={settings.paypur_failure_url ?? ""}
-              onChange={(e) =>
-                setSettings({ ...settings, paypur_failure_url: e.target.value || null })
-              }
+              id="callback_url"
+              value={cfg.phonepe_callback_url ?? ""}
+              onChange={(e) => setCfg({ ...cfg, phonepe_callback_url: e.target.value || null })}
               placeholder="https://…"
             />
           </div>
@@ -315,31 +264,41 @@ export function PaymentSettingsTab({
             <KeyRound className="size-4" /> Credentials
           </h4>
           <p className="mt-1 text-xs text-muted-foreground">
-            Stored server-side and never sent back to this screen. Currently on file: API key{" "}
-            <strong>{settings.has_api_key ? "yes" : "no"}</strong>, signing secret{" "}
-            <strong>{settings.has_signing_secret ? "yes" : "no"}</strong>.
+            Stored server-side and never sent back to this screen. Currently on file: client secret{" "}
+            <strong>{cfg.has_client_secret ? "yes" : "no"}</strong>, salt key{" "}
+            <strong>{cfg.has_salt_key ? "yes" : "no"}</strong>.
           </p>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="api_key">API key</Label>
+              <Label htmlFor="client_secret">Client secret</Label>
               <Input
-                id="api_key"
+                id="client_secret"
                 type="password"
                 autoComplete="off"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                value={clientSecret}
+                onChange={(e) => setClientSecret(e.target.value)}
                 placeholder="Leave blank to keep current"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signing_secret">Signing secret</Label>
+              <Label htmlFor="salt_key">Salt key</Label>
               <Input
-                id="signing_secret"
+                id="salt_key"
                 type="password"
                 autoComplete="off"
-                value={signingSecret}
-                onChange={(e) => setSigningSecret(e.target.value)}
+                value={saltKey}
+                onChange={(e) => setSaltKey(e.target.value)}
                 placeholder="Leave blank to keep current"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="salt_index">Salt index</Label>
+              <Input
+                id="salt_index"
+                autoComplete="off"
+                value={saltIndex}
+                onChange={(e) => setSaltIndex(e.target.value)}
+                placeholder="1"
               />
             </div>
           </div>
@@ -350,7 +309,11 @@ export function PaymentSettingsTab({
             disabled={savingSecrets}
             onClick={() => void persistSecrets()}
           >
-            {savingSecrets ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}{" "}
+            {savingSecrets ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}{" "}
             Update credentials
           </Button>
         </div>

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DESIGN_CODES } from "./pricing";
+
 export const phoneSchema = z
   .string()
   .trim()
@@ -23,6 +25,9 @@ export const orderSchema = z.object({
   panchayat_samiti: z.string().trim().min(1).max(120),
   gram_panchayat: z.string().trim().min(1).max(120),
   ward_number: z.string().trim().min(1).max(20),
+  /** Set when the ward came from the geography master data. */
+  ward_id: z.string().uuid().nullable().optional(),
+  design_code: z.enum(DESIGN_CODES),
   election_symbol: z.string().trim().min(1).max(240),
   election_symbol_id: z.string().uuid().nullable().optional(),
   party_name_snapshot: z.string().trim().max(120).nullable().optional(),
@@ -37,22 +42,45 @@ export const orderSchema = z.object({
 
 export type OrderInput = z.infer<typeof orderSchema>;
 
+export const sampleRequestSchema = z.object({
+  candidate_name: z.string().trim().min(1).max(120),
+  contact_number: phoneSchema,
+  district: z.string().trim().max(120).nullable().optional(),
+  panchayat_samiti: z.string().trim().max(120).nullable().optional(),
+  gram_panchayat: z.string().trim().max(120).nullable().optional(),
+  ward_number: z.string().trim().max(20).nullable().optional(),
+  ward_id: z.string().uuid().nullable().optional(),
+  notes: z.string().trim().max(400).nullable().optional(),
+  ip_address: z.string().trim().max(64).nullable().optional(),
+});
+
 /**
  * Order IDs stay in the requested `SBG-####` shape (always exactly four
  * digits). The first attempt is time-derived so IDs trend upward; retries draw
  * a cryptographically random suffix so a collision resolves immediately
  * instead of colliding again on the same millisecond.
  */
-export function makeOrderId(attempt = 0) {
+export function makeOrderId(attempt = 0, prefix = "SBG") {
   if (attempt === 0) {
-    return `SBG-${Date.now().toString().slice(-4)}`;
+    return `${prefix}-${Date.now().toString().slice(-4)}`;
   }
   const random = crypto.getRandomValues(new Uint32Array(1))[0]! % 10_000;
-  return `SBG-${random.toString().padStart(4, "0")}`;
+  return `${prefix}-${random.toString().padStart(4, "0")}`;
 }
 
-export const ORDER_STATUSES = ["Pending", "In-Process", "Completed"] as const;
+/** Processing pipeline for an order, in workflow order. */
+export const ORDER_STATUSES = [
+  "New",
+  "Paid",
+  "In Production",
+  "Ready",
+  "Delivered",
+  "Closed",
+] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const SAMPLE_STATUSES = ["New", "Sent", "Converted", "Closed"] as const;
+export type SampleStatus = (typeof SAMPLE_STATUSES)[number];
 
 export const LEAD_STATUSES = {
   visit: "New",
