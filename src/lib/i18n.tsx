@@ -22,77 +22,54 @@ export const DICTIONARY = {
 
   "nav.whatsapp": { hi: "WhatsApp", en: "WhatsApp" },
 
-  "hero.badge": { hi: "राजस्थान पंचायत चुनाव 2026", en: "Rajasthan Panchayat Elections 2026" },
-  "hero.title": { hi: "सौभाग्य — मतदाता पर्ची सेवा", en: "Saubhagya — Voter Slip Service" },
-  "hero.body": {
-    hi: "सरपंच एवं वार्ड पंच प्रत्याशियों के लिए फोटो, चुनाव चिन्ह और नारे सहित प्रोफेशनल मतदाता पर्ची — बूथवार व्यवस्था के साथ, ड्राफ्ट अप्रूवल के बाद शीघ्र डिलीवरी।",
-    en: "Professional voter slips for Sarpanch and Ward Panch candidates — with photo, election symbol and slogan, arranged booth-wise and delivered promptly after draft approval.",
-  },
-  "hero.cta": { hi: "अभी ऑर्डर करें", en: "Order now" },
-  "hero.trust1": { hi: "प्रत्याशियों का भरोसा", en: "Trusted by candidates" },
-  "hero.trust2": { hi: "पूरे राजस्थान में डिलीवरी", en: "Delivery across Rajasthan" },
-
-  "features.heading": { hi: "हमारी सेवा क्यों चुनें?", en: "Why choose our service?" },
-  "features.1.title": { hi: "प्रोफेशनल डिज़ाइन", en: "Professional design" },
-  "features.1.body": {
-    hi: "प्रत्याशी की फोटो, चुनाव चिन्ह और नारे के साथ स्पष्ट व आकर्षक मतदाता पर्ची।",
-    en: "Clear, attractive voter slips featuring the candidate photo, election symbol and slogan.",
-  },
-  "features.2.title": { hi: "शीघ्र तैयार", en: "Quickly prepared" },
-  "features.2.body": {
-    hi: "ऑर्डर मिलते ही डिज़ाइन शुरू — अप्रूवल के बाद तुरंत प्रिंट एवं डिलीवरी।",
-    en: "Design starts as soon as the order arrives — printing and delivery follow approval.",
-  },
-  "features.3.title": { hi: "बूथवार व्यवस्था", en: "Booth-wise arrangement" },
-  "features.3.body": {
-    hi: "वार्ड और बूथ के अनुसार क्रमबद्ध पर्चियाँ, कार्यकर्ताओं के लिए आसान वितरण।",
-    en: "Slips sorted by ward and booth so workers can distribute them easily.",
-  },
-  "features.4.title": { hi: "डेटा सुरक्षित", en: "Data kept safe" },
-  "features.4.body": {
-    hi: "आपकी मतदाता सूची व जानकारी पूर्णतः गोपनीय एवं सुरक्षित रखी जाती है।",
-    en: "Your voter list and details stay fully confidential and secure.",
-  },
-
-  "steps.heading": { hi: "कैसे काम करता है?", en: "How it works" },
-  "steps.1.title": { hi: "फॉर्म भरें", en: "Fill the form" },
-  "steps.1.body": {
-    hi: "प्रत्याशी, क्षेत्र और चुनाव चिन्ह की जानकारी दर्ज करें।",
-    en: "Enter candidate, area and election symbol details.",
-  },
-  "steps.2.title": { hi: "डिज़ाइन अप्रूवल", en: "Design approval" },
-  "steps.2.body": {
-    hi: "WhatsApp पर पर्ची का ड्राफ्ट देखें और मंज़ूरी दें।",
-    en: "Review the slip draft on WhatsApp and approve it.",
-  },
-  "steps.3.title": { hi: "प्रिंट एवं डिलीवरी", en: "Print and delivery" },
-  "steps.3.body": {
-    hi: "भुगतान के बाद पर्चियाँ प्रिंट होकर आपके पते पर पहुँचती हैं।",
-    en: "After payment the slips are printed and delivered to your address.",
-  },
-
-  "trust.heading": { hi: "क्यों चुनें सौभाग्य मतदाता पर्ची सेवा?", en: "Why choose Saubhagya Matdata Parchi?" },
-  "trust.1": {
-    hi: "उम्मीदवार के नाम व फोटो सहित प्रोफेशनल डिज़ाइन",
-    en: "Professional design with the candidate's name and photo",
-  },
-  "trust.2": { hi: "चुनाव चिन्ह के साथ कस्टम ब्रांडिंग", en: "Custom branding with the election symbol" },
-  "trust.3": { hi: "WhatsApp आधारित त्वरित सपोर्ट", en: "Fast WhatsApp-based support" },
-  "trust.4": {
-    hi: "राजस्थान पंचायत चुनावों के लिए विशेष सेवा",
-    en: "A service built for Rajasthan panchayat elections",
-  },
-  "trust.5": { hi: "ड्राफ्ट अप्रूवल के बाद अंतिम डिलीवरी", en: "Final delivery after draft approval" },
-
-  "order.heading": { hi: "ऑर्डर फॉर्म भरें", en: "Fill the order form" },
+  "order.heading": { hi: "मतदाता पर्ची आवेदन", en: "Voter slip request" },
   "order.subheading": {
-    hi: "सभी जानकारी सही भरें — सबमिट करते ही ऑर्डर आईडी मिलेगी और WhatsApp चैट खुलेगी।",
-    en: "Fill in every detail correctly — you get an order ID on submit and a WhatsApp chat opens.",
+    hi: "क्षेत्र चुनें, ज़रूरी जानकारी भरें और डिज़ाइन चुनकर आवेदन भेजें।",
+    en: "Select your area, add the details you want and choose a design.",
   },
 
-  "form.section.candidate": { hi: "प्रत्याशी की जानकारी", en: "Candidate details" },
-  "form.section.area": { hi: "क्षेत्र की जानकारी", en: "Area details" },
-  "form.section.slogan": { hi: "नारा एवं फोटो", en: "Slogan and photo" },
+  "form.section.area": { hi: "क्षेत्र चुनें", en: "Select your area" },
+  "form.section.optional": { hi: "वैकल्पिक जानकारी", en: "Optional details" },
+  "form.section.design": { hi: "स्लिप का प्रकार (सभी 8 डिज़ाइन)", en: "Slip type (all 8 designs)" },
+  "form.section.lists": { hi: "सूची विकल्प", en: "List options" },
+
+  "form.optional.note": {
+    hi: "ये जानकारी वैकल्पिक है — बाद में WhatsApp पर भी दी जा सकती है।",
+    en: "These details are optional — you can also share them later on WhatsApp.",
+  },
+  "form.area.summary": { hi: "चयनित क्षेत्र", en: "Selected area" },
+  "form.voters.total": { hi: "कुल मतदाता", en: "Total voters" },
+  "form.body_name": { hi: "निकाय / ग्राम पंचायत का नाम (पर्ची पर)", en: "Body / Gram Panchayat name (on slip)" },
+  "form.body_name.ph": { hi: "पर्ची पर छपने वाला नाम", en: "Name printed on the slip" },
+  "form.ward.auto": { hi: "वार्ड नं. (क्षेत्र से)", en: "Ward no. (from area)" },
+  "form.evm": { hi: "EVM पर क्रम संख्या", en: "Serial number on EVM" },
+  "form.evm.ph": { hi: "जैसे: 3", en: "e.g. 3" },
+  "form.polldate": { hi: "मतदान दिनांक / दिन", en: "Polling date / day" },
+  "form.lists.hint": {
+    hi: "जो सूचियाँ चाहिए उन्हें चुनें।",
+    en: "Choose the lists you need.",
+  },
+  "list.slip": { hi: "वोटर स्लिप (चुने हुए टेम्पलेट में)", en: "Voter slip (in the chosen template)" },
+  "list.hindi_alpha": { hi: "हिंदी वर्णमाला क्रम सूची", en: "Hindi alphabetical list" },
+  "list.english_alpha": { hi: "English Alphabetical सूची", en: "English alphabetical list" },
+  "list.family": { hi: "परिवार वार (Family wise) सूची", en: "Family wise list" },
+
+  "design.D1.title": { hi: "क्लासिक", en: "Classic" },
+  "design.D1.desc": { hi: "फोटो बाएँ, चुनाव चिन्ह दाएँ", en: "Photo left, symbol right" },
+  "design.D2.title": { hi: "सेंटर फोटो", en: "Centre photo" },
+  "design.D2.desc": { hi: "बीच में फोटो, नीचे नाम", en: "Photo centred, name below" },
+  "design.D3.title": { hi: "नाम पट्टी", en: "Name band" },
+  "design.D3.desc": { hi: "ऊपर बोल्ड नाम पट्टी", en: "Bold name band on top" },
+  "design.D4.title": { hi: "दो रंग", en: "Two tone" },
+  "design.D4.desc": { hi: "दो रंग की बैनर पट्टी", en: "Two-colour banner strip" },
+  "design.D5.title": { hi: "बड़ा चिन्ह", en: "Large symbol" },
+  "design.D5.desc": { hi: "चुनाव चिन्ह प्रमुखता से", en: "Election symbol highlighted" },
+  "design.D6.title": { hi: "कॉम्पैक्ट", en: "Compact" },
+  "design.D6.desc": { hi: "अधिक मतदाता विवरण", en: "More voter details" },
+  "design.D7.title": { hi: "नारा हाइलाइट", en: "Slogan highlight" },
+  "design.D7.desc": { hi: "नीचे नारे की पट्टी", en: "Slogan strip at the bottom" },
+  "design.D8.title": { hi: "मिनिमल", en: "Minimal" },
+  "design.D8.desc": { hi: "सादा एवं स्पष्ट लेआउट", en: "Plain, clear layout" },
 
   "form.name_hi": { hi: "प्रत्याशी का नाम (हिंदी)", en: "Candidate name (Hindi)" },
   "form.name_hi.ph": { hi: "जैसे: रामलाल मीणा", en: "e.g. रामलाल मीणा" },
