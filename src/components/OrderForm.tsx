@@ -911,7 +911,13 @@ export function OrderForm() {
         </Section>
 
         <div className="space-y-3 border-t border-border pt-5">
-          <Button type="submit" variant="hero" size="xl" className="w-full" disabled={submitting}>
+          <Button
+            type="submit"
+            variant="hero"
+            size="xl"
+            className="w-full"
+            disabled={submitting || noGeoData}
+          >
             {submitting ? (
               <>
                 <Loader2 className="size-5 animate-spin" /> {t("form.submitting")}
