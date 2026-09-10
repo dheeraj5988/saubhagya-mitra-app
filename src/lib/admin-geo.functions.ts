@@ -278,13 +278,13 @@ export const adminGeoStats = createServerFn({ method: "POST" })
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const [districts, samitis, gps, wards, latest, voters] = await Promise.all([
+    const [districts, samitis, gps, wards, latest] = await Promise.all([
       db.from("geo_districts").select("id", { count: "exact", head: true }),
       db.from("geo_panchayat_samitis").select("id", { count: "exact", head: true }),
       db.from("geo_gram_panchayats").select("id", { count: "exact", head: true }),
       db.from("geo_wards").select("id", { count: "exact", head: true }),
       db.from("geo_wards").select("updated_at").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
-      db.rpc("admin_total_voters"),
+      
     ]);
 
     return {
@@ -292,7 +292,7 @@ export const adminGeoStats = createServerFn({ method: "POST" })
       samitis: samitis.count ?? 0,
       gram_panchayats: gps.count ?? 0,
       wards: wards.count ?? 0,
-      total_voters: typeof voters.data === "number" ? voters.data : 0,
+      
       last_import: (latest.data?.updated_at as string | undefined) ?? null,
     };
   });
