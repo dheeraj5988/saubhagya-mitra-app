@@ -173,7 +173,8 @@ export function OrderForm() {
   const [districtId, setDistrictId] = useState<string | null>(null);
   const [samitiId, setSamitiId] = useState<string | null>(null);
   const [gpId, setGpId] = useState<string | null>(null);
-  const [wardId, setWardId] = useState<string | null>(null);
+  const [wardIds, setWardIds] = useState<string[]>([]);
+  const [wardOpen, setWardOpen] = useState(false);
 
   // Section 2 — optional slip details.
   const [bodyName, setBodyName] = useState("");
@@ -248,12 +249,22 @@ export function OrderForm() {
   const selectedDistrict = districts.find((d) => d.id === districtId);
   const selectedSamiti = (samitisQuery.data?.options ?? []).find((s) => s.id === samitiId);
   const selectedGp = (gpsQuery.data?.options ?? []).find((g) => g.id === gpId);
-  const selectedWard = useMemo(
-    () => (wardsQuery.data?.options ?? []).find((w) => w.id === wardId) ?? null,
-    [wardsQuery.data, wardId],
+  const wardOptions = useMemo(
+    () =>
+      [...(wardsQuery.data?.options ?? [])].sort((a, b) =>
+        compareWardNumbers(a.ward_number, b.ward_number),
+      ),
+    [wardsQuery.data],
   );
+  const selectedWards = useMemo(
+    () => wardOptions.filter((w) => wardIds.includes(w.id)),
+    [wardOptions, wardIds],
+  );
+  const totalVoters = selectedWards.reduce((sum, w) => sum + w.voter_count, 0);
   const estimatedAmount =
-    selectedWard && rate != null ? computeAmount(selectedWard.voter_count, rate) : null;
+    selectedWards.length && rate != null ? computeAmount(totalVoters, rate) : null;
+  const wardNumbersLabel = selectedWards.map((w) => w.ward_number).join(", ");
+  const noGeoData = !districtsQuery.isLoading && districts.length === 0;
 
   useEffect(() => {
     let cancelled = false;
