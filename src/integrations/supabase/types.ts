@@ -245,6 +245,7 @@ export type Database = {
       orders: {
         Row: {
           amount: number | null
+          body_name: string | null
           candidate_name_english: string
           candidate_name_hindi: string
           contact_number: string
@@ -253,10 +254,12 @@ export type Database = {
           district: string
           election_symbol: string
           election_symbol_id: string | null
+          evm_serial: string | null
           gram_panchayat: string
           id: string
           ip_address: string | null
           is_sample: boolean
+          list_options: string[]
           order_id: string
           panchayat_samiti: string
           party_name_snapshot: string | null
@@ -266,6 +269,7 @@ export type Database = {
           payment_txn_id: string | null
           payment_updated_at: string | null
           photo_path: string | null
+          poll_date: string | null
           rate_per_voter: number | null
           slogan: string | null
           status: string
@@ -277,6 +281,7 @@ export type Database = {
         }
         Insert: {
           amount?: number | null
+          body_name?: string | null
           candidate_name_english: string
           candidate_name_hindi: string
           contact_number: string
@@ -285,10 +290,12 @@ export type Database = {
           district: string
           election_symbol: string
           election_symbol_id?: string | null
+          evm_serial?: string | null
           gram_panchayat: string
           id?: string
           ip_address?: string | null
           is_sample?: boolean
+          list_options?: string[]
           order_id: string
           panchayat_samiti: string
           party_name_snapshot?: string | null
@@ -298,6 +305,7 @@ export type Database = {
           payment_txn_id?: string | null
           payment_updated_at?: string | null
           photo_path?: string | null
+          poll_date?: string | null
           rate_per_voter?: number | null
           slogan?: string | null
           status?: string
@@ -309,6 +317,7 @@ export type Database = {
         }
         Update: {
           amount?: number | null
+          body_name?: string | null
           candidate_name_english?: string
           candidate_name_hindi?: string
           contact_number?: string
@@ -317,10 +326,12 @@ export type Database = {
           district?: string
           election_symbol?: string
           election_symbol_id?: string | null
+          evm_serial?: string | null
           gram_panchayat?: string
           id?: string
           ip_address?: string | null
           is_sample?: boolean
+          list_options?: string[]
           order_id?: string
           panchayat_samiti?: string
           party_name_snapshot?: string | null
@@ -330,6 +341,7 @@ export type Database = {
           payment_txn_id?: string | null
           payment_updated_at?: string | null
           photo_path?: string | null
+          poll_date?: string | null
           rate_per_voter?: number | null
           slogan?: string | null
           status?: string
