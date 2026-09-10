@@ -11,6 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RefundRouteImport } from './routes/refund'
+import { Route as ShippingRouteImport } from './routes/shipping'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ApiPublicAdminBatchZipRouteImport } from './routes/api/public/admin/batch-zip'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +28,31 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShippingRoute = ShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAdminBatchZipRoute = ApiPublicAdminBatchZipRouteImport.update({
   id: '/api/public/admin/batch-zip',
   path: '/api/public/admin/batch-zip',
@@ -32,30 +62,75 @@ const ApiPublicAdminBatchZipRoute = ApiPublicAdminBatchZipRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
+  '/shipping': typeof ShippingRoute
+  '/terms': typeof TermsRoute
   '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
+  '/shipping': typeof ShippingRoute
+  '/terms': typeof TermsRoute
   '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
+  '/shipping': typeof ShippingRoute
+  '/terms': typeof TermsRoute
   '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/api/public/admin/batch-zip'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/contact'
+    | '/privacy'
+    | '/refund'
+    | '/shipping'
+    | '/terms'
+    | '/api/public/admin/batch-zip'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/api/public/admin/batch-zip'
-  id: '__root__' | '/' | '/admin' | '/api/public/admin/batch-zip'
+  to:
+    | '/'
+    | '/admin'
+    | '/contact'
+    | '/privacy'
+    | '/refund'
+    | '/shipping'
+    | '/terms'
+    | '/api/public/admin/batch-zip'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/contact'
+    | '/privacy'
+    | '/refund'
+    | '/shipping'
+    | '/terms'
+    | '/api/public/admin/batch-zip'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ContactRoute: typeof ContactRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RefundRoute: typeof RefundRoute
+  ShippingRoute: typeof ShippingRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicAdminBatchZipRoute: typeof ApiPublicAdminBatchZipRoute
 }
 
@@ -75,6 +150,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shipping': {
+      id: '/shipping'
+      path: '/shipping'
+      fullPath: '/shipping'
+      preLoaderRoute: typeof ShippingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/admin/batch-zip': {
       id: '/api/public/admin/batch-zip'
       path: '/api/public/admin/batch-zip'
@@ -88,6 +198,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ContactRoute: ContactRoute,
+  PrivacyRoute: PrivacyRoute,
+  RefundRoute: RefundRoute,
+  ShippingRoute: ShippingRoute,
+  TermsRoute: TermsRoute,
   ApiPublicAdminBatchZipRoute: ApiPublicAdminBatchZipRoute,
 }
 export const routeTree = rootRouteImport
