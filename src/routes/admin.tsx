@@ -1204,19 +1204,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                   ))}
                                 </SelectContent>
                               </Select>
-                              {o.payment_screenshot_path ? (
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="size-8"
-                                  title={`View payment screenshot for ${o.order_id}`}
-                                  aria-label={`View payment screenshot for ${o.order_id}`}
-                                  disabled={busyPhoto}
-                                  onClick={() => void openScreenshot(o)}
-                                >
-                                  <Receipt className="size-4 text-saffron-deep" />
-                                </Button>
-                              ) : null}
                             </div>
                           </td>
                           <td className="px-3 py-2">
@@ -1269,13 +1256,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 variant="ghost"
                                 className="size-8"
                                 title={
-                                  o.status === "Completed"
-                                    ? "Already completed"
-                                    : `Mark ${o.order_id} complete`
+                                  o.status === "Delivered"
+                                    ? "Already delivered"
+                                    : `Mark ${o.order_id} delivered`
                                 }
-                                aria-label={`Mark ${o.order_id} complete`}
-                                disabled={o.status === "Completed"}
-                                onClick={() => void changeStatus(o, "Completed")}
+                                aria-label={`Mark ${o.order_id} delivered`}
+                                disabled={o.status === "Delivered"}
+                                onClick={() => void changeStatus(o, "Delivered")}
                               >
                                 <CheckCircle2 className="size-4 text-success" />
                               </Button>
@@ -1283,10 +1270,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 size="icon"
                                 variant="ghost"
                                 className="size-8"
-                                title={`Approve manual payment for ${o.order_id}`}
-                                aria-label={`Approve manual payment for ${o.order_id}`}
-                                disabled={o.payment_status === "MANUAL_APPROVED"}
-                                onClick={() => void changePaymentStatus(o, "MANUAL_APPROVED")}
+                                title={`Mark payment paid for ${o.order_id}`}
+                                aria-label={`Mark payment paid for ${o.order_id}`}
+                                disabled={o.payment_status === "PAID"}
+                                onClick={() => void changePaymentStatus(o, "PAID")}
                               >
                                 <ShieldCheck className="size-4 text-success" />
                               </Button>
@@ -1294,10 +1281,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 size="icon"
                                 variant="ghost"
                                 className="size-8"
-                                title={`Flag ${o.order_id} payment as suspicious`}
-                                aria-label={`Flag ${o.order_id} payment as suspicious`}
-                                disabled={o.payment_status === "SUSPICIOUS"}
-                                onClick={() => void changePaymentStatus(o, "SUSPICIOUS")}
+                                title={`Mark ${o.order_id} payment refunded`}
+                                aria-label={`Mark ${o.order_id} payment refunded`}
+                                disabled={o.payment_status === "REFUNDED"}
+                                onClick={() => void changePaymentStatus(o, "REFUNDED")}
                               >
                                 <ShieldAlert className="size-4 text-destructive" />
                               </Button>
@@ -1718,11 +1705,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <a href={telLink(detail.contact_number)!}>
                   <Phone className="size-4" /> Call {detail.contact_number}
                 </a>
-              </Button>
-            ) : null}
-            {detail?.payment_screenshot_path ? (
-              <Button variant="outline" disabled={busyPhoto} onClick={() => void openScreenshot(detail)}>
-                <Receipt className="size-4" /> Payment screenshot
               </Button>
             ) : null}
             {detail && waLink(detail.contact_number) ? (
