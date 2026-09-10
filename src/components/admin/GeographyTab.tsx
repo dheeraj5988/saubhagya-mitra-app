@@ -517,28 +517,142 @@ export function GeographyTab({
         </Column>
       </div>
 
-      <section className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
-        <div>
-          <h3 className="text-sm font-bold text-navy">Bulk CSV import</h3>
-          <p className="text-xs text-muted-foreground">
-            One row per ward: District, Panchayat Samiti, Gram Panchayat, Ward, Voter count. Re-importing
-            a corrected sheet updates voter counts instead of duplicating rows.
-          </p>
+      <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-navy">Import geography &amp; voter counts (CSV)</h3>
+            <p className="text-xs text-muted-foreground">
+              One row per ward. Columns: {GEO_CSV_HEADER}. UTF-8, Hindi names supported. Re-importing a
+              corrected sheet updates voter counts instead of duplicating rows.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="shrink-0" onClick={downloadTemplate}>
+            <Download className="size-4" /> Download CSV template
+          </Button>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="geo_csv">Paste rows</Label>
-          <Textarea
-            id="geo_csv"
-            rows={6}
-            value={csv}
-            onChange={(e) => setCsv(e.target.value)}
-            placeholder={"Jaipur, Amber, Kunda, 1, 842\nJaipur, Amber, Kunda, 2, 917"}
+
+        <div className="rounded-lg border-2 border-dashed border-border p-4">
+          <input
+            ref={fileRef}
+            id="geo_csv_file"
+            type="file"
+            accept=".csv,text/csv"
+            className="sr-only"
+            onChange={(e) => void onPickFile(e.target.files?.[0] ?? null)}
           />
+          <div className="flex items-center gap-3">
+            <Button onClick={() => fileRef.current?.click()} disabled={importing}>
+              <FileSpreadsheet className="size-4" /> Upload CSV
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {fileName ?? "No file selected"}
+              {parsed ? ` — ${parsed.rows.length.toLocaleString("en-IN")} valid row(s), ${parsed.errors.length} rejected` : ""}
+            </span>
+          </div>
+
+          {parsed ? (
+            <div className="mt-3 space-y-3">
+              {parsed.rows.length ? (
+                <div className="overflow-hidden rounded-md border border-border">
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/60 text-left">
+                      <tr>
+                        <th className="px-2 py-1">District</th>
+                        <th className="px-2 py-1">Panchayat Samiti</th>
+                        <th className="px-2 py-1">Gram Panchayat</th>
+                        <th className="px-2 py-1">Ward</th>
+                        <th className="px-2 py-1 text-right">Voters</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {parsed.rows.slice(0, 5).map((r, i) => (
+                        <tr key={i} className="border-t border-border">
+                          <td className="px-2 py-1">{r.district}</td>
+                          <td className="px-2 py-1">{r.panchayat_samiti}</td>
+                          <td className="px-2 py-1">{r.gram_panchayat}</td>
+                          <td className="px-2 py-1">{r.ward_number}</td>
+                          <td className="px-2 py-1 text-right">{r.voter_count.toLocaleString("en-IN")}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+
+              {parsed.errors.length ? (
+                <div className="max-h-40 overflow-y-auto rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
+                  <p className="font-semibold">{parsed.errors.length} row(s) rejected:</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {parsed.errors.slice(0, 50).map((e, i) => (
+                      <li key={i}>Line {e.line}: {e.message}</li>
+                    ))}
+                  </ul>
+                  {parsed.errors.length > 50 ? <p className="mt-1">…and more.</p> : null}
+                </div>
+              ) : null}
+
+              <Button
+                disabled={importing || !parsed.rows.length}
+                onClick={() =>
+                  void importRows(parsed, () => {
+                    setParsed(null);
+                    setFileName(null);
+                    if (fileRef.current) fileRef.current.value = "";
+                  })
+                }
+              >
+                {importing ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                {importing && progress
+                  ? ` Importing ${progress.done.toLocaleString("en-IN")} / ${progress.total.toLocaleString("en-IN")}…`
+                  : ` Import ${parsed.rows.length.toLocaleString("en-IN")} row(s)`}
+              </Button>
+            </div>
+          ) : null}
         </div>
-        <Button disabled={importing} onClick={() => void runImport()}>
-          {importing ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}{" "}
-          Import rows
-        </Button>
+
+        {summary ? (
+          <div className="grid grid-cols-7 gap-2 rounded-lg border border-success/40 bg-success/5 p-3 text-center text-xs">
+            {(
+              [
+                ["Districts", summary.districts],
+                ["Samitis", summary.samitis],
+                ["Gram Panchayats", summary.gram_panchayats],
+                ["Wards", summary.wards],
+                ["Inserted", summary.inserted],
+                ["Updated", summary.updated],
+                ["Rejected", summary.rejected],
+              ] as const
+            ).map(([label, value]) => (
+              <div key={label}>
+                <p className="text-base font-bold text-navy">{value.toLocaleString("en-IN")}</p>
+                <p className="text-muted-foreground">{label}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <details className="rounded-lg border border-border p-3">
+          <summary className="cursor-pointer text-xs font-semibold text-muted-foreground">
+            Paste rows instead (optional)
+          </summary>
+          <div className="mt-3 space-y-2">
+            <Label htmlFor="geo_csv">Paste rows</Label>
+            <Textarea
+              id="geo_csv"
+              rows={6}
+              value={csv}
+              onChange={(e) => setCsv(e.target.value)}
+              placeholder={"Jaipur, Amber, Kunda, 1, 842\nJaipur, Amber, Kunda, 2, 917"}
+            />
+            <Button
+              variant="outline"
+              disabled={importing || !csv.trim()}
+              onClick={() => void importRows(parseGeoCsv(csv), () => setCsv(""))}
+            >
+              <Upload className="size-4" /> Import pasted rows
+            </Button>
+          </div>
+        </details>
       </section>
     </div>
   );
