@@ -179,7 +179,11 @@ export const DICTIONARY = {
   "pay.whatsapp": { hi: "WhatsApp पर विवरण भेजें", en: "Send details on WhatsApp" },
   "pay.call": { hi: "कॉल करें", en: "Call us" },
 
-  "footer.tagline2": { hi: "संपर्क", en: "Contact" },
+  "footer.tagline": {
+    hi: "राजस्थान पंचायत चुनाव हेतु विश्वसनीय प्रिंटिंग एवं डिज़ाइन सेवा",
+    en: "Reliable printing and design service for Rajasthan panchayat elections",
+  },
+  "footer.contact": { hi: "संपर्क", en: "Contact" },
   "footer.legal": { hi: "नीतियाँ", en: "Policies" },
   "footer.whatsapp": { hi: "WhatsApp पर संपर्क करें", en: "Contact on WhatsApp" },
   "footer.rights": { hi: "सर्वाधिकार सुरक्षित.", en: "All rights reserved." },
