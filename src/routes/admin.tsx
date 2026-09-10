@@ -295,7 +295,7 @@ function Kpi({
   tone,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   tone: "navy" | "orange" | "blue" | "emerald" | "purple";
 }) {
   const tones: Record<string, string> = {
@@ -695,7 +695,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           "Payment Txn",
           "Payment Amount",
           "Payment Updated",
-          "Screenshot Uploaded",
+          "Design",
+          "Voter Count",
+          "Rate Per Voter",
+          "Amount",
         ],
         ...rows.map((o) => [
           o.order_id,
@@ -720,7 +723,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           o.payment_txn_id,
           o.payment_amount,
           o.payment_updated_at ? formatDateTime(o.payment_updated_at) : "",
-          o.payment_screenshot_path ? "Yes" : "No",
+          o.design_code,
+          o.voter_count,
+          o.rate_per_voter,
+          o.amount,
         ]),
       ]);
 
@@ -815,12 +821,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       </header>
 
       <main className="mx-auto max-w-[1600px] space-y-6 px-6 py-6">
-        <section className="grid grid-cols-5 gap-4">
+        <section className="grid grid-cols-6 gap-4">
           <Kpi label="Total Orders" value={kpis.total} tone="navy" />
-          <Kpi label="Pending Orders" value={kpis.pending} tone="orange" />
-          <Kpi label="In-Process Orders" value={kpis.process} tone="blue" />
-          <Kpi label="Completed Orders" value={kpis.completed} tone="emerald" />
-          <Kpi label="Total Captured IPs / Leads" value={kpis.leads} tone="purple" />
+          <Kpi label="Paid Orders" value={kpis.paid} tone="emerald" />
+          <Kpi label="Pending Payments" value={kpis.pending} tone="orange" />
+          <Kpi label="Revenue" value={formatInr(kpis.revenue)} tone="emerald" />
+          <Kpi label="Sample Requests" value={kpis.samples} tone="blue" />
+          <Kpi label="Captured IPs / Leads" value={kpis.leads} tone="purple" />
         </section>
 
         <Tabs defaultValue="orders" className="space-y-4">
