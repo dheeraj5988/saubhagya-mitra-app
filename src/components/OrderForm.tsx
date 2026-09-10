@@ -337,7 +337,7 @@ export function OrderForm() {
     if (!districtId) next.district = t("err.required.district");
     if (!samitiId) next.samiti = t("err.required.samiti");
     if (!gpId) next.gp = t("err.required.gp");
-    if (!wardId) next.ward = t("err.required.ward");
+    if (!wardIds.length) next.ward = t("err.required.ward");
     if (!PHONE_RE.test(contact.trim())) next.contact_number = t("err.phone");
     if (!design) next.design = t("err.required.design");
     setErrors(next);
@@ -351,7 +351,7 @@ export function OrderForm() {
       candidate_name_english: nameEn.trim(),
       gram_panchayat: label(selectedGp),
       panchayat_samiti: label(selectedSamiti),
-      ward_number: selectedWard?.ward_number ?? "",
+      ward_number: wardNumbersLabel,
       district: label(selectedDistrict),
       election_symbol: symbol ? `${symbol.party_name} — ${symbol.symbol_name}` : "",
       slogan: slogan.trim(),
@@ -391,8 +391,9 @@ export function OrderForm() {
           district: label(selectedDistrict),
           panchayat_samiti: label(selectedSamiti),
           gram_panchayat: label(selectedGp),
-          ward_number: selectedWard?.ward_number ?? "",
-          ward_id: wardId,
+          ward_number: wardNumbersLabel,
+          ward_id: wardIds[0] ?? null,
+          ward_ids: wardIds,
           design_code: design as DesignCode,
           election_symbol: symbol ? `${symbol.party_name} — ${symbol.symbol_name}` : "",
           election_symbol_id: symbol?.id ?? null,
@@ -558,7 +559,7 @@ export function OrderForm() {
               <Input
                 id="ward_auto"
                 readOnly
-                value={selectedWard?.ward_number ?? ""}
+                value={wardNumbersLabel}
                 placeholder="—"
                 className="h-12 bg-muted/50 text-base"
               />
