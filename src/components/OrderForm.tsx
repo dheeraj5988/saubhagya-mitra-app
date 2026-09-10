@@ -60,6 +60,7 @@ import {
 import type { PublicSymbol } from "@/lib/catalog.schema";
 import { buildWhatsAppUrl } from "@/lib/campaign";
 import { DESIGN_CODES, computeAmount, formatInr, type DesignCode } from "@/lib/pricing";
+import { compareWardNumbers } from "@/lib/csv";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -436,7 +437,7 @@ export function OrderForm() {
                   setDistrictId(value);
                   setSamitiId(null);
                   setGpId(null);
-                  setWardId(null);
+                  setWardIds([]);
                   setErrors((p) => ({ ...p, district: undefined }));
                 }}
               >
@@ -460,7 +461,7 @@ export function OrderForm() {
                 onValueChange={(value) => {
                   setSamitiId(value);
                   setGpId(null);
-                  setWardId(null);
+                  setWardIds([]);
                   setErrors((p) => ({ ...p, samiti: undefined }));
                 }}
               >
@@ -483,7 +484,7 @@ export function OrderForm() {
                 disabled={!samitiId}
                 onValueChange={(value) => {
                   setGpId(value);
-                  setWardId(null);
+                  setWardIds([]);
                   setErrors((p) => ({ ...p, gp: undefined }));
                 }}
               >
