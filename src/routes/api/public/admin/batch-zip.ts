@@ -49,18 +49,11 @@ export const Route = createFileRoute("/api/public/admin/batch-zip")({
         for (const row of batch.rows) {
           const orderId = safeName(String(row["order_id"] ?? "order"), "order");
           const photo = row["photo_path"] as string | null;
-          const shot = row["payment_screenshot_path"] as string | null;
           if (photo) {
             const ext = photo.split(".").pop() ?? "jpg";
             await pull("candidate-photos", photo, `${orderId}/candidate-photo.${safeName(ext)}`);
           } else {
             missing.push(`${orderId}/candidate-photo`);
-          }
-          if (shot) {
-            const ext = shot.split(".").pop() ?? "jpg";
-            await pull("payment-assets", shot, `${orderId}/payment-screenshot.${safeName(ext)}`);
-          } else {
-            missing.push(`${orderId}/payment-screenshot`);
           }
         }
 

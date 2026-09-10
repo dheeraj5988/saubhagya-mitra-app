@@ -39,13 +39,19 @@ export type BatchOrder = {
     panchayat_samiti: string;
     gram_panchayat: string;
     ward_number: string;
+    voter_count: number | null;
+  };
+  product: {
+    design_code: string | null;
+    voter_count: number | null;
+    rate_per_voter: number | null;
+    amount: number | null;
   };
   payment: {
     amount: number | null;
     method: string | null;
     status: string;
     transaction_id: string | null;
-    screenshot_url: string | null;
   };
   metadata: {
     ip_address: string | null;
