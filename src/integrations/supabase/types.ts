@@ -277,7 +277,9 @@ export type Database = {
           user_agent: string | null
           voter_count: number | null
           ward_id: string | null
+          ward_ids: string[]
           ward_number: string
+          ward_snapshots: Json
         }
         Insert: {
           amount?: number | null
@@ -313,7 +315,9 @@ export type Database = {
           user_agent?: string | null
           voter_count?: number | null
           ward_id?: string | null
+          ward_ids?: string[]
           ward_number: string
+          ward_snapshots?: Json
         }
         Update: {
           amount?: number | null
@@ -349,7 +353,9 @@ export type Database = {
           user_agent?: string | null
           voter_count?: number | null
           ward_id?: string | null
+          ward_ids?: string[]
           ward_number?: string
+          ward_snapshots?: Json
         }
         Relationships: [
           {
