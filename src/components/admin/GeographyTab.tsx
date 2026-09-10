@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
+import { Download, FileSpreadsheet, Loader2, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   adminDeleteGeo,
+  adminGeoStats,
   adminGeography,
   adminImportGeography,
   adminSaveDistrict,
@@ -18,36 +19,12 @@ import {
   adminSaveWard,
 } from "@/lib/admin-geo.functions";
 import type { GeoRow, GeoWardRow } from "@/lib/admin-geo.schema";
+import { GEO_CSV_HEADER, parseGeoCsv, type GeoCsvResult } from "@/lib/csv";
 
 type Level = "district" | "samiti" | "gram_panchayat" | "ward";
 
-function parseCsv(text: string) {
-  const rows: {
-    district: string;
-    panchayat_samiti: string;
-    gram_panchayat: string;
-    ward_number: string;
-    voter_count: number;
-  }[] = [];
-  for (const raw of text.split(/\r?\n/)) {
-    const line = raw.trim();
-    if (!line) continue;
-    const cells = line.split(",").map((c) => c.trim());
-    if (cells.length < 5) continue;
-    const [district, samiti, gp, ward, voters] = cells;
-    if (!district || !samiti || !gp || !ward) continue;
-    if (/^district$/i.test(district)) continue; // header row
-    const count = Number(voters);
-    rows.push({
-      district,
-      panchayat_samiti: samiti,
-      gram_panchayat: gp,
-      ward_number: ward,
-      voter_count: Number.isFinite(count) && count >= 0 ? Math.round(count) : 0,
-    });
-  }
-  return rows;
-}
+const CHUNK_SIZE = 500;
+const MAX_ROWS = 20_000;
 
 export function GeographyTab({
   token,
