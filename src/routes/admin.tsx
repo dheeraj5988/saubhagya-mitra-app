@@ -333,7 +333,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const deleteOrder = useServerFn(adminDeleteOrder);
   const photoUrl = useServerFn(adminPhotoUrl);
   const updatePaymentStatus = useServerFn(adminUpdatePaymentStatus);
-  const screenshotUrl = useServerFn(adminScreenshotUrl);
+  
   const deleteLead = useServerFn(adminDeleteLead);
   const clearLeads = useServerFn(adminClearLeads);
   const batchExport = useServerFn(adminBatchExport);
@@ -499,20 +499,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     }
   }
 
-  async function openScreenshot(order: AdminOrder, download = false) {
-    if (!order.payment_screenshot_path) return;
-    setBusyPhoto(true);
-    try {
-      const { url } = await screenshotUrl({
-        data: { token, path: order.payment_screenshot_path, download },
-      });
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      handleError(err, "Could not open the payment screenshot.");
-    } finally {
-      setBusyPhoto(false);
-    }
-  }
 
   async function confirmLeadDelete() {
     const lead = pendingLeadDelete;
