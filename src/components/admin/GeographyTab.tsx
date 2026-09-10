@@ -58,6 +58,27 @@ export function GeographyTab({
   const [newVoters, setNewVoters] = useState("");
   const [csv, setCsv] = useState("");
   const [importing, setImporting] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [parsed, setParsed] = useState<GeoCsvResult | null>(null);
+  const [summary, setSummary] = useState<{
+    districts: number;
+    samitis: number;
+    gram_panchayats: number;
+    wards: number;
+    inserted: number;
+    updated: number;
+    rejected: number;
+  } | null>(null);
+  const [stats, setStats] = useState<{
+    districts: number;
+    samitis: number;
+    gram_panchayats: number;
+    wards: number;
+    last_import: string | null;
+  } | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const fetchStats = useServerFn(adminGeoStats);
 
   const load = useCallback(async () => {
     try {
