@@ -5,6 +5,7 @@ import {
   geoDeleteSchema,
   geoImportSchema,
   geoListSchema,
+  geoStatsSchema,
   gramPanchayatSaveSchema,
   samitiSaveSchema,
   wardSaveSchema,
