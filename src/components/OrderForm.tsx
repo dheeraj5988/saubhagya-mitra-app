@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -6,14 +6,13 @@ import {
   Check,
   CheckCircle2,
   ChevronsUpDown,
+  Gift,
   ImageUp,
   Loader2,
   MapPin,
   MessageCircle,
   Phone,
-  QrCode,
   Trash2,
-  Upload,
   User,
   Vote,
 } from "lucide-react";
@@ -23,6 +22,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Command,
   CommandEmpty,
@@ -40,15 +46,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { captureLeadPhone, createOrder, recordVisit } from "@/lib/orders.functions";
 import {
-  attachPaymentScreenshot,
-  getPaymentPanel,
-  listActiveSymbols,
-  startPaypurPayment,
-} from "@/lib/catalog.functions";
+  captureLeadPhone,
+  createOrder,
+  createSampleRequest,
+  recordVisit,
+} from "@/lib/orders.functions";
+import { listActiveSymbols } from "@/lib/catalog.functions";
+import {
+  getPublicPricing,
+  listDistricts,
+  listGramPanchayats,
+  listSamitis,
+  listWards,
+} from "@/lib/geo.functions";
 import type { PublicSymbol } from "@/lib/catalog.schema";
 import { WHATSAPP_NUMBER, buildWhatsAppUrl } from "@/lib/campaign";
+import { DESIGN_CODES, computeAmount, formatInr, type DesignCode } from "@/lib/pricing";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -75,8 +89,9 @@ const EMPTY: FormState = {
 };
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-const SCREENSHOT_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const PHONE_RE = /^[6-9]\d{9}$/;
+
+type ErrorKey = keyof FormState | "photo" | "symbol" | "design";
 
 function Field({
   id,
@@ -112,32 +127,46 @@ function Field({
 }
 
 export function OrderForm() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const visit = useServerFn(recordVisit);
   const capture = useServerFn(captureLeadPhone);
   const submitOrder = useServerFn(createOrder);
+  const submitSample = useServerFn(createSampleRequest);
   const fetchSymbols = useServerFn(listActiveSymbols);
-  const fetchPanel = useServerFn(getPaymentPanel);
-  const attachScreenshot = useServerFn(attachPaymentScreenshot);
-  const startPaypur = useServerFn(startPaypurPayment);
+  const fetchDistricts = useServerFn(listDistricts);
+  const fetchSamitis = useServerFn(listSamitis);
+  const fetchGps = useServerFn(listGramPanchayats);
+  const fetchWards = useServerFn(listWards);
+  const fetchPricing = useServerFn(getPublicPricing);
 
   const [form, setForm] = useState<FormState>(EMPTY);
   const [symbol, setSymbol] = useState<PublicSymbol | null>(null);
   const [symbolOpen, setSymbolOpen] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState | "photo" | "symbol", string | undefined>>>({});
+  const [design, setDesign] = useState<DesignCode | "">("");
+  const [errors, setErrors] = useState<Partial<Record<ErrorKey, string | undefined>>>({});
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState<{ orderId: string } | null>(null);
-  const [screenshotUploaded, setScreenshotUploaded] = useState(false);
-  const [uploadingShot, setUploadingShot] = useState(false);
-  const [paypurBusy, setPaypurBusy] = useState(false);
+  const [success, setSuccess] = useState<{
+    orderId: string;
+    amount: number | null;
+    voterCount: number | null;
+  } | null>(null);
+
+  // Geography selection ids, only set when master data is available.
+  const [districtId, setDistrictId] = useState<string | null>(null);
+  const [samitiId, setSamitiId] = useState<string | null>(null);
+  const [gpId, setGpId] = useState<string | null>(null);
+  const [wardId, setWardId] = useState<string | null>(null);
+
+  const [sampleOpen, setSampleOpen] = useState(false);
+  const [sampleName, setSampleName] = useState("");
+  const [sampleBusy, setSampleBusy] = useState(false);
 
   const ipRef = useRef<string | null>(null);
   const leadIdRef = useRef<string | null>(null);
   const capturedPhoneRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const shotInputRef = useRef<HTMLInputElement | null>(null);
   const submittedRef = useRef<FormState | null>(null);
 
   // Catalog is fetched live, so admin activations/reordering show up without a rebuild.
@@ -148,12 +177,46 @@ export function OrderForm() {
   });
   const symbols = symbolsQuery.data?.symbols ?? [];
 
-  const panelQuery = useQuery({
-    queryKey: ["public-payment-panel"],
-    queryFn: () => fetchPanel(),
-    enabled: Boolean(success),
+  const pricingQuery = useQuery({
+    queryKey: ["public-pricing"],
+    queryFn: () => fetchPricing(),
+    staleTime: 60_000,
   });
-  const panel = panelQuery.data;
+  const rate = pricingQuery.data?.rate_per_voter ?? null;
+  const sampleVoters = pricingQuery.data?.free_sample_voter_count ?? 24;
+
+  const districtsQuery = useQuery({
+    queryKey: ["geo-districts"],
+    queryFn: () => fetchDistricts(),
+    staleTime: 300_000,
+  });
+  const districts = districtsQuery.data?.options ?? [];
+  // Geography master data is optional: until it is loaded the form keeps
+  // accepting typed names so ordering is never blocked.
+  const useMasterGeo = districts.length > 0;
+
+  const samitisQuery = useQuery({
+    queryKey: ["geo-samitis", districtId],
+    queryFn: () => fetchSamitis({ data: { district_id: districtId! } }),
+    enabled: Boolean(districtId),
+  });
+  const gpsQuery = useQuery({
+    queryKey: ["geo-gps", samitiId],
+    queryFn: () => fetchGps({ data: { samiti_id: samitiId! } }),
+    enabled: Boolean(samitiId),
+  });
+  const wardsQuery = useQuery({
+    queryKey: ["geo-wards", gpId],
+    queryFn: () => fetchWards({ data: { gram_panchayat_id: gpId! } }),
+    enabled: Boolean(gpId),
+  });
+
+  const selectedWard = useMemo(
+    () => (wardsQuery.data?.options ?? []).find((w) => w.id === wardId) ?? null,
+    [wardsQuery.data, wardId],
+  );
+  const estimatedAmount =
+    selectedWard && rate != null ? computeAmount(selectedWard.voter_count, rate) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -227,7 +290,7 @@ export function OrderForm() {
   }
 
   function validate() {
-    const next: Partial<Record<keyof FormState | "photo" | "symbol", string | undefined>> = {};
+    const next: Partial<Record<ErrorKey, string | undefined>> = {};
     if (!form.candidate_name_hindi.trim()) next.candidate_name_hindi = t("err.required.name_hi");
     if (!form.candidate_name_english.trim()) next.candidate_name_english = t("err.required.name_en");
     if (!PHONE_RE.test(form.contact_number.trim())) next.contact_number = t("err.phone");
@@ -236,6 +299,7 @@ export function OrderForm() {
     if (!form.gram_panchayat.trim()) next.gram_panchayat = t("err.required.gp");
     if (!form.ward_number.trim()) next.ward_number = t("err.required.ward");
     if (!symbol) next.symbol = t("err.required.symbol");
+    if (!design) next.design = t("err.required.design");
     if (!photo) next.photo = t("err.required.photo");
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -254,8 +318,10 @@ export function OrderForm() {
       election_symbol: symbol ? `${symbol.party_name} — ${symbol.symbol_name}` : "",
       slogan: source.slogan?.trim() ?? "",
       contact_number: source.contact_number.trim(),
-      payment_screenshot_sent: screenshotUploaded,
-      payment_method: "MANUAL_QR",
+      design_code: design || null,
+      voter_count: success?.voterCount ?? null,
+      amount: success?.amount ?? null,
+      payment_status: "PENDING",
     });
   }
 
@@ -279,13 +345,15 @@ export function OrderForm() {
       if (uploadError) throw new Error(uploadError.message);
 
       const chosen = symbol!;
-      const { order_id } = await submitOrder({
+      const result = await submitOrder({
         data: {
           ...form,
           candidate_name_hindi: form.candidate_name_hindi.trim(),
           candidate_name_english: form.candidate_name_english.trim(),
           contact_number: form.contact_number.trim(),
           slogan: form.slogan.trim() || null,
+          ward_id: wardId,
+          design_code: design as DesignCode,
           election_symbol: `${chosen.party_name} — ${chosen.symbol_name}`,
           election_symbol_id: chosen.id,
           party_name_snapshot: chosen.party_name,
@@ -298,9 +366,12 @@ export function OrderForm() {
       });
 
       submittedRef.current = { ...form };
-      setScreenshotUploaded(false);
-      setSuccess({ orderId: order_id });
-      toast.success(`${t("success.toast")} — ${order_id}`);
+      setSuccess({
+        orderId: result.order_id,
+        amount: result.amount,
+        voterCount: result.voter_count,
+      });
+      toast.success(`${t("success.toast")} — ${result.order_id}`);
     } catch (error) {
       console.error(error);
       toast.error(t("err.submit"));
@@ -309,46 +380,35 @@ export function OrderForm() {
     }
   }
 
-  async function onPickScreenshot(file: File | null) {
-    if (!file || !success) return;
-    if (!SCREENSHOT_TYPES.includes(file.type) || file.size > MAX_PHOTO_BYTES) {
-      toast.error(t("pay.upload.type"));
+  async function onSampleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    const phone = form.contact_number.trim();
+    if (!sampleName.trim() || !PHONE_RE.test(phone)) {
+      toast.error(t("err.phone"));
       return;
     }
-    setUploadingShot(true);
+    setSampleBusy(true);
     try {
-      const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-      const path = `screenshots/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("payment-assets")
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (error) throw new Error(error.message);
-      await attachScreenshot({ data: { order_id: success.orderId, path } });
-      setScreenshotUploaded(true);
-      toast.success(t("pay.uploaded"));
+      await submitSample({
+        data: {
+          candidate_name: sampleName.trim(),
+          contact_number: phone,
+          district: form.district.trim() || null,
+          panchayat_samiti: form.panchayat_samiti.trim() || null,
+          gram_panchayat: form.gram_panchayat.trim() || null,
+          ward_number: form.ward_number.trim() || null,
+          ward_id: wardId,
+          ip_address: ipRef.current,
+        },
+      });
+      toast.success(t("sample.success"));
+      setSampleOpen(false);
+      setSampleName("");
     } catch (error) {
       console.error(error);
-      toast.error(t("pay.upload.error"));
+      toast.error(t("sample.error"));
     } finally {
-      setUploadingShot(false);
-      if (shotInputRef.current) shotInputRef.current.value = "";
-    }
-  }
-
-  async function onPaypur() {
-    if (!success) return;
-    setPaypurBusy(true);
-    try {
-      const res = await startPaypur({ data: { order_id: success.orderId } });
-      if (res.ok && res.pay_url) {
-        window.location.href = res.pay_url;
-        return;
-      }
-      toast.error(t("pay.paypur.error"));
-    } catch {
-      toast.error(t("pay.paypur.error"));
-    } finally {
-      setPaypurBusy(false);
+      setSampleBusy(false);
     }
   }
 
@@ -386,7 +446,7 @@ export function OrderForm() {
                 inputMode="numeric"
                 autoComplete="tel"
                 maxLength={10}
-                placeholder="98285 55751"
+                placeholder="99833 33119"
                 onChange={(e) => set("contact_number", e.target.value.replace(/\D/g, "").slice(0, 10))}
               />
             </Field>
@@ -479,20 +539,162 @@ export function OrderForm() {
             </span>
             {t("form.section.area")}
           </h3>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field id="district" label={t("form.district")} required error={errors.district}>
-              <Input {...inputProps("district")} placeholder={t("form.district.ph")} autoComplete="address-level2" />
-            </Field>
-            <Field id="panchayat_samiti" label={t("form.samiti")} required error={errors.panchayat_samiti}>
-              <Input {...inputProps("panchayat_samiti")} placeholder={t("form.samiti.ph")} autoComplete="address-level3" />
-            </Field>
-            <Field id="gram_panchayat" label={t("form.gp")} required error={errors.gram_panchayat}>
-              <Input {...inputProps("gram_panchayat")} placeholder={t("form.gp.ph")} autoComplete="address-level3" />
-            </Field>
-            <Field id="ward_number" label={t("form.ward")} required error={errors.ward_number}>
-              <Input {...inputProps("ward_number")} inputMode="numeric" placeholder={t("form.ward.ph")} autoComplete="off" />
-            </Field>
-          </div>
+
+          {useMasterGeo ? (
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field id="district" label={t("form.district")} required error={errors.district}>
+                <Select
+                  value={districtId ?? ""}
+                  onValueChange={(value) => {
+                    const row = districts.find((d) => d.id === value);
+                    setDistrictId(value);
+                    setSamitiId(null);
+                    setGpId(null);
+                    setWardId(null);
+                    setForm((prev) => ({
+                      ...prev,
+                      district: row?.name_hindi || row?.name || "",
+                      panchayat_samiti: "",
+                      gram_panchayat: "",
+                      ward_number: "",
+                    }));
+                    setErrors((p) => ({ ...p, district: undefined }));
+                  }}
+                >
+                  <SelectTrigger id="district" className="h-12 text-base">
+                    <SelectValue placeholder={t("form.district.ph")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districts.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.name_hindi || d.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field id="panchayat_samiti" label={t("form.samiti")} required error={errors.panchayat_samiti}>
+                <Select
+                  value={samitiId ?? ""}
+                  disabled={!districtId}
+                  onValueChange={(value) => {
+                    const row = (samitisQuery.data?.options ?? []).find((s) => s.id === value);
+                    setSamitiId(value);
+                    setGpId(null);
+                    setWardId(null);
+                    setForm((prev) => ({
+                      ...prev,
+                      panchayat_samiti: row?.name_hindi || row?.name || "",
+                      gram_panchayat: "",
+                      ward_number: "",
+                    }));
+                    setErrors((p) => ({ ...p, panchayat_samiti: undefined }));
+                  }}
+                >
+                  <SelectTrigger id="panchayat_samiti" className="h-12 text-base">
+                    <SelectValue placeholder={t("form.samiti.ph")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(samitisQuery.data?.options ?? []).map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name_hindi || s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field id="gram_panchayat" label={t("form.gp")} required error={errors.gram_panchayat}>
+                <Select
+                  value={gpId ?? ""}
+                  disabled={!samitiId}
+                  onValueChange={(value) => {
+                    const row = (gpsQuery.data?.options ?? []).find((g) => g.id === value);
+                    setGpId(value);
+                    setWardId(null);
+                    setForm((prev) => ({
+                      ...prev,
+                      gram_panchayat: row?.name_hindi || row?.name || "",
+                      ward_number: "",
+                    }));
+                    setErrors((p) => ({ ...p, gram_panchayat: undefined }));
+                  }}
+                >
+                  <SelectTrigger id="gram_panchayat" className="h-12 text-base">
+                    <SelectValue placeholder={t("form.gp.ph")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(gpsQuery.data?.options ?? []).map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.name_hindi || g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field id="ward_number" label={t("form.ward")} required error={errors.ward_number}>
+                <Select
+                  value={wardId ?? ""}
+                  disabled={!gpId}
+                  onValueChange={(value) => {
+                    const row = (wardsQuery.data?.options ?? []).find((w) => w.id === value);
+                    setWardId(value);
+                    setForm((prev) => ({ ...prev, ward_number: row?.ward_number ?? "" }));
+                    setErrors((p) => ({ ...p, ward_number: undefined }));
+                  }}
+                >
+                  <SelectTrigger id="ward_number" className="h-12 text-base">
+                    <SelectValue placeholder={t("form.ward.ph")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(wardsQuery.data?.options ?? []).map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.ward_number} — {w.voter_count.toLocaleString("en-IN")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field id="district" label={t("form.district")} required error={errors.district}>
+                <Input {...inputProps("district")} placeholder={t("form.district.ph")} autoComplete="address-level2" />
+              </Field>
+              <Field id="panchayat_samiti" label={t("form.samiti")} required error={errors.panchayat_samiti}>
+                <Input {...inputProps("panchayat_samiti")} placeholder={t("form.samiti.ph")} autoComplete="address-level3" />
+              </Field>
+              <Field id="gram_panchayat" label={t("form.gp")} required error={errors.gram_panchayat}>
+                <Input {...inputProps("gram_panchayat")} placeholder={t("form.gp.ph")} autoComplete="address-level3" />
+              </Field>
+              <Field id="ward_number" label={t("form.ward")} required error={errors.ward_number}>
+                <Input {...inputProps("ward_number")} inputMode="numeric" placeholder={t("form.ward.ph")} autoComplete="off" />
+              </Field>
+            </div>
+          )}
+
+          {selectedWard ? (
+            <dl className="grid gap-2 rounded-xl border border-border bg-muted/40 p-4 text-sm sm:grid-cols-3">
+              <div>
+                <dt className="text-muted-foreground">{t("form.voters")}</dt>
+                <dd className="font-bold text-navy">
+                  {selectedWard.voter_count.toLocaleString("en-IN")}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">{t("form.rate")}</dt>
+                <dd className="font-bold text-navy">{rate == null ? "—" : formatInr(rate)}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">{t("form.amount")}</dt>
+                <dd className="font-bold text-saffron-deep">{formatInr(estimatedAmount)}</dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="text-xs text-muted-foreground">{t("form.amount.pending")}</p>
+          )}
         </section>
 
         <section className="space-y-5">
@@ -502,6 +704,27 @@ export function OrderForm() {
             </span>
             {t("form.section.slogan")}
           </h3>
+
+          <Field id="design_code" label={t("form.design")} hint={t("form.design.hint")} required error={errors.design}>
+            <Select
+              value={design}
+              onValueChange={(value) => {
+                setDesign(value as DesignCode);
+                setErrors((p) => ({ ...p, design: undefined }));
+              }}
+            >
+              <SelectTrigger id="design_code" className="h-12 text-base">
+                <SelectValue placeholder={t("form.design.hint")} />
+              </SelectTrigger>
+              <SelectContent>
+                {DESIGN_CODES.map((code, index) => (
+                  <SelectItem key={code} value={code}>
+                    {`${code} — Design ${index + 1}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
 
           <Field id="slogan" label={t("form.slogan")} hint={t("form.slogan.hint")}>
             <Textarea
@@ -563,6 +786,18 @@ export function OrderForm() {
           </Field>
         </section>
 
+        <div className="flex flex-col gap-3 rounded-xl border border-saffron/30 bg-saffron/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="flex items-center gap-2 text-sm font-bold text-navy">
+              <Gift className="size-4 text-saffron-deep" /> {t("sample.heading")}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("sample.body")}</p>
+          </div>
+          <Button type="button" variant="outline" onClick={() => setSampleOpen(true)}>
+            {t("sample.cta")}
+          </Button>
+        </div>
+
         <div className="space-y-3 border-t border-border pt-6">
           <Button type="submit" variant="hero" size="xl" className="w-full" disabled={submitting}>
             {submitting ? (
@@ -579,6 +814,44 @@ export function OrderForm() {
         </div>
       </form>
 
+      <Dialog open={sampleOpen} onOpenChange={setSampleOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("sample.heading")}</DialogTitle>
+            <DialogDescription>{t("sample.body")}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={onSampleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="sample_name">{t("sample.name")}</Label>
+              <Input
+                id="sample_name"
+                value={sampleName}
+                onChange={(e) => setSampleName(e.target.value)}
+                className="h-12 text-base"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sample_phone">{t("form.phone")}</Label>
+              <Input
+                id="sample_phone"
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
+                value={form.contact_number}
+                onChange={(e) => set("contact_number", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                className="h-12 text-base"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {sampleVoters} {t("form.voters")}
+            </p>
+            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={sampleBusy}>
+              {sampleBusy ? <Loader2 className="size-4 animate-spin" /> : null} {t("sample.submit")}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={Boolean(success)} onOpenChange={(open) => !open && setSuccess(null)}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
@@ -594,96 +867,26 @@ export function OrderForm() {
 
           <div className="space-y-4">
             <div className="rounded-2xl border border-border bg-muted/40 p-4">
-              <h4 className="flex items-center gap-2 text-sm font-bold text-navy">
-                <QrCode className="size-4 text-saffron-deep" /> {t("pay.heading")}
-              </h4>
-
-              {panelQuery.isLoading ? (
-                <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" />
-                </p>
-              ) : panel?.qr_url ? (
-                <div className="mt-3 space-y-3">
-                  <img
-                    src={panel.qr_url}
-                    alt="Payment QR"
-                    className="mx-auto size-52 rounded-xl border border-border bg-card object-contain p-2"
-                  />
-                  <p className="text-center text-xs text-muted-foreground">{t("pay.qr.hint")}</p>
-                </div>
-              ) : (
-                <p className="mt-3 text-sm text-muted-foreground">{t("pay.none")}</p>
-              )}
-
+              <h4 className="text-sm font-bold text-navy">{t("pay.heading")}</h4>
               <dl className="mt-3 space-y-1.5 text-sm">
-                {panel?.amount != null ? (
+                {success?.voterCount != null ? (
                   <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{t("pay.amount")}</dt>
-                    <dd className="font-bold text-navy">₹{panel.amount}</dd>
+                    <dt className="text-muted-foreground">{t("form.voters")}</dt>
+                    <dd className="font-medium">{success.voterCount.toLocaleString("en-IN")}</dd>
                   </div>
                 ) : null}
-                {panel?.display_name ? (
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{t("pay.account")}</dt>
-                    <dd className="break-all font-medium">{panel.display_name}</dd>
-                  </div>
-                ) : null}
-                {panel?.upi_id ? (
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{t("pay.upi")}</dt>
-                    <dd className="break-all font-medium">{panel.upi_id}</dd>
-                  </div>
-                ) : null}
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">{t("pay.amount")}</dt>
+                  <dd className="font-bold text-navy">{formatInr(success?.amount ?? null)}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">{t("pay.status")}</dt>
+                  <dd className="font-medium text-saffron-deep">{t("pay.pending")}</dd>
+                </div>
               </dl>
-
-              {panel?.instructions ? (
-                <p className="mt-3 whitespace-pre-line rounded-lg bg-card p-3 text-xs leading-relaxed text-muted-foreground">
-                  {panel.instructions}
-                </p>
-              ) : null}
-
-              <input
-                ref={shotInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="sr-only"
-                onChange={(e) => onPickScreenshot(e.target.files?.[0] ?? null)}
-              />
-              <Button
-                type="button"
-                variant={screenshotUploaded ? "success" : "outline"}
-                size="lg"
-                className="mt-4 w-full"
-                disabled={uploadingShot}
-                onClick={() => shotInputRef.current?.click()}
-              >
-                {uploadingShot ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" /> {t("pay.uploading")}
-                  </>
-                ) : screenshotUploaded ? (
-                  <>
-                    <CheckCircle2 className="size-4" /> {t("pay.uploaded")}
-                  </>
-                ) : (
-                  <>
-                    <Upload className="size-4" /> {t("pay.upload")}
-                  </>
-                )}
-              </Button>
-
-              {panel?.paypur_enabled ? (
-                <Button
-                  type="button"
-                  variant="navy"
-                  size="lg"
-                  className="mt-2 w-full"
-                  disabled={paypurBusy}
-                  onClick={onPaypur}
-                >
-                  {paypurBusy ? <Loader2 className="size-4 animate-spin" /> : null} {t("pay.paypur")}
-                </Button>
-              ) : null}
+              <p className="mt-3 rounded-lg bg-card p-3 text-xs leading-relaxed text-muted-foreground">
+                {t("pay.soon")}
+              </p>
             </div>
 
             <Button asChild variant="hero" size="lg" className="w-full">

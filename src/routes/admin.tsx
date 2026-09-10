@@ -8,15 +8,16 @@ import {
   Download,
   Eraser,
   Eye,
+  Gift,
   ImageOff,
   Laptop,
   Loader2,
   LogOut,
+  MapPin,
   MessageCircle,
   Phone,
   FileJson,
   FolderArchive,
-  Receipt,
   RefreshCw,
   ShieldAlert,
   ShieldCheck,
@@ -76,11 +77,13 @@ import { BATCH_MAX } from "@/lib/admin-batch.schema";
 import {
   adminClearLeads,
   adminDeleteLead,
-  adminScreenshotUrl,
   adminUpdatePaymentStatus,
 } from "@/lib/admin-catalog.functions";
 import { SymbolsTab } from "@/components/admin/SymbolsTab";
 import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
+import { GeographyTab } from "@/components/admin/GeographyTab";
+import { SampleRequestsTab } from "@/components/admin/SampleRequestsTab";
+import { formatInr } from "@/lib/pricing";
 import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
@@ -293,7 +296,7 @@ function Kpi({
   tone,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   tone: "navy" | "orange" | "blue" | "emerald" | "purple";
 }) {
   const tones: Record<string, string> = {
@@ -311,7 +314,14 @@ function Kpi({
   );
 }
 
-const EMPTY_KPIS: AdminKpis = { total: 0, pending: 0, process: 0, completed: 0, leads: 0 };
+const EMPTY_KPIS: AdminKpis = {
+  total: 0,
+  paid: 0,
+  pending: 0,
+  revenue: 0,
+  samples: 0,
+  leads: 0,
+};
 
 function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => void }) {
   const fetchOverview = useServerFn(adminOverview);
@@ -324,7 +334,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const deleteOrder = useServerFn(adminDeleteOrder);
   const photoUrl = useServerFn(adminPhotoUrl);
   const updatePaymentStatus = useServerFn(adminUpdatePaymentStatus);
-  const screenshotUrl = useServerFn(adminScreenshotUrl);
+  
   const deleteLead = useServerFn(adminDeleteLead);
   const clearLeads = useServerFn(adminClearLeads);
   const batchExport = useServerFn(adminBatchExport);
@@ -490,20 +500,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     }
   }
 
-  async function openScreenshot(order: AdminOrder, download = false) {
-    if (!order.payment_screenshot_path) return;
-    setBusyPhoto(true);
-    try {
-      const { url } = await screenshotUrl({
-        data: { token, path: order.payment_screenshot_path, download },
-      });
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      handleError(err, "Could not open the payment screenshot.");
-    } finally {
-      setBusyPhoto(false);
-    }
-  }
 
   async function confirmLeadDelete() {
     const lead = pendingLeadDelete;
@@ -700,7 +696,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           "Payment Txn",
           "Payment Amount",
           "Payment Updated",
-          "Screenshot Uploaded",
+          "Design",
+          "Voter Count",
+          "Rate Per Voter",
+          "Amount",
         ],
         ...rows.map((o) => [
           o.order_id,
@@ -725,7 +724,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           o.payment_txn_id,
           o.payment_amount,
           o.payment_updated_at ? formatDateTime(o.payment_updated_at) : "",
-          o.payment_screenshot_path ? "Yes" : "No",
+          o.design_code,
+          o.voter_count,
+          o.rate_per_voter,
+          o.amount,
         ]),
       ]);
 
@@ -820,12 +822,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       </header>
 
       <main className="mx-auto max-w-[1600px] space-y-6 px-6 py-6">
-        <section className="grid grid-cols-5 gap-4">
+        <section className="grid grid-cols-6 gap-4">
           <Kpi label="Total Orders" value={kpis.total} tone="navy" />
-          <Kpi label="Pending Orders" value={kpis.pending} tone="orange" />
-          <Kpi label="In-Process Orders" value={kpis.process} tone="blue" />
-          <Kpi label="Completed Orders" value={kpis.completed} tone="emerald" />
-          <Kpi label="Total Captured IPs / Leads" value={kpis.leads} tone="purple" />
+          <Kpi label="Paid Orders" value={kpis.paid} tone="emerald" />
+          <Kpi label="Pending Payments" value={kpis.pending} tone="orange" />
+          <Kpi label="Revenue" value={formatInr(kpis.revenue)} tone="emerald" />
+          <Kpi label="Sample Requests" value={kpis.samples} tone="blue" />
+          <Kpi label="Captured IPs / Leads" value={kpis.leads} tone="purple" />
         </section>
 
         <Tabs defaultValue="orders" className="space-y-4">
@@ -834,6 +837,12 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="leads">
                 <Users className="mr-1.5 size-4" /> Visitor &amp; Lead Tracker
+              </TabsTrigger>
+              <TabsTrigger value="samples">
+                <Gift className="mr-1.5 size-4" /> Sample Requests
+              </TabsTrigger>
+              <TabsTrigger value="geography">
+                <MapPin className="mr-1.5 size-4" /> Geography Data
               </TabsTrigger>
               <TabsTrigger value="symbols">
                 <Vote className="mr-1.5 size-4" /> Party &amp; Symbols
@@ -1202,19 +1211,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                   ))}
                                 </SelectContent>
                               </Select>
-                              {o.payment_screenshot_path ? (
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="size-8"
-                                  title={`View payment screenshot for ${o.order_id}`}
-                                  aria-label={`View payment screenshot for ${o.order_id}`}
-                                  disabled={busyPhoto}
-                                  onClick={() => void openScreenshot(o)}
-                                >
-                                  <Receipt className="size-4 text-saffron-deep" />
-                                </Button>
-                              ) : null}
                             </div>
                           </td>
                           <td className="px-3 py-2">
@@ -1267,13 +1263,13 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 variant="ghost"
                                 className="size-8"
                                 title={
-                                  o.status === "Completed"
-                                    ? "Already completed"
-                                    : `Mark ${o.order_id} complete`
+                                  o.status === "Delivered"
+                                    ? "Already delivered"
+                                    : `Mark ${o.order_id} delivered`
                                 }
-                                aria-label={`Mark ${o.order_id} complete`}
-                                disabled={o.status === "Completed"}
-                                onClick={() => void changeStatus(o, "Completed")}
+                                aria-label={`Mark ${o.order_id} delivered`}
+                                disabled={o.status === "Delivered"}
+                                onClick={() => void changeStatus(o, "Delivered")}
                               >
                                 <CheckCircle2 className="size-4 text-success" />
                               </Button>
@@ -1281,10 +1277,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 size="icon"
                                 variant="ghost"
                                 className="size-8"
-                                title={`Approve manual payment for ${o.order_id}`}
-                                aria-label={`Approve manual payment for ${o.order_id}`}
-                                disabled={o.payment_status === "MANUAL_APPROVED"}
-                                onClick={() => void changePaymentStatus(o, "MANUAL_APPROVED")}
+                                title={`Mark payment paid for ${o.order_id}`}
+                                aria-label={`Mark payment paid for ${o.order_id}`}
+                                disabled={o.payment_status === "PAID"}
+                                onClick={() => void changePaymentStatus(o, "PAID")}
                               >
                                 <ShieldCheck className="size-4 text-success" />
                               </Button>
@@ -1292,10 +1288,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 size="icon"
                                 variant="ghost"
                                 className="size-8"
-                                title={`Flag ${o.order_id} payment as suspicious`}
-                                aria-label={`Flag ${o.order_id} payment as suspicious`}
-                                disabled={o.payment_status === "SUSPICIOUS"}
-                                onClick={() => void changePaymentStatus(o, "SUSPICIOUS")}
+                                title={`Mark ${o.order_id} payment refunded`}
+                                aria-label={`Mark ${o.order_id} payment refunded`}
+                                disabled={o.payment_status === "REFUNDED"}
+                                onClick={() => void changePaymentStatus(o, "REFUNDED")}
                               >
                                 <ShieldAlert className="size-4 text-destructive" />
                               </Button>
@@ -1566,6 +1562,14 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
             <SymbolsTab token={token} onError={handleError} />
           </TabsContent>
 
+          <TabsContent value="geography">
+            <GeographyTab token={token} onError={handleError} />
+          </TabsContent>
+
+          <TabsContent value="samples">
+            <SampleRequestsTab token={token} onError={handleError} />
+          </TabsContent>
+
           <TabsContent value="payments">
             <PaymentSettingsTab token={token} onError={handleError} />
           </TabsContent>
@@ -1716,11 +1720,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 <a href={telLink(detail.contact_number)!}>
                   <Phone className="size-4" /> Call {detail.contact_number}
                 </a>
-              </Button>
-            ) : null}
-            {detail?.payment_screenshot_path ? (
-              <Button variant="outline" disabled={busyPhoto} onClick={() => void openScreenshot(detail)}>
-                <Receipt className="size-4" /> Payment screenshot
               </Button>
             ) : null}
             {detail && waLink(detail.contact_number) ? (
