@@ -136,24 +136,57 @@ function Field({
   );
 }
 
-/** Tiny abstract layout preview so each design card is recognisable. */
-function DesignPreview({ code }: { code: DesignCode }) {
-  const index = DESIGN_CODES.indexOf(code);
-  const reversed = index % 2 === 1;
-  const bandTop = index < 4;
-  return (
-    <div className="flex h-14 w-full flex-col gap-1 rounded-md border border-border bg-muted/50 p-1.5">
-      {bandTop ? <span className="h-1.5 w-full rounded-full bg-saffron/70" /> : null}
-      <div className={cn("flex flex-1 items-center gap-1.5", reversed && "flex-row-reverse")}>
-        <span className="h-full w-5 rounded bg-navy/20" />
-        <span className="flex flex-1 flex-col gap-1">
-          <span className="h-1.5 w-4/5 rounded-full bg-navy/30" />
-          <span className="h-1.5 w-3/5 rounded-full bg-navy/20" />
-          <span className="h-1.5 w-2/5 rounded-full bg-navy/15" />
+/** Reference card metadata, mapped in order onto the stored codes D1–D8. */
+type DesignMeta = {
+  label: string;
+  desc: string;
+  spec: string;
+  rows: number;
+  cols: number;
+  ad?: "top" | "left" | "right";
+  symbol?: "left" | "right";
+};
+const DESIGN_META: Record<DesignCode, DesignMeta> = {
+  D1: { label: "P-16", desc: "16 स्लिप, बिना विज्ञापन (चौड़ा पेपर)", spec: "16 स्लिप/पेज · 4×4 · चौड़ा पेपर · सादा", rows: 4, cols: 4 },
+  D2: { label: "P-12", desc: "12 स्लिप, बिना विज्ञापन", spec: "12 स्लिप/पेज · 2×6 · सादा", rows: 6, cols: 2 },
+  D3: { label: "SR-10", desc: "10 स्लिप, चुनाव चिन्ह दाईं ओर", spec: "10 स्लिप/पेज · 2×5 · चुनाव चिन्ह", rows: 5, cols: 2, symbol: "right" },
+  D4: { label: "SL-10", desc: "10 स्लिप, चुनाव चिन्ह बाईं ओर", spec: "10 स्लिप/पेज · 2×5 · चुनाव चिन्ह", rows: 5, cols: 2, symbol: "left" },
+  D5: { label: "AT-9", desc: "9 स्लिप, विज्ञापन ऊपर", spec: "9 स्लिप/पेज · 3×3 · विज्ञापन", rows: 3, cols: 3, ad: "top" },
+  D6: { label: "AT-8", desc: "8 स्लिप, विज्ञापन ऊपर", spec: "8 स्लिप/पेज · 2×4 · विज्ञापन", rows: 4, cols: 2, ad: "top" },
+  D7: { label: "AL-8", desc: "8 स्लिप, विज्ञापन बाईं ओर", spec: "8 स्लिप/पेज · 1×8 · विज्ञापन", rows: 8, cols: 1, ad: "left" },
+  D8: { label: "AR-8", desc: "8 स्लिप, विज्ञापन दाईं ओर", spec: "8 स्लिप/पेज · 1×8 · विज्ञापन", rows: 8, cols: 1, ad: "right" },
+};
+
+/** Miniature wireframe reflecting each design's slot grid and ad/symbol placement. */
+function DesignPreview({ meta }: { meta: DesignMeta }) {
+  const slots = Array.from({ length: meta.rows * meta.cols });
+  const adBand = <span className="block rounded-sm bg-saffron/60" aria-hidden />;
+  const grid = (
+    <div
+      className="grid flex-1 gap-[2px]"
+      style={{ gridTemplateRows: `repeat(${meta.rows}, minmax(0,1fr))`, gridTemplateColumns: `repeat(${meta.cols}, minmax(0,1fr))` }}
+    >
+      {slots.map((_, i) => (
+        <span key={i} className="flex items-center gap-px rounded-[2px] border border-navy/20 bg-background px-px">
+          {meta.symbol === "left" ? <span className="size-[3px] shrink-0 rounded-full bg-saffron/70" /> : null}
+          <span className="h-[2px] flex-1 rounded-full bg-navy/25" />
+          {meta.symbol === "right" ? <span className="size-[3px] shrink-0 rounded-full bg-saffron/70" /> : null}
         </span>
-        <span className="size-4 rounded-full bg-saffron/50" />
-      </div>
-      {!bandTop ? <span className="h-1.5 w-full rounded-full bg-saffron/70" /> : null}
+      ))}
+    </div>
+  );
+  return (
+    <div className="flex h-16 w-full gap-[2px] rounded-md border border-border bg-muted/40 p-1" aria-hidden>
+      {meta.ad === "left" ? <div className="w-2 shrink-0">{adBand}</div> : null}
+      {meta.ad === "top" ? (
+        <div className="flex flex-1 flex-col gap-[2px]">
+          <span className="block h-1.5 shrink-0 rounded-sm bg-saffron/60" />
+          {grid}
+        </div>
+      ) : (
+        grid
+      )}
+      {meta.ad === "right" ? <div className="w-2 shrink-0">{adBand}</div> : null}
     </div>
   );
 }
