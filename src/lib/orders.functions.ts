@@ -134,9 +134,10 @@ export const createOrder = createServerFn({ method: "POST" })
     // concurrent submissions can never win the same id.
     let orderId = makeOrderId(0);
     let inserted = false;
+    let orderUuid: string | null = null;
 
     for (let attempt = 0; attempt < 15; attempt++) {
-      const { error } = await supabaseAdmin.from("orders").insert({
+      const { data: row, error } = await supabaseAdmin.from("orders").insert({
         order_id: orderId,
         candidate_name_hindi: data.candidate_name_hindi,
         candidate_name_english: data.candidate_name_english,
