@@ -106,7 +106,7 @@ export const adminCreatePartner = createServerFn({ method: "POST" })
       .insert({
         partner_code: data.partner_code.toUpperCase(),
         full_name: data.full_name,
-        phone: data.phone || null,
+        phone: data.phone,
         whatsapp: data.whatsapp || null,
         district: data.district || null,
         notes: data.notes || null,
@@ -139,7 +139,7 @@ export const adminUpdatePartner = createServerFn({ method: "POST" })
       .update({
         ...(data.partner_code ? { partner_code: data.partner_code.toUpperCase() } : {}),
         full_name: data.full_name,
-        phone: data.phone || null,
+        phone: data.phone,
         whatsapp: data.whatsapp || null,
         district: data.district || null,
         notes: data.notes || null,
@@ -210,7 +210,7 @@ function mapConversion(r: ConversionRow): AdminConversion {
 
 async function selectConversions(
   db: Awaited<ReturnType<(typeof import("./admin.server"))["assertSession"]>>,
-  filters: { partner_id?: string | null; status: string; search: string },
+  filters: { partner_id?: string | null | undefined; status: string; search: string },
   range: { from: number; to: number },
 ) {
   const { sanitizeSearch } = await import("./admin.server");
@@ -278,13 +278,18 @@ export const adminSetConversionStatus = createServerFn({ method: "POST" })
       throw new Error(`Cannot move a ${current} commission to ${data.status}.`);
     }
 
-    const patch: Record<string, unknown> = { status: data.status };
-    if (data.status === "PAID") patch["paid_at"] = new Date().toISOString();
+    const patch: {
+      status: ConversionStatus;
+      paid_at?: string | null;
+      approved_at?: string | null;
+      payout_note?: string | null;
+    } = { status: data.status };
+    if (data.status === "PAID") patch.paid_at = new Date().toISOString();
     if (data.status === "PENDING") {
-      patch["approved_at"] = null;
-      patch["paid_at"] = null;
+      patch.approved_at = null;
+      patch.paid_at = null;
     }
-    if (data.payout_note !== undefined) patch["payout_note"] = data.payout_note || null;
+    if (data.payout_note !== undefined) patch.payout_note = data.payout_note || null;
 
     const { error } = await db.from("referral_conversions").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
