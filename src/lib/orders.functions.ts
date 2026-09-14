@@ -10,6 +10,7 @@ import {
 } from "./orders.schema";
 import { compareWardNumbers } from "./csv";
 import { computeAmount } from "./pricing";
+import { REF_TTL_DAYS as REFERRAL_WINDOW_DAYS } from "./referral";
 
 /**
  * All functions below are intentionally public (the order form is used by
