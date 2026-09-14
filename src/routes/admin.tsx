@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Search,
+  Share2,
   Trash2,
   Users,
   Vote,
@@ -83,6 +84,12 @@ import { SymbolsTab } from "@/components/admin/SymbolsTab";
 import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
 import { GeographyTab } from "@/components/admin/GeographyTab";
 import { SampleRequestsTab } from "@/components/admin/SampleRequestsTab";
+import { ReferralTab } from "@/components/admin/ReferralTab";
+import {
+  adminAssignOrderPartner,
+  adminListPartners,
+} from "@/lib/admin-referral.functions";
+import type { AdminPartnerStats } from "@/lib/admin-referral.schema";
 import { formatInr } from "@/lib/pricing";
 import {
   PAYMENT_METHOD_LABELS,
@@ -321,6 +328,8 @@ const EMPTY_KPIS: AdminKpis = {
   revenue: 0,
   samples: 0,
   leads: 0,
+  referral_orders: 0,
+  commission_payable: 0,
 };
 
 function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => void }) {
@@ -365,6 +374,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [leadPage, setLeadPage] = useState(1);
 
   const [detail, setDetail] = useState<AdminOrder | null>(null);
+  const [assign, setAssign] = useState<AdminOrder | null>(null);
+  const [assignPartners, setAssignPartners] = useState<AdminPartnerStats[]>([]);
+  const listPartnersFn = useServerFn(adminListPartners);
+  const assignPartnerFn = useServerFn(adminAssignOrderPartner);
   const [preview, setPreview] = useState<AdminOrder | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminOrder | null>(null);
   const [pendingLeadDelete, setPendingLeadDelete] = useState<AdminLead | null>(null);
@@ -822,13 +835,19 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       </header>
 
       <main className="mx-auto max-w-[1600px] space-y-6 px-6 py-6">
-        <section className="grid grid-cols-6 gap-4">
+        <section className="grid grid-cols-8 gap-4">
           <Kpi label="Total Orders" value={kpis.total} tone="navy" />
           <Kpi label="Paid Orders" value={kpis.paid} tone="emerald" />
           <Kpi label="Pending Payments" value={kpis.pending} tone="orange" />
           <Kpi label="Revenue" value={formatInr(kpis.revenue)} tone="emerald" />
           <Kpi label="Sample Requests" value={kpis.samples} tone="blue" />
           <Kpi label="Captured IPs / Leads" value={kpis.leads} tone="purple" />
+          <Kpi label="Referral Orders" value={kpis.referral_orders} tone="purple" />
+          <Kpi
+            label="Commission Payable"
+            value={formatInr(kpis.commission_payable)}
+            tone="purple"
+          />
         </section>
 
         <Tabs defaultValue="orders" className="space-y-4">
@@ -849,6 +868,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               </TabsTrigger>
               <TabsTrigger value="payments">
                 <CreditCard className="mr-1.5 size-4" /> Payment Settings
+              </TabsTrigger>
+              <TabsTrigger value="referrals">
+                <Share2 className="mr-1.5 size-4" /> Referrals
               </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-3">
