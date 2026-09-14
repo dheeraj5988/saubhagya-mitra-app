@@ -1642,7 +1642,55 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           <TabsContent value="payments">
             <PaymentSettingsTab token={token} onError={handleError} />
           </TabsContent>
+
+          <TabsContent value="referrals">
+            <ReferralTab token={token} onError={handleError} />
+          </TabsContent>
         </Tabs>
+
+        <Dialog open={!!assign} onOpenChange={(open) => (open ? null : setAssign(null))}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Map a referral partner</DialogTitle>
+              <DialogDescription>
+                {assign
+                  ? `${assign.order_id} · commission is calculated from the partner's current terms.`
+                  : ""}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[320px] space-y-1 overflow-auto">
+              {assignPartners.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => void saveAssignment(p.id)}
+                  className="flex w-full items-center justify-between rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted/50"
+                >
+                  <span>
+                    <span className="font-mono font-semibold">{p.partner_code}</span>{" "}
+                    {p.full_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{p.district ?? ""}</span>
+                </button>
+              ))}
+              {assignPartners.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  No partners available.
+                </p>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAssign(null)}>
+                Cancel
+              </Button>
+              {assign?.referral_code ? (
+                <Button variant="destructive" onClick={() => void saveAssignment(null)}>
+                  Remove referral
+                </Button>
+              ) : null}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
 
       {/* Photo lightbox */}
