@@ -199,6 +199,7 @@ export function OrderForm() {
   const capture = useServerFn(captureLeadPhone);
   const submitOrder = useServerFn(createOrder);
   const fetchSymbols = useServerFn(listActiveSymbols);
+  const resolvePartner = useServerFn(resolveReferralPartner);
   const fetchDistricts = useServerFn(listDistricts);
   const fetchSamitis = useServerFn(listSamitis);
   const fetchGps = useServerFn(listGramPanchayats);
