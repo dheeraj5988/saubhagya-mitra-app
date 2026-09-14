@@ -230,10 +230,7 @@ async function selectLeads(
   const { sanitizeSearch } = await import("./admin.server");
   let query = db
     .from("visitor_leads")
-    .select(
-      "*, referral_partners:referral_partner_id(full_name)",
-      withCount ? { count: "exact" } : undefined,
-    )
+    .select("*", withCount ? { count: "exact" } : undefined)
     .order("visited_at", { ascending: false });
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
