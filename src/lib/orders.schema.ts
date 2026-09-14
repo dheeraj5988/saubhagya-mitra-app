@@ -9,6 +9,7 @@ export const phoneSchema = z
 
 export const visitSchema = z.object({
   ip_address: z.string().trim().max(64).optional().nullable(),
+  referral_code: z.string().trim().max(32).nullable().optional(),
 });
 
 export const leadSchema = z.object({
@@ -53,6 +54,9 @@ export const orderSchema = z.object({
   ip_address: z.string().trim().max(64).optional().nullable(),
   user_agent: z.string().trim().max(400).optional().nullable(),
   lead_id: z.string().uuid().nullable().optional(),
+  /** Referral code captured from a /r/:code link; verified server-side. */
+  referral_code: z.string().trim().max(32).nullable().optional(),
+  referral_captured_at: z.string().trim().max(40).nullable().optional(),
 });
 
 export type OrderInput = z.infer<typeof orderSchema>;

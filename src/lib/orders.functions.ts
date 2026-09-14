@@ -10,6 +10,7 @@ import {
 } from "./orders.schema";
 import { compareWardNumbers } from "./csv";
 import { computeAmount } from "./pricing";
+import { REF_TTL_DAYS as REFERRAL_WINDOW_DAYS } from "./referral";
 
 /**
  * All functions below are intentionally public (the order form is used by
@@ -28,6 +29,7 @@ export const recordVisit = createServerFn({ method: "POST" })
         ip_address: data.ip_address ?? null,
         lead_type: "visit",
         status: LEAD_STATUSES.visit,
+        referral_code: data.referral_code ?? null,
       })
       .select("id")
       .single();
@@ -133,9 +135,10 @@ export const createOrder = createServerFn({ method: "POST" })
     // concurrent submissions can never win the same id.
     let orderId = makeOrderId(0);
     let inserted = false;
+    let orderUuid: string | null = null;
 
     for (let attempt = 0; attempt < 15; attempt++) {
-      const { error } = await supabaseAdmin.from("orders").insert({
+      const { data: row, error } = await supabaseAdmin.from("orders").insert({
         order_id: orderId,
         candidate_name_hindi: data.candidate_name_hindi,
         candidate_name_english: data.candidate_name_english,
@@ -165,10 +168,13 @@ export const createOrder = createServerFn({ method: "POST" })
         user_agent: data.user_agent ?? null,
         status: "New",
         payment_status: "PENDING",
-      });
+      })
+        .select("id")
+        .maybeSingle();
 
       if (!error) {
         inserted = true;
+        orderUuid = (row?.id as string | undefined) ?? null;
         break;
       }
       if (error.code !== "23505") throw new Error(error.message);
@@ -176,6 +182,66 @@ export const createOrder = createServerFn({ method: "POST" })
     }
 
     if (!inserted) throw new Error("Could not generate a unique order id");
+
+    // Referral attribution. The partner, its commission terms and the
+    // commission amount are all resolved server-side from the code alone —
+    // the browser's numbers are never trusted, exactly like the ward re-read
+    // above. A failure here must never fail the order the customer just placed.
+    if (orderUuid && data.referral_code) {
+      try {
+        const capturedAt = data.referral_captured_at ? Date.parse(data.referral_captured_at) : NaN;
+        const withinWindow =
+          !data.referral_captured_at ||
+          (Number.isFinite(capturedAt) &&
+            Date.now() - capturedAt <= REFERRAL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+        if (withinWindow) {
+          const { data: partner } = await supabaseAdmin
+            .from("referral_partners")
+            .select("id, partner_code, commission_type, commission_value")
+            .ilike("partner_code", data.referral_code)
+            .eq("active", true)
+            .maybeSingle();
+
+          if (partner) {
+            const attributedAt = new Date().toISOString();
+            await supabaseAdmin
+              .from("orders")
+              .update({
+                referral_partner_id: partner.id,
+                referral_code: partner.partner_code,
+                referral_attributed_at: attributedAt,
+                referral_source: "LINK",
+              })
+              .eq("id", orderUuid);
+
+            const { data: commission } = await supabaseAdmin.rpc("calc_commission", {
+              p_type: partner.commission_type,
+              p_value: partner.commission_value,
+              p_amount: amount,
+              p_voters: voterCount,
+            });
+
+            await supabaseAdmin.from("referral_conversions").insert({
+              partner_id: partner.id,
+              partner_code: partner.partner_code,
+              order_uuid: orderUuid,
+              order_id: orderId,
+              order_amount: amount,
+              voter_count: voterCount,
+              commission_type: partner.commission_type,
+              commission_value: partner.commission_value,
+              commission_amount: Number(commission ?? 0),
+              status: "PENDING",
+              source: "LINK",
+            });
+          }
+        }
+      } catch (referralError) {
+        console.error("[referral] attribution failed", referralError);
+      }
+    }
+
 
     // Promote the visitor's lead to Submitted and attach the order id.
     if (data.lead_id) {

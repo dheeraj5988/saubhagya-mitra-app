@@ -50,6 +50,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { captureLeadPhone, createOrder, recordVisit } from "@/lib/orders.functions";
 import { LIST_OPTIONS, type ListOption } from "@/lib/orders.schema";
 import { listActiveSymbols } from "@/lib/catalog.functions";
+import { readReferral, storeReferral } from "@/lib/referral";
+import { resolveReferralPartner } from "@/lib/referral.functions";
 import {
   getPublicPricing,
   listDistricts,
@@ -197,6 +199,7 @@ export function OrderForm() {
   const capture = useServerFn(captureLeadPhone);
   const submitOrder = useServerFn(createOrder);
   const fetchSymbols = useServerFn(listActiveSymbols);
+  const resolvePartner = useServerFn(resolveReferralPartner);
   const fetchDistricts = useServerFn(listDistricts);
   const fetchSamitis = useServerFn(listSamitis);
   const fetchGps = useServerFn(listGramPanchayats);
@@ -235,6 +238,8 @@ export function OrderForm() {
     amount: number | null;
     voterCount: number | null;
   } | null>(null);
+
+  const [referralName, setReferralName] = useState<string | null>(null);
 
   const ipRef = useRef<string | null>(null);
   const leadIdRef = useRef<string | null>(null);
@@ -303,6 +308,15 @@ export function OrderForm() {
 
   useEffect(() => {
     let cancelled = false;
+    // ?ref= on the landing URL is treated exactly like a /r/:code visit and
+    // obeys the same first-touch rule.
+    const fromUrl =
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search).get("ref");
+    if (fromUrl) storeReferral(fromUrl);
+    const referral = readReferral();
+
     (async () => {
       let ip: string | null = null;
       try {
@@ -315,16 +329,26 @@ export function OrderForm() {
       if (cancelled) return;
       ipRef.current = ip;
       try {
-        const result = await visit({ data: { ip_address: ip } });
+        const result = await visit({
+          data: { ip_address: ip, referral_code: referral?.code ?? null },
+        });
         if (!cancelled) leadIdRef.current = result.lead_id;
       } catch {
         /* tracking is best-effort */
+      }
+      if (referral) {
+        try {
+          const partner = await resolvePartner({ data: { code: referral.code } });
+          if (!cancelled && partner.valid && partner.full_name) setReferralName(partner.full_name);
+        } catch {
+          /* the badge is cosmetic; attribution still happens server-side */
+        }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [visit]);
+  }, [visit, resolvePartner]);
 
   useEffect(() => {
     const phone = contact.trim();
@@ -442,6 +466,8 @@ export function OrderForm() {
           ip_address: ipRef.current,
           user_agent: typeof navigator === "undefined" ? null : navigator.userAgent.slice(0, 400),
           lead_id: leadIdRef.current,
+          referral_code: readReferral()?.code ?? null,
+          referral_captured_at: readReferral()?.captured_at ?? null,
         },
       });
 
@@ -462,6 +488,13 @@ export function OrderForm() {
   return (
     <>
       <form onSubmit={onSubmit} noValidate className="space-y-6">
+        {referralName ? (
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+            <User className="size-3.5" aria-hidden />
+            {t("referral.badge")}: {referralName}
+          </div>
+        ) : null}
+
         {/* SECTION 1 — क्षेत्र चुनें */}
         <Section icon={MapPin} title={t("form.section.area")}>
           <div className="grid gap-4 sm:grid-cols-2">

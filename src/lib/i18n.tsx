@@ -28,6 +28,8 @@ export const DICTIONARY = {
     en: "Select your area, add the details you want and choose a design.",
   },
 
+  "referral.badge": { hi: "रेफ़रल", en: "Referred by" },
+
   "form.section.area": { hi: "क्षेत्र चुनें", en: "Select your area" },
   "form.section.optional": { hi: "वैकल्पिक जानकारी", en: "Optional details" },
   "form.section.design": { hi: "स्लिप का प्रकार (सभी 8 डिज़ाइन)", en: "Slip type (all 8 designs)" },
