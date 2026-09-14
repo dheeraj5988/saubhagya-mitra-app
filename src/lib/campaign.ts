@@ -86,3 +86,17 @@ export function buildEnquiryWhatsAppUrl(lang: Lang = "hi") {
       : "नमस्ते! मुझे मतदाता पर्ची सेवा के बारे में जानकारी चाहिए।";
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
+
+/**
+ * Short Hindi invite a partner can forward as-is. The link is passed in by the
+ * caller so it always matches the site the admin is working on.
+ */
+export function buildPartnerInviteMessage(payload: { full_name: string; link: string }) {
+  return [
+    `नमस्ते ${payload.full_name} जी,`,
+    `आपका सौभाग्य रेफ़रल लिंक तैयार है:`,
+    payload.link,
+    ``,
+    `इस लिंक से आने वाले हर ऑर्डर पर आपका कमीशन अपने आप जुड़ जाएगा।`,
+  ].join("\n");
+}
