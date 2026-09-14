@@ -488,6 +488,13 @@ export function OrderForm() {
   return (
     <>
       <form onSubmit={onSubmit} noValidate className="space-y-6">
+        {referralName ? (
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+            <User className="size-3.5" aria-hidden />
+            {t("referral.badge")}: {referralName}
+          </div>
+        ) : null}
+
         {/* SECTION 1 — क्षेत्र चुनें */}
         <Section icon={MapPin} title={t("form.section.area")}>
           <div className="grid gap-4 sm:grid-cols-2">
