@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Search,
+  Share2,
   Trash2,
   Users,
   Vote,
@@ -83,6 +84,12 @@ import { SymbolsTab } from "@/components/admin/SymbolsTab";
 import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
 import { GeographyTab } from "@/components/admin/GeographyTab";
 import { SampleRequestsTab } from "@/components/admin/SampleRequestsTab";
+import { ReferralTab } from "@/components/admin/ReferralTab";
+import {
+  adminAssignOrderPartner,
+  adminListPartners,
+} from "@/lib/admin-referral.functions";
+import type { AdminPartnerStats } from "@/lib/admin-referral.schema";
 import { formatInr } from "@/lib/pricing";
 import {
   PAYMENT_METHOD_LABELS,
@@ -321,6 +328,8 @@ const EMPTY_KPIS: AdminKpis = {
   revenue: 0,
   samples: 0,
   leads: 0,
+  referral_orders: 0,
+  commission_payable: 0,
 };
 
 function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => void }) {
@@ -365,6 +374,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [leadPage, setLeadPage] = useState(1);
 
   const [detail, setDetail] = useState<AdminOrder | null>(null);
+  const [assign, setAssign] = useState<AdminOrder | null>(null);
+  const [assignPartners, setAssignPartners] = useState<AdminPartnerStats[]>([]);
+  const listPartnersFn = useServerFn(adminListPartners);
+  const assignPartnerFn = useServerFn(adminAssignOrderPartner);
   const [preview, setPreview] = useState<AdminOrder | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminOrder | null>(null);
   const [pendingLeadDelete, setPendingLeadDelete] = useState<AdminLead | null>(null);
@@ -473,6 +486,31 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
 
   const pageCount = Math.max(1, Math.ceil(orderTotal / PAGE_SIZE));
   const leadPageCount = Math.max(1, Math.ceil(leadTotal / PAGE_SIZE));
+
+  async function openAssign(order: AdminOrder) {
+    setAssign(order);
+    try {
+      const res = await listPartnersFn({ data: { token, search: "" } });
+      setAssignPartners(res.partners as AdminPartnerStats[]);
+    } catch (err) {
+      handleError(err, "Could not load referral partners.");
+    }
+  }
+
+  async function saveAssignment(partnerId: string | null) {
+    if (!assign) return;
+    const order = assign;
+    setAssign(null);
+    try {
+      await assignPartnerFn({ data: { token, order_id: order.order_id, partner_id: partnerId } });
+      toast.success(partnerId ? `${order.order_id} mapped to partner.` : "Referral removed.");
+      await load(true);
+    } catch (err) {
+      if (!handleError(err, "Could not map the partner.")) {
+        toast.error(err instanceof Error ? err.message : "Could not map the partner.");
+      }
+    }
+  }
 
   async function changeStatus(order: AdminOrder, next: OrderStatus) {
     const prev = orders;
@@ -822,13 +860,19 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       </header>
 
       <main className="mx-auto max-w-[1600px] space-y-6 px-6 py-6">
-        <section className="grid grid-cols-6 gap-4">
+        <section className="grid grid-cols-8 gap-4">
           <Kpi label="Total Orders" value={kpis.total} tone="navy" />
           <Kpi label="Paid Orders" value={kpis.paid} tone="emerald" />
           <Kpi label="Pending Payments" value={kpis.pending} tone="orange" />
           <Kpi label="Revenue" value={formatInr(kpis.revenue)} tone="emerald" />
           <Kpi label="Sample Requests" value={kpis.samples} tone="blue" />
           <Kpi label="Captured IPs / Leads" value={kpis.leads} tone="purple" />
+          <Kpi label="Referral Orders" value={kpis.referral_orders} tone="purple" />
+          <Kpi
+            label="Commission Payable"
+            value={formatInr(kpis.commission_payable)}
+            tone="purple"
+          />
         </section>
 
         <Tabs defaultValue="orders" className="space-y-4">
@@ -849,6 +893,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               </TabsTrigger>
               <TabsTrigger value="payments">
                 <CreditCard className="mr-1.5 size-4" /> Payment Settings
+              </TabsTrigger>
+              <TabsTrigger value="referrals">
+                <Share2 className="mr-1.5 size-4" /> Referrals
               </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-3">
@@ -1060,6 +1107,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "Symbol",
                           "Phone",
                           "IP",
+                          "Referred By",
                           "Photo",
                           "Status",
                           "Payment",
@@ -1138,6 +1186,27 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                             title={o.ip_address ?? undefined}
                           >
                             <span className="block truncate">{o.ip_address ?? "—"}</span>
+                          </td>
+                          <td className="px-3 py-2 text-xs">
+                            {o.referral_code ? (
+                              <button
+                                type="button"
+                                onClick={() => void openAssign(o)}
+                                title={o.referral_partner_name ?? o.referral_code}
+                                className="font-mono font-semibold text-navy underline-offset-2 hover:underline"
+                              >
+                                {o.referral_code}
+                              </button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() => void openAssign(o)}
+                              >
+                                Assign
+                              </Button>
+                            )}
                           </td>
                           <td className="px-3 py-2">
                             {o.photo_url ? (
@@ -1573,7 +1642,55 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           <TabsContent value="payments">
             <PaymentSettingsTab token={token} onError={handleError} />
           </TabsContent>
+
+          <TabsContent value="referrals">
+            <ReferralTab token={token} onError={handleError} />
+          </TabsContent>
         </Tabs>
+
+        <Dialog open={!!assign} onOpenChange={(open) => (open ? null : setAssign(null))}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Map a referral partner</DialogTitle>
+              <DialogDescription>
+                {assign
+                  ? `${assign.order_id} · commission is calculated from the partner's current terms.`
+                  : ""}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[320px] space-y-1 overflow-auto">
+              {assignPartners.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => void saveAssignment(p.id)}
+                  className="flex w-full items-center justify-between rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted/50"
+                >
+                  <span>
+                    <span className="font-mono font-semibold">{p.partner_code}</span>{" "}
+                    {p.full_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{p.district ?? ""}</span>
+                </button>
+              ))}
+              {assignPartners.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  No partners available.
+                </p>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAssign(null)}>
+                Cancel
+              </Button>
+              {assign?.referral_code ? (
+                <Button variant="destructive" onClick={() => void saveAssignment(null)}>
+                  Remove referral
+                </Button>
+              ) : null}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
 
       {/* Photo lightbox */}

@@ -30,6 +30,7 @@ const ORDER_SEARCH_COLUMNS = [
   "party_name_snapshot",
   "symbol_name_snapshot",
   "payment_txn_id",
+  "referral_code",
 ] as const;
 const EXPORT_LIMIT = 5000;
 
@@ -111,7 +112,8 @@ export const adminOverview = createServerFn({ method: "POST" })
       return q;
     };
 
-    const [total, paid, pending, samples, leads, revenue, wardRows] = await Promise.all([
+    const [total, paid, pending, samples, leads, revenue, wardRows, referred, commissions] =
+      await Promise.all([
       countPayments(),
       countPayments("PAID"),
       countPayments("PENDING"),
@@ -123,7 +125,13 @@ export const adminOverview = createServerFn({ method: "POST" })
       // DISTINCT across the whole table via a security-definer function, so the
       // ward list stays complete past any row limit.
       db.rpc("admin_distinct_wards"),
-    ]);
+        db
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .not("referral_partner_id", "is", null),
+        // Payable = commissions approved but not yet paid out.
+        db.from("referral_conversions").select("commission_amount").eq("status", "APPROVED").limit(10_000),
+      ]);
 
     const kpis: AdminKpis = {
       total: total.count ?? 0,
@@ -132,6 +140,10 @@ export const adminOverview = createServerFn({ method: "POST" })
       revenue: Number(revenue.data ?? 0),
       samples: samples.count ?? 0,
       leads: leads.count ?? 0,
+      referral_orders: referred.count ?? 0,
+      commission_payable: (
+        (commissions.data ?? []) as { commission_amount: number | null }[]
+      ).reduce((sum, r) => sum + Number(r.commission_amount ?? 0), 0),
     };
 
     const wards = ((wardRows.data ?? []) as { ward_number: string }[])
@@ -153,7 +165,10 @@ async function selectOrders(
   const { sanitizeSearch } = await import("./admin.server");
   let query = db
     .from("orders")
-    .select("*", withCount ? { count: "exact" } : undefined)
+    .select(
+      "*, referral_partners:referral_partner_id(full_name)",
+      withCount ? { count: "exact" } : undefined,
+    )
     .order("created_at", { ascending: false });
 
   if (filters.ward !== "all") query = query.eq("ward_number", filters.ward);
@@ -179,7 +194,9 @@ export const adminOrders = createServerFn({ method: "POST" })
     const res = await selectOrders(db, data, { from, to: from + data.page_size - 1 }, true);
     if (res.error) throw new Error(res.error.message);
 
-    const rows = (res.data ?? []) as unknown as AdminOrder[];
+    const rows = ((res.data ?? []) as unknown as (AdminOrder & {
+      referral_partners?: { full_name: string | null } | null;
+    })[]).map((o) => ({ ...o, referral_partner_name: o.referral_partners?.full_name ?? null }));
 
     // Sign only the photos on this page, and only briefly.
     const paths = rows.map((o) => o.photo_path).filter(Boolean) as string[];
@@ -213,7 +230,10 @@ async function selectLeads(
   const { sanitizeSearch } = await import("./admin.server");
   let query = db
     .from("visitor_leads")
-    .select("*", withCount ? { count: "exact" } : undefined)
+    .select(
+      "*, referral_partners:referral_partner_id(full_name)",
+      withCount ? { count: "exact" } : undefined,
+    )
     .order("visited_at", { ascending: false });
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
