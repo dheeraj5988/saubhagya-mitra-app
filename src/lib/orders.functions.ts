@@ -28,6 +28,7 @@ export const recordVisit = createServerFn({ method: "POST" })
         ip_address: data.ip_address ?? null,
         lead_type: "visit",
         status: LEAD_STATUSES.visit,
+        referral_code: data.referral_code ?? null,
       })
       .select("id")
       .single();
