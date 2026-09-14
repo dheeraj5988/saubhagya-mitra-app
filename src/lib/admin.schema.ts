@@ -85,6 +85,9 @@ export type AdminOrder = {
   payment_amount: number | null;
   payment_updated_at: string | null;
   user_agent: string | null;
+  referral_code: string | null;
+  referral_partner_id?: string | null;
+  referral_partner_name: string | null;
 };
 
 export type AdminLead = {
@@ -120,4 +123,6 @@ export type AdminKpis = {
   revenue: number;
   samples: number;
   leads: number;
+  referral_orders: number;
+  commission_payable: number;
 };
