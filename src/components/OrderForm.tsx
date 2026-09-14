@@ -466,6 +466,8 @@ export function OrderForm() {
           ip_address: ipRef.current,
           user_agent: typeof navigator === "undefined" ? null : navigator.userAgent.slice(0, 400),
           lead_id: leadIdRef.current,
+          referral_code: readReferral()?.code ?? null,
+          referral_captured_at: readReferral()?.captured_at ?? null,
         },
       });
 
