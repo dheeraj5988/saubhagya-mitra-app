@@ -307,6 +307,15 @@ export function OrderForm() {
 
   useEffect(() => {
     let cancelled = false;
+    // ?ref= on the landing URL is treated exactly like a /r/:code visit and
+    // obeys the same first-touch rule.
+    const fromUrl =
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search).get("ref");
+    if (fromUrl) storeReferral(fromUrl);
+    const referral = readReferral();
+
     (async () => {
       let ip: string | null = null;
       try {
@@ -319,16 +328,26 @@ export function OrderForm() {
       if (cancelled) return;
       ipRef.current = ip;
       try {
-        const result = await visit({ data: { ip_address: ip } });
+        const result = await visit({
+          data: { ip_address: ip, referral_code: referral?.code ?? null },
+        });
         if (!cancelled) leadIdRef.current = result.lead_id;
       } catch {
         /* tracking is best-effort */
+      }
+      if (referral) {
+        try {
+          const partner = await resolvePartner({ data: { code: referral.code } });
+          if (!cancelled && partner.valid && partner.full_name) setReferralName(partner.full_name);
+        } catch {
+          /* the badge is cosmetic; attribution still happens server-side */
+        }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [visit]);
+  }, [visit, resolvePartner]);
 
   useEffect(() => {
     const phone = contact.trim();
