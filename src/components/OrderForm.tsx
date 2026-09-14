@@ -50,6 +50,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { captureLeadPhone, createOrder, recordVisit } from "@/lib/orders.functions";
 import { LIST_OPTIONS, type ListOption } from "@/lib/orders.schema";
 import { listActiveSymbols } from "@/lib/catalog.functions";
+import { readReferral, storeReferral } from "@/lib/referral";
+import { resolveReferralPartner } from "@/lib/referral.functions";
 import {
   getPublicPricing,
   listDistricts,
@@ -235,6 +237,8 @@ export function OrderForm() {
     amount: number | null;
     voterCount: number | null;
   } | null>(null);
+
+  const [referralName, setReferralName] = useState<string | null>(null);
 
   const ipRef = useRef<string | null>(null);
   const leadIdRef = useRef<string | null>(null);
