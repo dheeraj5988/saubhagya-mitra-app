@@ -192,11 +192,18 @@ export function ReferralTab({
   async function savePartner() {
     if (!form) return;
     const value = Number(form.commission_value);
-    if (!form.full_name.trim()) return toast.error("Partner name is required.");
-    if (!Number.isFinite(value) || value < 0) return toast.error("Enter a valid commission value.");
+    if (!form.full_name.trim()) {
+      toast.error("Partner name is required.");
+      return;
+    }
+    if (!Number.isFinite(value) || value < 0) {
+      toast.error("Enter a valid commission value.");
+      return;
+    }
     const code = (form.partner_code || suggestCode(form.full_name)).trim();
     if (!/^[A-Za-z0-9_-]{3,24}$/.test(code)) {
-      return toast.error("Code must be 3-24 letters, digits, - or _.");
+      toast.error("Code must be 3-24 letters, digits, - or _.");
+      return;
     }
 
     setSaving(true);
