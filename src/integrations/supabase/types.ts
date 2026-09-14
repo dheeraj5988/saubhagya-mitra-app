@@ -271,6 +271,10 @@ export type Database = {
           photo_path: string | null
           poll_date: string | null
           rate_per_voter: number | null
+          referral_attributed_at: string | null
+          referral_code: string | null
+          referral_partner_id: string | null
+          referral_source: string | null
           slogan: string | null
           status: string
           symbol_name_snapshot: string | null
@@ -309,6 +313,10 @@ export type Database = {
           photo_path?: string | null
           poll_date?: string | null
           rate_per_voter?: number | null
+          referral_attributed_at?: string | null
+          referral_code?: string | null
+          referral_partner_id?: string | null
+          referral_source?: string | null
           slogan?: string | null
           status?: string
           symbol_name_snapshot?: string | null
@@ -347,6 +355,10 @@ export type Database = {
           photo_path?: string | null
           poll_date?: string | null
           rate_per_voter?: number | null
+          referral_attributed_at?: string | null
+          referral_code?: string | null
+          referral_partner_id?: string | null
+          referral_source?: string | null
           slogan?: string | null
           status?: string
           symbol_name_snapshot?: string | null
@@ -363,6 +375,13 @@ export type Database = {
             columns: ["election_symbol_id"]
             isOneToOne: false
             referencedRelation: "election_symbols"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_referral_partner_id_fkey"
+            columns: ["referral_partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
             referencedColumns: ["id"]
           },
           {
@@ -452,6 +471,164 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          ip_address: string | null
+          lead_id: string | null
+          partner_code: string
+          partner_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          ip_address?: string | null
+          lead_id?: string | null
+          partner_code: string
+          partner_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          ip_address?: string | null
+          lead_id?: string | null
+          partner_code?: string
+          partner_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_clicks_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_conversions: {
+        Row: {
+          approved_at: string | null
+          commission_amount: number
+          commission_type: string
+          commission_value: number
+          created_at: string
+          id: string
+          order_amount: number | null
+          order_id: string
+          order_uuid: string | null
+          paid_at: string | null
+          partner_code: string
+          partner_id: string
+          payout_note: string | null
+          source: string
+          status: string
+          updated_at: string
+          voter_count: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          commission_amount?: number
+          commission_type: string
+          commission_value: number
+          created_at?: string
+          id?: string
+          order_amount?: number | null
+          order_id: string
+          order_uuid?: string | null
+          paid_at?: string | null
+          partner_code: string
+          partner_id: string
+          payout_note?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          voter_count?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          commission_amount?: number
+          commission_type?: string
+          commission_value?: number
+          created_at?: string
+          id?: string
+          order_amount?: number | null
+          order_id?: string
+          order_uuid?: string | null
+          paid_at?: string | null
+          partner_code?: string
+          partner_id?: string
+          payout_note?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          voter_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_conversions_order_uuid_fkey"
+            columns: ["order_uuid"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_conversions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_partners: {
+        Row: {
+          active: boolean
+          commission_type: string
+          commission_value: number
+          created_at: string
+          district: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          partner_code: string
+          phone: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          active?: boolean
+          commission_type?: string
+          commission_value?: number
+          created_at?: string
+          district?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          partner_code: string
+          phone: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          active?: boolean
+          commission_type?: string
+          commission_value?: number
+          created_at?: string
+          district?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          partner_code?: string
+          phone?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       sample_requests: {
         Row: {
           candidate_name: string
@@ -521,6 +698,7 @@ export type Database = {
           lead_type: string
           order_id: string | null
           phone: string | null
+          referral_code: string | null
           status: string
           updated_at: string
           visited_at: string
@@ -531,6 +709,7 @@ export type Database = {
           lead_type?: string
           order_id?: string | null
           phone?: string | null
+          referral_code?: string | null
           status?: string
           updated_at?: string
           visited_at?: string
@@ -541,6 +720,7 @@ export type Database = {
           lead_type?: string
           order_id?: string | null
           phone?: string | null
+          referral_code?: string | null
           status?: string
           updated_at?: string
           visited_at?: string
@@ -558,7 +738,36 @@ export type Database = {
           ward_number: string
         }[]
       }
+      admin_referral_summary: {
+        Args: never
+        Returns: {
+          active: boolean
+          click_count: number
+          commission_approved: number
+          commission_paid: number
+          commission_pending: number
+          commission_type: string
+          commission_value: number
+          full_name: string
+          last_activity_at: string
+          order_count: number
+          paid_order_count: number
+          partner_code: string
+          partner_id: string
+          phone: string
+          total_order_amount: number
+        }[]
+      }
       admin_revenue: { Args: never; Returns: number }
+      calc_commission: {
+        Args: {
+          p_amount: number
+          p_type: string
+          p_value: number
+          p_voters: number
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
