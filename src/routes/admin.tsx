@@ -487,6 +487,31 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const pageCount = Math.max(1, Math.ceil(orderTotal / PAGE_SIZE));
   const leadPageCount = Math.max(1, Math.ceil(leadTotal / PAGE_SIZE));
 
+  async function openAssign(order: AdminOrder) {
+    setAssign(order);
+    try {
+      const res = await listPartnersFn({ data: { token, search: "" } });
+      setAssignPartners(res.partners as AdminPartnerStats[]);
+    } catch (err) {
+      handleError(err, "Could not load referral partners.");
+    }
+  }
+
+  async function saveAssignment(partnerId: string | null) {
+    if (!assign) return;
+    const order = assign;
+    setAssign(null);
+    try {
+      await assignPartnerFn({ data: { token, order_id: order.order_id, partner_id: partnerId } });
+      toast.success(partnerId ? `${order.order_id} mapped to partner.` : "Referral removed.");
+      await load(true);
+    } catch (err) {
+      if (!handleError(err, "Could not map the partner.")) {
+        toast.error(err instanceof Error ? err.message : "Could not map the partner.");
+      }
+    }
+  }
+
   async function changeStatus(order: AdminOrder, next: OrderStatus) {
     const prev = orders;
     setOrders((rows) => rows.map((r) => (r.id === order.id ? { ...r, status: next } : r)));
@@ -1082,6 +1107,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "Symbol",
                           "Phone",
                           "IP",
+                          "Referred By",
                           "Photo",
                           "Status",
                           "Payment",
@@ -1160,6 +1186,27 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                             title={o.ip_address ?? undefined}
                           >
                             <span className="block truncate">{o.ip_address ?? "—"}</span>
+                          </td>
+                          <td className="px-3 py-2 text-xs">
+                            {o.referral_code ? (
+                              <button
+                                type="button"
+                                onClick={() => void openAssign(o)}
+                                title={o.referral_partner_name ?? o.referral_code}
+                                className="font-mono font-semibold text-navy underline-offset-2 hover:underline"
+                              >
+                                {o.referral_code}
+                              </button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() => void openAssign(o)}
+                              >
+                                Assign
+                              </Button>
+                            )}
                           </td>
                           <td className="px-3 py-2">
                             {o.photo_url ? (
