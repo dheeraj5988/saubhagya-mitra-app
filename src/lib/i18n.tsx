@@ -157,6 +157,10 @@ export const DICTIONARY = {
   "sample.success": { hi: "सैंपल रिक्वेस्ट दर्ज हुई", en: "Sample request recorded" },
   "sample.error": { hi: "रिक्वेस्ट दर्ज नहीं हो सकी।", en: "Could not record the request." },
 
+  "form.rate.formula": { hi: "मतदाता ×", en: "voters ×" },
+  "form.rate.banner_note": { hi: "विज्ञापन सहित", en: "with ad banner" },
+  "form.rate.photo_note": { hi: "फोटो सहित", en: "with photo" },
+
   "pay.heading": { hi: "अगला कदम", en: "Next step" },
   "pay.amount": { hi: "राशि", en: "Amount" },
   "pay.status": { hi: "भुगतान स्थिति", en: "Payment status" },

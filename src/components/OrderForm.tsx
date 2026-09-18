@@ -61,7 +61,16 @@ import {
 } from "@/lib/geo.functions";
 import type { PublicSymbol } from "@/lib/catalog.schema";
 import { buildWhatsAppUrl } from "@/lib/campaign";
-import { DESIGN_CODES, computeAmount, formatInr, type DesignCode } from "@/lib/pricing";
+import {
+  DESIGN_CODES,
+  DESIGN_META,
+  computeAmount,
+  designHasBanner,
+  formatInr,
+  resolveRatePerVoter,
+  type DesignCode,
+  type DesignMeta,
+} from "@/lib/pricing";
 import { compareWardNumbers } from "@/lib/csv";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -125,11 +134,17 @@ function Field({
       <Label htmlFor={id} className="text-sm font-semibold text-foreground">
         {label}
         {required ? <span className="ml-1 text-destructive">*</span> : null}
-        {hint ? <span className="ml-2 text-xs font-normal text-muted-foreground">{hint}</span> : null}
+        {hint ? (
+          <span className="ml-2 text-xs font-normal text-muted-foreground">{hint}</span>
+        ) : null}
       </Label>
       {children}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="flex items-center gap-1.5 text-xs font-medium text-destructive"
+        >
           <AlertCircle className="size-3.5 shrink-0" />
           {error}
         </p>
@@ -138,27 +153,6 @@ function Field({
   );
 }
 
-/** Reference card metadata, mapped in order onto the stored codes D1–D8. */
-type DesignMeta = {
-  label: string;
-  desc: string;
-  spec: string;
-  rows: number;
-  cols: number;
-  ad?: "top" | "left" | "right";
-  symbol?: "left" | "right";
-};
-const DESIGN_META: Record<DesignCode, DesignMeta> = {
-  D1: { label: "P-16", desc: "16 स्लिप, बिना विज्ञापन (चौड़ा पेपर)", spec: "16 स्लिप/पेज · 4×4 · चौड़ा पेपर · सादा", rows: 4, cols: 4 },
-  D2: { label: "P-12", desc: "12 स्लिप, बिना विज्ञापन", spec: "12 स्लिप/पेज · 2×6 · सादा", rows: 6, cols: 2 },
-  D3: { label: "SR-10", desc: "10 स्लिप, चुनाव चिन्ह दाईं ओर", spec: "10 स्लिप/पेज · 2×5 · चुनाव चिन्ह", rows: 5, cols: 2, symbol: "right" },
-  D4: { label: "SL-10", desc: "10 स्लिप, चुनाव चिन्ह बाईं ओर", spec: "10 स्लिप/पेज · 2×5 · चुनाव चिन्ह", rows: 5, cols: 2, symbol: "left" },
-  D5: { label: "AT-9", desc: "9 स्लिप, विज्ञापन ऊपर", spec: "9 स्लिप/पेज · 3×3 · विज्ञापन", rows: 3, cols: 3, ad: "top" },
-  D6: { label: "AT-8", desc: "8 स्लिप, विज्ञापन ऊपर", spec: "8 स्लिप/पेज · 2×4 · विज्ञापन", rows: 4, cols: 2, ad: "top" },
-  D7: { label: "AL-8", desc: "8 स्लिप, विज्ञापन बाईं ओर", spec: "8 स्लिप/पेज · 1×8 · विज्ञापन", rows: 8, cols: 1, ad: "left" },
-  D8: { label: "AR-8", desc: "8 स्लिप, विज्ञापन दाईं ओर", spec: "8 स्लिप/पेज · 1×8 · विज्ञापन", rows: 8, cols: 1, ad: "right" },
-};
-
 /** Miniature wireframe reflecting each design's slot grid and ad/symbol placement. */
 function DesignPreview({ meta }: { meta: DesignMeta }) {
   const slots = Array.from({ length: meta.rows * meta.cols });
@@ -166,19 +160,32 @@ function DesignPreview({ meta }: { meta: DesignMeta }) {
   const grid = (
     <div
       className="grid flex-1 gap-[2px]"
-      style={{ gridTemplateRows: `repeat(${meta.rows}, minmax(0,1fr))`, gridTemplateColumns: `repeat(${meta.cols}, minmax(0,1fr))` }}
+      style={{
+        gridTemplateRows: `repeat(${meta.rows}, minmax(0,1fr))`,
+        gridTemplateColumns: `repeat(${meta.cols}, minmax(0,1fr))`,
+      }}
     >
       {slots.map((_, i) => (
-        <span key={i} className="flex items-center gap-px rounded-[2px] border border-navy/20 bg-background px-px">
-          {meta.symbol === "left" ? <span className="size-[3px] shrink-0 rounded-full bg-saffron/70" /> : null}
+        <span
+          key={i}
+          className="flex items-center gap-px rounded-[2px] border border-navy/20 bg-background px-px"
+        >
+          {meta.symbol === "left" ? (
+            <span className="size-[3px] shrink-0 rounded-full bg-saffron/70" />
+          ) : null}
           <span className="h-[2px] flex-1 rounded-full bg-navy/25" />
-          {meta.symbol === "right" ? <span className="size-[3px] shrink-0 rounded-full bg-saffron/70" /> : null}
+          {meta.symbol === "right" ? (
+            <span className="size-[3px] shrink-0 rounded-full bg-saffron/70" />
+          ) : null}
         </span>
       ))}
     </div>
   );
   return (
-    <div className="flex aspect-[3/4] w-full gap-[2px] rounded-md border border-border bg-muted/40 p-1" aria-hidden>
+    <div
+      className="flex aspect-[3/4] w-full gap-[2px] rounded-md border border-border bg-muted/40 p-1"
+      aria-hidden
+    >
       {meta.ad === "left" ? <div className="w-2 shrink-0">{adBand}</div> : null}
       {meta.ad === "top" ? (
         <div className="flex flex-1 flex-col gap-[2px]">
@@ -230,6 +237,11 @@ export function OrderForm() {
   const [design, setDesign] = useState<DesignCode | "">("");
   // All four list options start selected; the candidate can uncheck any.
   const [lists, setLists] = useState<ListOption[]>([...LIST_OPTIONS]);
+  // Photo voter slip toggle.
+  const [photoSlip, setPhotoSlip] = useState(false);
+  const [photoSlipConsent, setPhotoSlipConsent] = useState(false);
+  const [photoSlipInfoOpen, setPhotoSlipInfoOpen] = useState(false);
+  const [voterPdf, setVoterPdf] = useState<File | null>(null);
 
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string | undefined>>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -245,6 +257,7 @@ export function OrderForm() {
   const leadIdRef = useRef<string | null>(null);
   const capturedPhoneRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const voterPdfInputRef = useRef<HTMLInputElement | null>(null);
 
   const symbolsQuery = useQuery({
     queryKey: ["public-symbols"],
@@ -258,7 +271,16 @@ export function OrderForm() {
     queryFn: () => fetchPricing(),
     staleTime: 60_000,
   });
-  const rate = pricingQuery.data?.rate_per_voter ?? null;
+  const baseRate = pricingQuery.data?.rate_per_voter ?? null;
+
+  // Effective rate for display. Server always recomputes independently.
+  const effectiveRate = useMemo(() => {
+    if (baseRate == null) return null;
+    return resolveRatePerVoter(baseRate, {
+      banner: design ? designHasBanner(design as DesignCode) : false,
+      photoSlip,
+    });
+  }, [baseRate, design, photoSlip]);
 
   const districtsQuery = useQuery({
     queryKey: ["geo-districts"],
@@ -302,7 +324,9 @@ export function OrderForm() {
   );
   const totalVoters = selectedWards.reduce((sum, w) => sum + w.voter_count, 0);
   const estimatedAmount =
-    selectedWards.length && rate != null ? computeAmount(totalVoters, rate) : null;
+    selectedWards.length && effectiveRate != null
+      ? computeAmount(totalVoters, effectiveRate)
+      : null;
   const wardNumbersLabel = selectedWards.map((w) => w.ward_number).join(", ");
   const noGeoData = !districtsQuery.isLoading && districts.length === 0;
 
@@ -311,9 +335,7 @@ export function OrderForm() {
     // ?ref= on the landing URL is treated exactly like a /r/:code visit and
     // obeys the same first-touch rule.
     const fromUrl =
-      typeof window === "undefined"
-        ? null
-        : new URLSearchParams(window.location.search).get("ref");
+      typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("ref");
     if (fromUrl) storeReferral(fromUrl);
     const referral = readReferral();
 
@@ -673,9 +695,19 @@ export function OrderForm() {
                 {t("form.area.summary")}: {label(selectedDistrict)} › {label(selectedSamiti)} ›{" "}
                 {label(selectedGp)} › {t("form.ward")} {wardNumbersLabel}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {t("form.rate")}: {rate == null ? "—" : formatInr(rate)} · {t("form.amount")}:{" "}
-                <span className="font-semibold text-saffron-deep">{formatInr(estimatedAmount)}</span>
+              <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-1.5">
+                <span>
+                  {totalVoters.toLocaleString("en-IN")} {t("form.rate.formula")}{" "}
+                  {effectiveRate == null ? "—" : formatInr(effectiveRate)} ={" "}
+                  <span className="font-semibold text-saffron-deep">
+                    {formatInr(estimatedAmount)}
+                  </span>
+                </span>
+                {effectiveRate != null && baseRate != null && effectiveRate !== baseRate ? (
+                  <span className="rounded-full bg-saffron/20 px-1.5 py-0.5 text-[10px] font-semibold text-saffron-deep">
+                    {photoSlip ? t("form.rate.photo_note") : t("form.rate.banner_note")}
+                  </span>
+                ) : null}
               </p>
             </div>
           ) : null}
@@ -775,7 +807,9 @@ export function OrderForm() {
                       </span>
                     ) : (
                       <span className="text-muted-foreground">
-                        {symbolsQuery.isLoading ? t("form.symbol.loading") : t("form.symbol.placeholder")}
+                        {symbolsQuery.isLoading
+                          ? t("form.symbol.loading")
+                          : t("form.symbol.placeholder")}
                       </span>
                     )}
                     <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
@@ -810,8 +844,12 @@ export function OrderForm() {
                               </span>
                             )}
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-sm font-semibold">{s.party_name}</span>
-                              <span className="block truncate text-xs text-muted-foreground">{s.symbol_name}</span>
+                              <span className="block truncate text-sm font-semibold">
+                                {s.party_name}
+                              </span>
+                              <span className="block truncate text-xs text-muted-foreground">
+                                {s.symbol_name}
+                              </span>
                             </span>
                             {symbol?.id === s.id ? <Check className="size-4 text-success" /> : null}
                           </CommandItem>
@@ -856,7 +894,12 @@ export function OrderForm() {
             />
           </Field>
 
-          <Field id="photo" label={t("form.photo")} hint={t("form.photo.hint")} error={errors.photo}>
+          <Field
+            id="photo"
+            label={t("form.photo")}
+            hint={t("form.photo.hint")}
+            error={errors.photo}
+          >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <input
                 ref={fileInputRef}
@@ -944,7 +987,10 @@ export function OrderForm() {
             })}
           </div>
           {errors.design ? (
-            <p role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+            <p
+              role="alert"
+              className="flex items-center gap-1.5 text-xs font-medium text-destructive"
+            >
               <AlertCircle className="size-3.5" /> {errors.design}
             </p>
           ) : null}
@@ -1027,7 +1073,9 @@ export function OrderForm() {
                 ) : null}
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">{t("pay.amount")}</dt>
-                  <dd className="font-bold text-saffron-deep">{formatInr(success?.amount ?? null)}</dd>
+                  <dd className="font-bold text-saffron-deep">
+                    {formatInr(success?.amount ?? null)}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">{t("pay.status")}</dt>

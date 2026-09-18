@@ -9,7 +9,7 @@ import {
   visitSchema,
 } from "./orders.schema";
 import { compareWardNumbers } from "./csv";
-import { computeAmount } from "./pricing";
+import { computeAmount, designHasBanner, resolveRatePerVoter } from "./pricing";
 import { REF_TTL_DAYS as REFERRAL_WINDOW_DAYS } from "./referral";
 
 /**
@@ -122,13 +122,21 @@ export const createOrder = createServerFn({ method: "POST" })
     const wardSnapshots = [...wardRows]
       .sort((a, b) => compareWardNumbers(a.ward_number as string, b.ward_number as string))
       .map((w) => ({
-      ward_id: w.id as string,
-      ward_number: w.ward_number as string,
-      voter_count: w.voter_count as number,
-    }));
+        ward_id: w.id as string,
+        ward_number: w.ward_number as string,
+        voter_count: w.voter_count as number,
+      }));
     const voterCount = wardSnapshots.reduce((sum, w) => sum + w.voter_count, 0);
     const wardNumbers = wardSnapshots.map((w) => w.ward_number).join(", ");
-    const amount = computeAmount(voterCount, config.rate_per_voter);
+
+    // Rate is always derived server-side from the admin-configured base rate
+    // plus the design/photo-slip flags. A browser can never dictate the rate.
+    const bannerOption = designHasBanner(data.design_code);
+    const effectiveRate = resolveRatePerVoter(config.rate_per_voter, {
+      banner: bannerOption,
+      photoSlip: data.photo_slip,
+    });
+    const amount = computeAmount(voterCount, effectiveRate);
 
     // The unique index on orders.order_id is the source of truth: we insert and
     // retry on a 23505 conflict rather than checking-then-inserting, so two
@@ -138,7 +146,7 @@ export const createOrder = createServerFn({ method: "POST" })
     let orderUuid: string | null = null;
 
     for (let attempt = 0; attempt < 15; attempt++) {
-      const { data: row, error } = await supabaseAdmin.from("orders").insert({
+      const payload: any = {
         order_id: orderId,
         candidate_name_hindi: data.candidate_name_hindi,
         candidate_name_english: data.candidate_name_english,
@@ -152,7 +160,7 @@ export const createOrder = createServerFn({ method: "POST" })
         ward_snapshots: wardSnapshots,
         design_code: data.design_code,
         voter_count: voterCount,
-        rate_per_voter: config.rate_per_voter,
+        rate_per_voter: effectiveRate,
         amount,
         election_symbol: data.election_symbol,
         election_symbol_id: data.election_symbol_id ?? null,
@@ -167,8 +175,15 @@ export const createOrder = createServerFn({ method: "POST" })
         ip_address: data.ip_address ?? null,
         user_agent: data.user_agent ?? null,
         status: "New",
-        payment_status: "PENDING",
-      })
+        payment_status: "UNPAID",
+        banner_option: bannerOption,
+        photo_slip: data.photo_slip,
+        voter_photo_pdf_path: data.voter_photo_pdf_path ?? null,
+      };
+
+      const { data: row, error } = await supabaseAdmin
+        .from("orders")
+        .insert(payload)
         .select("id")
         .maybeSingle();
 
@@ -241,7 +256,6 @@ export const createOrder = createServerFn({ method: "POST" })
         console.error("[referral] attribution failed", referralError);
       }
     }
-
 
     // Promote the visitor's lead to Submitted and attach the order id.
     if (data.lead_id) {

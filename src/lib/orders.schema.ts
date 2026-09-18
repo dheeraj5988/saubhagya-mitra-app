@@ -57,6 +57,14 @@ export const orderSchema = z.object({
   /** Referral code captured from a /r/:code link; verified server-side. */
   referral_code: z.string().trim().max(32).nullable().optional(),
   referral_captured_at: z.string().trim().max(40).nullable().optional(),
+  /** True when the selected design includes an ad banner (D5–D8); derived at submit time. */
+  banner_option: z.boolean().default(false),
+  /** True when the candidate selected a photo voter slip. */
+  photo_slip: z.boolean().default(false),
+  /** Storage path for the uploaded voter-roll PDF (photo-slip orders only). */
+  voter_photo_pdf_path: z.string().trim().max(512).nullable().optional(),
+  /** ISO timestamp when the candidate consented to the photo-slip terms. */
+  photo_consent_at: z.string().trim().max(40).nullable().optional(),
 });
 
 export type OrderInput = z.infer<typeof orderSchema>;
