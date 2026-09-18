@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { useI18n } from "@/lib/i18n";
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 import { CONTACT_DISPLAY, SUPPORT_EMAIL } from "@/lib/campaign";
 
@@ -22,9 +23,10 @@ export const Route = createFileRoute("/terms")({
 });
 
 function Terms() {
+  const { t } = useI18n();
   return (
-    <LegalPage title="Terms & Conditions">
-      <LegalSection title="1. About the service">
+    <LegalPage title={t("legal.terms.page_title")}>
+      <LegalSection title={t("legal.terms.sec1.title")}>
         <p>
           Saubhagya Matdata Parchi ("we", "us") prepares and supplies printed voter slips (matdata
           parchi) for Sarpanch and Ward Panch candidates contesting panchayat elections in
@@ -32,7 +34,7 @@ function Terms() {
         </p>
       </LegalSection>
 
-      <LegalSection title="2. Orders and information you provide">
+      <LegalSection title={t("legal.terms.sec2.title")}>
         <p>
           You are responsible for the accuracy of every detail you submit: candidate names, ward,
           gram panchayat, panchayat samiti, district, election symbol, slogan, photograph and
@@ -45,7 +47,7 @@ function Terms() {
         </p>
       </LegalSection>
 
-      <LegalSection title="3. Pricing">
+      <LegalSection title={t("legal.terms.sec3.title")}>
         <p>
           The order amount is calculated as the voter count of the selected ward multiplied by the
           current per-voter rate shown on the order form. The amount displayed before payment is
@@ -57,7 +59,7 @@ function Terms() {
         </p>
       </LegalSection>
 
-      <LegalSection title="4. Draft approval and production">
+      <LegalSection title={t("legal.terms.sec4.title")}>
         <p>
           After an order is placed we share a draft on WhatsApp. Production begins only after you
           approve the draft. Once printing has begun, changes to names, symbol, photograph or
@@ -65,14 +67,14 @@ function Terms() {
         </p>
       </LegalSection>
 
-      <LegalSection title="5. Payments">
+      <LegalSection title={t("legal.terms.sec5.title")}>
         <p>
           Online payments are processed by our payment gateway partner. We do not store your card,
           UPI or banking credentials on our servers.
         </p>
       </LegalSection>
 
-      <LegalSection title="6. Acceptable use">
+      <LegalSection title={t("legal.terms.sec6.title")}>
         <p>
           You may not use this service for content that is obscene, defamatory, communal, or that
           breaches the model code of conduct or any election law. We may refuse or cancel any order
@@ -80,7 +82,7 @@ function Terms() {
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Liability">
+      <LegalSection title={t("legal.terms.sec7.title")}>
         <p>
           Our liability for any order is limited to the amount you paid for that order. We are not
           liable for election outcomes, printing errors present in an approved draft, or delays
@@ -88,14 +90,14 @@ function Terms() {
         </p>
       </LegalSection>
 
-      <LegalSection title="8. Governing law">
+      <LegalSection title={t("legal.terms.sec8.title")}>
         <p>
           These terms are governed by the laws of India, and the courts of Rajasthan have exclusive
           jurisdiction over any dispute.
         </p>
       </LegalSection>
 
-      <LegalSection title="9. Contact">
+      <LegalSection title={t("legal.terms.sec9.title")}>
         <p>
           Questions about these terms: {CONTACT_DISPLAY} or {SUPPORT_EMAIL}.
         </p>

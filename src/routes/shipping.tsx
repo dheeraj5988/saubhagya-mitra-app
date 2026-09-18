@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { useI18n } from "@/lib/i18n";
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 import { CONTACT_DISPLAY } from "@/lib/campaign";
 
@@ -22,47 +23,28 @@ export const Route = createFileRoute("/shipping")({
 });
 
 function Shipping() {
+  const { t } = useI18n();
   return (
-    <LegalPage title="Shipping & Delivery Policy">
-      <LegalSection title="Order processing">
-        <p>
-          Every order begins with a design draft shared on WhatsApp for your approval. Printing
-          starts after the draft is approved and payment is confirmed.
-        </p>
+    <LegalPage title={t("legal.shipping.page_title")}>
+      <LegalSection title={t("legal.shipping.sec1.title")}>
+        <p>{t("legal.shipping.sec1.p1")}</p>
       </LegalSection>
 
-      <LegalSection title="Digital delivery">
-        <p>
-          Print-ready files are shared on the WhatsApp number submitted with the order. Digital
-          files are normally shared within 1-2 working days of draft approval.
-        </p>
+      <LegalSection title={t("legal.shipping.sec2.title")}>
+        <p>{t("legal.shipping.sec2.p1")}</p>
       </LegalSection>
 
-      <LegalSection title="Printed delivery">
-        <p>
-          Printed voter slips are dispatched to the address confirmed with our team over WhatsApp.
-          Delivery within Rajasthan typically takes 2-5 working days after printing, depending on
-          the quantity and your location.
-        </p>
-        <p>
-          During peak election periods timelines can extend. If your polling date is close, tell us
-          before ordering so we can confirm whether we can meet it.
-        </p>
+      <LegalSection title={t("legal.shipping.sec3.title")}>
+        <p>{t("legal.shipping.sec3.p1")}</p>
+        <p>{t("legal.shipping.sec3.p2")}</p>
       </LegalSection>
 
-      <LegalSection title="Delivery charges">
-        <p>
-          Standard delivery within Rajasthan is included in the order amount. Any express or
-          out-of-state courier requirement is quoted separately and confirmed with you before
-          dispatch.
-        </p>
+      <LegalSection title={t("legal.shipping.sec4.title")}>
+        <p>{t("legal.shipping.sec4.p1")}</p>
       </LegalSection>
 
-      <LegalSection title="Tracking and support">
-        <p>
-          Dispatch details and tracking, where available, are shared on WhatsApp. For any delivery
-          question, message {CONTACT_DISPLAY} with your Order ID.
-        </p>
+      <LegalSection title={t("legal.shipping.sec5.title")}>
+        <p>{t("legal.shipping.sec5.p1")} {CONTACT_DISPLAY} {t("legal.shipping.sec5.p2")}</p>
       </LegalSection>
     </LegalPage>
   );

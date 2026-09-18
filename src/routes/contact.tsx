@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { useI18n } from "@/lib/i18n";
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 import { BUSINESS_ADDRESS, BUSINESS_NAME, CONTACT_DISPLAY, SUPPORT_EMAIL } from "@/lib/campaign";
 
@@ -22,17 +23,14 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
+  const { t } = useI18n();
   return (
-    <LegalPage title="Contact Us">
-      <LegalSection title="Talk to our team">
-        <p>
-          WhatsApp and calls: {CONTACT_DISPLAY}
-          <br />
-          Email: {SUPPORT_EMAIL}
-        </p>
+    <LegalPage title={t("legal.contact.page_title")}>
+      <LegalSection title={t("legal.contact.sec1.title")}>
+        <p>{t("legal.contact.sec1.whatsapp")}{CONTACT_DISPLAY}<br />{t("legal.contact.sec1.email")}{SUPPORT_EMAIL}</p>
       </LegalSection>
 
-      <LegalSection title="Business address">
+      <LegalSection title={t("legal.contact.sec2.title")}>
         <p>
           {BUSINESS_NAME}
           <br />
@@ -40,18 +38,12 @@ function Contact() {
         </p>
       </LegalSection>
 
-      <LegalSection title="Service area">
-        <p>
-          We serve Sarpanch and Ward Panch candidates across Rajasthan — district, panchayat samiti,
-          gram panchayat and ward wise.
-        </p>
+      <LegalSection title={t("legal.contact.sec3.title")}>
+        <p>{t("legal.contact.sec3.p1")}</p>
       </LegalSection>
 
-      <LegalSection title="Order support">
-        <p>
-          Keep your Order ID (for example SBG-1234) handy when you write to us; it lets us pull up
-          your draft, payment and delivery status immediately.
-        </p>
+      <LegalSection title={t("legal.contact.sec4.title")}>
+        <p>{t("legal.contact.sec4.p1")}</p>
       </LegalSection>
     </LegalPage>
   );

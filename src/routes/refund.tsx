@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { useI18n } from "@/lib/i18n";
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 import { CONTACT_DISPLAY, SUPPORT_EMAIL } from "@/lib/campaign";
 
@@ -22,54 +23,32 @@ export const Route = createFileRoute("/refund")({
 });
 
 function Refund() {
+  const { t } = useI18n();
   return (
-    <LegalPage title="Refund & Cancellation Policy">
-      <LegalSection title="Before draft approval">
-        <p>
-          You may cancel an order any time before you approve the printing draft. The full amount
-          paid is refunded to the original payment method.
-        </p>
+    <LegalPage title={t("legal.refund.page_title")}>
+      <LegalSection title={t("legal.refund.sec1.title")}>
+        <p>{t("legal.refund.sec1.p1")}</p>
       </LegalSection>
 
-      <LegalSection title="After draft approval">
-        <p>
-          Voter slips are printed to order and carry your name, photograph and ward, so they cannot
-          be resold. Once you approve the draft and production begins, the order cannot be
-          cancelled and the amount is non-refundable.
-        </p>
+      <LegalSection title={t("legal.refund.sec2.title")}>
+        <p>{t("legal.refund.sec2.p1")}</p>
       </LegalSection>
 
-      <LegalSection title="Defective or incorrect work">
-        <p>
-          If the delivered slips differ from the approved draft, or arrive damaged, report it
-          within 48 hours of delivery with photographs. We will reprint the affected quantity free
-          of charge, or refund it if a reprint is no longer useful before your election date.
-        </p>
-        <p>
-          Errors already present in the draft you approved are not covered, because printing
-          follows the approved draft exactly.
-        </p>
+      <LegalSection title={t("legal.refund.sec3.title")}>
+        <p>{t("legal.refund.sec3.p1")}</p>
+        <p>{t("legal.refund.sec3.p2")}</p>
       </LegalSection>
 
-      <LegalSection title="Failed or duplicate payments">
-        <p>
-          If money is debited but the order is not created, or you are charged twice, the amount is
-          refunded in full. Bank settlement usually takes 5-7 working days.
-        </p>
+      <LegalSection title={t("legal.refund.sec4.title")}>
+        <p>{t("legal.refund.sec4.p1")}</p>
       </LegalSection>
 
-      <LegalSection title="How to request a refund">
-        <p>
-          Message {CONTACT_DISPLAY} on WhatsApp or email {SUPPORT_EMAIL} with your Order ID and the
-          reason. Approved refunds are initiated within 3 working days and credited to the original
-          payment method.
-        </p>
+      <LegalSection title={t("legal.refund.sec5.title")}>
+        <p>{t("legal.refund.sec5.p1")} {CONTACT_DISPLAY} {t("legal.refund.sec5.p2")} {SUPPORT_EMAIL} {t("legal.refund.sec5.p3")}</p>
       </LegalSection>
 
-      <LegalSection title="Free sample">
-        <p>
-          The free 24-voter sample carries no charge, so no refund arises for it.
-        </p>
+      <LegalSection title={t("legal.refund.sec6.title")}>
+        <p>{t("legal.refund.sec6.p1")}</p>
       </LegalSection>
     </LegalPage>
   );

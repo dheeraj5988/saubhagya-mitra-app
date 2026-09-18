@@ -9,6 +9,7 @@ import {
   SUPPORT_EMAIL,
   buildEnquiryWhatsAppUrl,
 } from "@/lib/campaign";
+import { useI18n } from "@/lib/i18n";
 
 export function LegalSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -28,12 +29,13 @@ export function LegalPage({
   updated?: string;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <div className="min-h-dvh bg-background">
       <header className="border-b border-border bg-navy px-4 py-4 text-navy-foreground">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
           <Link to="/" className="font-display text-lg font-bold">
-            सौभाग्य मतदाता पर्ची सेवा
+            {t("brand.full")}
           </Link>
           <Button
             asChild
@@ -42,7 +44,7 @@ export function LegalPage({
             className="border-navy-foreground/40 bg-navy-foreground/10 text-navy-foreground hover:bg-navy-foreground/20"
           >
             <Link to="/">
-              <ArrowLeft className="size-4" /> Home
+              <ArrowLeft className="size-4" /> {t("legal.page.home")}
             </Link>
           </Button>
         </div>
@@ -51,13 +53,15 @@ export function LegalPage({
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-10">
         <div>
           <h1 className="font-display text-3xl font-black text-navy">{title}</h1>
-          <p className="mt-1 text-xs text-muted-foreground">Last updated: {updated}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t("legal.page.last_updated")} {updated}
+          </p>
         </div>
 
         {children}
 
         <section className="rounded-xl border border-border bg-card p-4 shadow-card">
-          <h2 className="font-display text-lg font-bold text-navy">Reach us</h2>
+          <h2 className="font-display text-lg font-bold text-navy">{t("legal.page.reach_us")}</h2>
           <p className="mt-2 text-sm text-foreground/85">{BUSINESS_ADDRESS}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button asChild variant="success" size="sm">
