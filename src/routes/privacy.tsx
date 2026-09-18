@@ -33,7 +33,7 @@ function Privacy() {
 
       <LegalSection title={t("legal.privacy.sec2.title")}>
         <p>{t("legal.privacy.sec2.p1")}</p>
-        <p>We do not sell your data and we do not use it for unrelated marketing.</p>
+        <p>{t("legal.dom.1")}</p>
       </LegalSection>
 
       <LegalSection title={t("legal.privacy.sec3.title")}>
@@ -49,7 +49,7 @@ function Privacy() {
       </LegalSection>
 
       <LegalSection title={t("legal.privacy.sec6.title")}>
-        <p>This service is intended for election candidates and is not directed at children.</p>
+        <p>{t("legal.dom.2")}</p>
       </LegalSection>
 
       <LegalSection title={t("legal.privacy.sec7.title")}>

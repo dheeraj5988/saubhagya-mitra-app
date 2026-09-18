@@ -111,7 +111,7 @@ export const createOrder = createServerFn({ method: "POST" })
       if (data.contact_number) orConditions.push(`and(type.eq.PHONE,value.eq.${data.contact_number})`);
       if (data.ip_address) orConditions.push(`and(type.eq.IP,value.eq.${data.ip_address})`);
       
-      const { data: blockedRows } = await (supabaseAdmin as any)
+      const { data: blockedRows } = await supabaseAdmin
         .from("blocked_entities")
         .select("id")
         .or(orConditions.join(","))
@@ -136,7 +136,7 @@ export const createOrder = createServerFn({ method: "POST" })
         
       if (recentOrders && recentOrders.length >= 3) {
         // Automatically block this IP
-        await (supabaseAdmin as any)
+        await supabaseAdmin
           .from("blocked_entities")
           .insert({ type: "IP", value: data.ip_address, reason: "Exceeded daily UNPAID limit" });
         throw new Error("Daily limit for unpaid orders exceeded. Please contact support.");
@@ -250,7 +250,7 @@ export const createOrder = createServerFn({ method: "POST" })
       }));
 
       // Fire and forget; do not fail the order if the registry insertion fails.
-      (supabaseAdmin as any)
+      supabaseAdmin
         .from("ward_photo_data_registry")
         .insert(registryRows)
         .then((res: any) => {

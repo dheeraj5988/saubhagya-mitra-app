@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+
+      blocked_entities: {
+        Row: {
+          id: string
+          type: "IP" | "PHONE"
+          value: string
+          reason: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          type: "IP" | "PHONE"
+          value: string
+          reason?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          type?: "IP" | "PHONE"
+          value?: string
+          reason?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+
+      ward_photo_data_registry: {
+        Row: {
+          ward_id: string
+          total_voters: number
+          verified_by: string | null
+          verified_at: string | null
+          created_at: string
+        }
+        Insert: {
+          ward_id: string
+          total_voters: number
+          verified_by?: string | null
+          verified_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          ward_id?: string
+          total_voters?: number
+          verified_by?: string | null
+          verified_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       admin_login_attempts: {
         Row: {
           client_key: string
@@ -732,6 +782,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+
+      ward_photo_availability: {
+        Args: {
+          p_ward_ids: string[]
+        }
+        Returns: number
+      }
       admin_distinct_wards: {
         Args: never
         Returns: {

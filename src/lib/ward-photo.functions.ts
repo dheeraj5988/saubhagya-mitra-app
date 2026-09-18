@@ -13,7 +13,6 @@ export const checkWardPhotoAvailability = createServerFn({ method: "POST" })
     // We only call this when wards are selected.
     if (!data.ward_ids.length) return { available: false, count: 0 };
 
-    // @ts-ignore: RPC function not in generated types yet (Task 9)
     const { data: res, error } = await supabaseAdmin.rpc("ward_photo_availability", {
       p_ward_ids: data.ward_ids,
     });

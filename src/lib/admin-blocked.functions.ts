@@ -7,7 +7,7 @@ export const adminListBlocked = createServerFn({ method: "POST" })
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const { data: rows, error } = await (db as any)
+    const { data: rows, error } = await db
       .from("blocked_entities")
       .select("*")
       .order("created_at", { ascending: false })
@@ -23,7 +23,7 @@ export const adminBlockEntity = createServerFn({ method: "POST" })
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const { error } = await (db as any)
+    const { error } = await db
       .from("blocked_entities")
       .insert({
         type: data.type,
@@ -41,7 +41,7 @@ export const adminUnblockEntity = createServerFn({ method: "POST" })
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
 
-    const { error } = await (db as any)
+    const { error } = await db
       .from("blocked_entities")
       .delete()
       .match({ type: data.type, value: data.value });
