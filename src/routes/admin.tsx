@@ -73,8 +73,7 @@ import {
   adminPhotoUrl,
   adminUpdateStatus,
 } from "@/lib/admin.functions";
-import { adminBatchExport } from "@/lib/admin-batch.functions";
-import { BATCH_MAX } from "@/lib/admin-batch.schema";
+
 import {
   adminClearLeads,
   adminDeleteLead,
@@ -86,10 +85,7 @@ import { GeographyTab } from "@/components/admin/GeographyTab";
 import { SampleRequestsTab } from "@/components/admin/SampleRequestsTab";
 import { ReferralTab } from "@/components/admin/ReferralTab";
 import { BlockedTab } from "@/components/admin/BlockedTab";
-import {
-  adminAssignOrderPartner,
-  adminListPartners,
-} from "@/lib/admin-referral.functions";
+import { adminAssignOrderPartner, adminListPartners } from "@/lib/admin-referral.functions";
 import type { AdminPartnerStats } from "@/lib/admin-referral.schema";
 import { formatInr } from "@/lib/pricing";
 import {
@@ -169,11 +165,9 @@ function paymentClass(status: string) {
   if (status === "PAID_VERIFIED" || status === "MANUAL_APPROVED")
     return "border-success/40 bg-success/10 text-success";
   if (status === "SUSPICIOUS") return "border-destructive/40 bg-destructive/10 text-destructive";
-  if (status === "VERIFICATION_PENDING")
-    return "border-saffron/40 bg-saffron/10 text-saffron-deep";
+  if (status === "VERIFICATION_PENDING") return "border-saffron/40 bg-saffron/10 text-saffron-deep";
   return "border-border bg-muted text-muted-foreground";
 }
-
 
 function AdminPage() {
   const isDesktop = useIsDesktop();
@@ -344,11 +338,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const deleteOrder = useServerFn(adminDeleteOrder);
   const photoUrl = useServerFn(adminPhotoUrl);
   const updatePaymentStatus = useServerFn(adminUpdatePaymentStatus);
-  
+
   const deleteLead = useServerFn(adminDeleteLead);
   const clearLeads = useServerFn(adminClearLeads);
-  const batchExport = useServerFn(adminBatchExport);
-
   const [kpis, setKpis] = useState<AdminKpis>(EMPTY_KPIS);
   const [wards, setWards] = useState<string[]>([]);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -384,8 +376,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [pendingLeadDelete, setPendingLeadDelete] = useState<AdminLead | null>(null);
   const [clearingLeads, setClearingLeads] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
-  const [batchSize, setBatchSize] = useState("200");
-  const [batchBusy, setBatchBusy] = useState<"json" | "zip" | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
 
   const debouncedSearch = useDebounced(search);
@@ -530,7 +520,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     const prev = orders;
     setOrders((rows) => rows.map((r) => (r.id === order.id ? { ...r, payment_status: next } : r)));
     try {
-      await updatePaymentStatus({ data: { token, order_id: order.order_id, payment_status: next } });
+      await updatePaymentStatus({
+        data: { token, order_id: order.order_id, payment_status: next },
+      });
       toast.success(`${order.order_id} payment → ${next}`);
       void load(true);
     } catch (err) {
@@ -538,7 +530,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       handleError(err, "Payment status update failed.");
     }
   }
-
 
   async function confirmLeadDelete() {
     const lead = pendingLeadDelete;
@@ -612,7 +603,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
 
   function toggleOne(orderId: string) {
     setSelected((prev) =>
-      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId].slice(0, BATCH_MAX),
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId],
     );
   }
 
@@ -620,93 +611,20 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     setSelected((prev) => {
       const ids = orders.map((o) => o.order_id);
       if (ids.every((id) => prev.includes(id))) return prev.filter((id) => !ids.includes(id));
-      return Array.from(new Set([...prev, ...ids])).slice(0, BATCH_MAX);
+      return Array.from(new Set([...prev, ...ids]));
     });
-  }
-
-  /**
-   * Ticked rows win over the filter set; otherwise the batch is the current
-   * filters capped at the chosen size. Either way the server re-applies the
-   * same bounds, so the UI can never widen the export.
-   */
-  function batchPayload() {
-    return {
-      token,
-      order_ids: selected.slice(0, BATCH_MAX),
-      search: debouncedSearch,
-      ward,
-      status,
-      payment_status: paymentStatus,
-      limit: selected.length ? Math.min(selected.length, BATCH_MAX) : Number(batchSize),
-    };
-  }
-
-  function saveBlob(blob: Blob, filename: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async function exportBatchForClaude() {
-    setBatchBusy("json");
-    try {
-      const payload = await batchExport({ data: batchPayload() });
-      if (!payload.total_orders) {
-        toast.error("Nothing to export for the current batch.");
-        return;
-      }
-      saveBlob(
-        new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
-        `${payload.batch_id}.json`,
-      );
-      toast.success(
-        payload.capped
-          ? `Exported ${payload.total_orders} of ${payload.matched} matching orders (batch cap ${payload.limit}).`
-          : `Exported ${payload.total_orders} orders. Asset links expire in 1 hour.`,
-      );
-    } catch (err) {
-      handleError(err, "Batch export failed. Please retry.");
-    } finally {
-      setBatchBusy(null);
-    }
-  }
-
-  async function downloadAssetsZip() {
-    setBatchBusy("zip");
-    try {
-      const res = await fetch("/api/public/admin/batch-zip", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(batchPayload()),
-      });
-      if (res.status === 401) {
-        handleError(new Error("UNAUTHORIZED"), "Session expired.");
-        return;
-      }
-      if (!res.ok) throw new Error(await res.text());
-      const missing = Number(res.headers.get("X-Batch-Missing") ?? "0");
-      const name =
-        /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ??
-        "saubhagya-assets.zip";
-      saveBlob(await res.blob(), name);
-      toast.success(
-        missing ? `ZIP ready — ${missing} asset(s) were missing (see manifest.json).` : "ZIP ready.",
-      );
-    } catch (err) {
-      handleError(err, "Asset ZIP failed. Please retry.");
-    } finally {
-      setBatchBusy(null);
-    }
   }
 
   /** Exports pull the full filtered set from the server, not just this page. */
   async function exportOrders() {
     setExporting(true);
     try {
-      const { orders: rows, matched, limit, capped } = await exportOrdersFn({
+      const {
+        orders: rows,
+        matched,
+        limit,
+        capped,
+      } = await exportOrdersFn({
         data: { token, search: debouncedSearch, ward, status, payment_status: paymentStatus },
       });
       if (!rows.length) {
@@ -787,7 +705,12 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   async function exportLeads() {
     setExporting(true);
     try {
-      const { leads: rows, matched, limit, capped } = await exportLeadsFn({
+      const {
+        leads: rows,
+        matched,
+        limit,
+        capped,
+      } = await exportLeadsFn({
         data: { token, search: debouncedLeadSearch, date: leadDate, tz_offset: localTzOffset() },
       });
       if (!rows.length) {
@@ -949,10 +872,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ))}
                 </SelectContent>
               </Select>
-              <Select
-                value={status}
-                onValueChange={(v) => setStatus(v as OrderStatus | "all")}
-              >
+              <Select value={status} onValueChange={(v) => setStatus(v as OrderStatus | "all")}>
                 <SelectTrigger className="h-10 w-[160px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -1006,57 +926,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 )}{" "}
                 Export CSV
               </Button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-saffron/30 bg-saffron/[0.06] p-3">
-              <span className="text-sm font-semibold text-navy">Claude batch</span>
-              <span className="text-xs text-muted-foreground">
-                {selected.length
-                  ? `${selected.length} order(s) selected`
-                  : `Current filters, newest first (max ${batchSize})`}
-              </span>
-              <Select value={batchSize} onValueChange={setBatchSize} disabled={!!selected.length}>
-                <SelectTrigger className="h-9 w-[130px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {["50", "100", "200"].map((n) => (
-                    <SelectItem key={n} value={n}>
-                      Last {n}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                onClick={() => void exportBatchForClaude()}
-                disabled={batchBusy !== null || !orderTotal}
-              >
-                {batchBusy === "json" ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <FileJson className="size-4" />
-                )}{" "}
-                Export Batch for Claude
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => void downloadAssetsZip()}
-                disabled={batchBusy !== null || !orderTotal}
-              >
-                {batchBusy === "zip" ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <FolderArchive className="size-4" />
-                )}{" "}
-                Download All Assets as ZIP
-              </Button>
-              {selected.length ? (
-                <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
-                  <X className="size-4" /> Clear selection
-                </Button>
-              ) : null}
             </div>
 
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
@@ -1153,10 +1022,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                             {formatDateTime(o.created_at)}
                           </td>
                           <td className="px-3 py-2">
-                            <p
-                              className="truncate font-medium"
-                              title={o.candidate_name_hindi}
-                            >
+                            <p className="truncate font-medium" title={o.candidate_name_hindi}>
                               {o.candidate_name_hindi}
                             </p>
                             <p
@@ -1515,10 +1381,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           key={l.id}
                           className="border-t border-border/70 transition-colors hover:bg-saffron/[0.06]"
                         >
-                          <td
-                            className="px-3 py-2 text-xs"
-                            title={l.ip_address ?? undefined}
-                          >
+                          <td className="px-3 py-2 text-xs" title={l.ip_address ?? undefined}>
                             <span className="block truncate">{l.ip_address ?? "—"}</span>
                           </td>
                           <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
@@ -1530,7 +1393,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           <td className="px-3 py-2">
                             <Badge
                               variant="outline"
-                              className={cn("text-[11px] font-semibold", leadTypeClass(l.lead_type))}
+                              className={cn(
+                                "text-[11px] font-semibold",
+                                leadTypeClass(l.lead_type),
+                              )}
                             >
                               {leadTypeLabel(l.lead_type)}
                             </Badge>
@@ -1675,8 +1541,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   className="flex w-full items-center justify-between rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted/50"
                 >
                   <span>
-                    <span className="font-mono font-semibold">{p.partner_code}</span>{" "}
-                    {p.full_name}
+                    <span className="font-mono font-semibold">{p.partner_code}</span> {p.full_name}
                   </span>
                   <span className="text-xs text-muted-foreground">{p.district ?? ""}</span>
                 </button>
@@ -1818,8 +1683,14 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                       : "—",
                   ],
                   ["Payment Txn ID", detail.payment_txn_id ?? "—"],
-                  ["Payment Amount", detail.payment_amount == null ? "—" : `₹${detail.payment_amount}`],
-                  ["Payment Updated", detail.payment_updated_at ? formatDateTime(detail.payment_updated_at) : "—"],
+                  [
+                    "Payment Amount",
+                    detail.payment_amount == null ? "—" : `₹${detail.payment_amount}`,
+                  ],
+                  [
+                    "Payment Updated",
+                    detail.payment_updated_at ? formatDateTime(detail.payment_updated_at) : "—",
+                  ],
                 ].map(([label, value]) => (
                   <div key={label} className="min-w-0">
                     <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -1896,8 +1767,8 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this IP log entry?</AlertDialogTitle>
             <AlertDialogDescription>
-              This removes the visitor/lead record ({pendingLeadDelete?.ip_address ?? "unknown IP"}).
-              Orders are not affected.
+              This removes the visitor/lead record ({pendingLeadDelete?.ip_address ?? "unknown IP"}
+              ). Orders are not affected.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
