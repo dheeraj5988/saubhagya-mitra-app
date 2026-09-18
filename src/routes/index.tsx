@@ -35,9 +35,11 @@ function Index() {
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur">
         <div className="mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-saffron-gradient text-base font-black text-saffron-foreground">
-              सौ
-            </span>
+            <img
+              src="/logo-512.png"
+              alt={t("brand.full")}
+              className="size-8 shrink-0 rounded-full bg-white p-1 sm:size-10"
+            />
             <div className="min-w-0">
               <p className="truncate font-display text-base font-bold leading-tight text-navy">
                 {t("brand.name")}
