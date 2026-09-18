@@ -198,6 +198,28 @@ export const createOrder = createServerFn({ method: "POST" })
 
     if (!inserted) throw new Error("Could not generate a unique order id");
 
+    // Task 2: Data Flywheel — log into the registry if photo_slip is on.
+    if (data.photo_slip && data.voter_photo_pdf_path) {
+      const registryRows: any[] = wardSnapshots.map((w) => ({
+        ward_id: w.ward_id,
+        district: data.district,
+        panchayat_samiti: data.panchayat_samiti,
+        gram_panchayat: data.gram_panchayat,
+        ward_number: w.ward_number,
+        voter_count: w.voter_count,
+        pdf_path: data.voter_photo_pdf_path,
+        asset_id: crypto.randomUUID(), // Unique tracker for the uploaded asset
+      }));
+
+      // Fire and forget; do not fail the order if the registry insertion fails.
+      (supabaseAdmin as any)
+        .from("ward_photo_data_registry")
+        .insert(registryRows)
+        .then((res: any) => {
+          if (res.error) console.error("Error inserting into photo registry:", res.error);
+        });
+    }
+
     // Referral attribution. The partner, its commission terms and the
     // commission amount are all resolved server-side from the code alone —
     // the browser's numbers are never trusted, exactly like the ward re-read

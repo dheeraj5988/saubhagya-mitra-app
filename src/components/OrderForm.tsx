@@ -6,21 +6,26 @@ import {
   Check,
   CheckCircle2,
   ChevronsUpDown,
+  FileText,
   ImageUp,
+  Info,
   LayoutGrid,
   ListChecks,
   Loader2,
   MapPin,
   MessageCircle,
   Trash2,
+  Upload,
   User,
   Vote,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -52,6 +57,7 @@ import { LIST_OPTIONS, type ListOption } from "@/lib/orders.schema";
 import { listActiveSymbols } from "@/lib/catalog.functions";
 import { readReferral, storeReferral } from "@/lib/referral";
 import { resolveReferralPartner } from "@/lib/referral.functions";
+import { checkWardPhotoAvailability } from "@/lib/ward-photo.functions";
 import {
   getPublicPricing,
   listDistricts,
@@ -212,6 +218,7 @@ export function OrderForm() {
   const fetchGps = useServerFn(listGramPanchayats);
   const fetchWards = useServerFn(listWards);
   const fetchPricing = useServerFn(getPublicPricing);
+  const fetchWardPhoto = useServerFn(checkWardPhotoAvailability);
 
   // Section 1 — area, chosen only through the master-data hierarchy.
   const [districtId, setDistrictId] = useState<string | null>(null);
@@ -219,6 +226,13 @@ export function OrderForm() {
   const [gpId, setGpId] = useState<string | null>(null);
   const [wardIds, setWardIds] = useState<string[]>([]);
   const [wardOpen, setWardOpen] = useState(false);
+
+  const wardPhotoQuery = useQuery({
+    queryKey: ["ward-photo", wardIds],
+    queryFn: () => fetchWardPhoto({ data: { ward_ids: wardIds } }),
+    enabled: wardIds.length > 0,
+  });
+  const photoSlipDataAvailable = wardPhotoQuery.data?.available ?? false;
 
   // Section 2 — optional slip details.
   const [bodyName, setBodyName] = useState("");
@@ -463,6 +477,17 @@ export function OrderForm() {
         if (uploadError) throw new Error(uploadError.message);
       }
 
+      let pdfPath: string | null = null;
+      let consentTime: string | null = null;
+      if (photoSlip && voterPdf) {
+        pdfPath = `uploads/${crypto.randomUUID()}.pdf`;
+        const { error: pdfUploadError } = await supabase.storage
+          .from("voter-raw-lists")
+          .upload(pdfPath, voterPdf, { contentType: "application/pdf", upsert: false });
+        if (pdfUploadError) throw new Error(pdfUploadError.message);
+        consentTime = new Date().toISOString();
+      }
+
       const result = await submitOrder({
         data: {
           candidate_name_hindi: nameHi.trim(),
@@ -485,6 +510,9 @@ export function OrderForm() {
           poll_date: pollDate.trim() || null,
           list_options: lists,
           photo_path: photoPath,
+          photo_slip: photoSlip,
+          voter_photo_pdf_path: pdfPath,
+          photo_consent_at: consentTime,
           ip_address: ipRef.current,
           user_agent: typeof navigator === "undefined" ? null : navigator.userAgent.slice(0, 400),
           lead_id: leadIdRef.current,
@@ -947,58 +975,168 @@ export function OrderForm() {
           </Field>
         </Section>
 
-        {/* SECTION 3 — 8 designs, two columns of four */}
+        {/* SECTION 3 — Design and Photo Slip */}
         <Section icon={LayoutGrid} title={t("form.section.design")} hint={t("form.design.hint")}>
-          <div className="grid grid-cols-1 gap-2.5 min-[380px]:grid-cols-2">
-            {DESIGN_CODES.map((code) => {
-              const meta = DESIGN_META[code];
-              const active = design === code;
-              return (
-                <button
-                  key={code}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => {
-                    setDesign(code);
-                    setErrors((p) => ({ ...p, design: undefined }));
-                  }}
-                  className={cn(
-                    "flex flex-row items-center gap-3 rounded-xl border-2 p-3 text-left transition-colors",
-                    active
-                      ? "border-saffron bg-saffron/10 shadow-card"
-                      : "border-border bg-card hover:border-saffron/50",
-                  )}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between rounded-xl border border-border p-4 shadow-sm">
+              <div className="flex flex-col gap-1 pr-4">
+                <Label
+                  htmlFor="photo-slip-toggle"
+                  className="flex items-center gap-2 text-base font-bold text-navy"
                 >
-                  <div className="flex min-w-0 flex-1 flex-col justify-center">
-                    <p className="flex items-center gap-1.5">
-                      <span className="rounded bg-navy px-1.5 py-0.5 text-[10px] font-black text-navy-foreground">
-                        {meta.label}
-                      </span>
-                      {active ? <Check className="ml-auto size-4 shrink-0 text-success" /> : null}
-                    </p>
-                    <p className="mt-1 text-sm font-bold leading-snug text-navy">{meta.desc}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{meta.spec}</p>
-                  </div>
-                  <div className="w-[30%] min-w-[3.5rem] max-w-[5rem] shrink-0">
-                    <DesignPreview meta={meta} />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          {errors.design ? (
-            <p
-              role="alert"
-              className="flex items-center gap-1.5 text-xs font-medium text-destructive"
+                  {t("photo_slip.title")}
+                  {photoSlipDataAvailable ? (
+                    <Badge variant="secondary" className="bg-success/15 text-success hover:bg-success/15 text-[10px]">
+                      {t("photo_slip.badge")}
+                    </Badge>
+                  ) : null}
+                </Label>
+                <p className="text-xs text-muted-foreground">{t("photo_slip.desc")}</p>
+              </div>
+              <Switch
+                id="photo-slip-toggle"
+                checked={photoSlip}
+                onCheckedChange={(checked) => {
+                  if (checked && !photoSlipConsent) {
+                    setPhotoSlipInfoOpen(true);
+                  } else {
+                    setPhotoSlip(checked);
+                  }
+                }}
+              />
+            </div>
+
+            <Dialog
+              open={photoSlipInfoOpen}
+              onOpenChange={(open) => {
+                setPhotoSlipInfoOpen(open);
+                if (!open && !photoSlipConsent) {
+                  setPhotoSlip(false);
+                }
+              }}
             >
-              <AlertCircle className="size-3.5" /> {errors.design}
-            </p>
-          ) : null}
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{t("photo_slip.consent.title")}</DialogTitle>
+                  <DialogDescription>{t("photo_slip.consent.desc")}</DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col gap-4 py-4">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="voter-pdf" className="text-sm font-semibold">
+                      {t("photo_slip.pdf")}
+                    </Label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        ref={voterPdfInputRef}
+                        id="voter-pdf"
+                        type="file"
+                        accept="application/pdf"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 50 * 1024 * 1024) {
+                              toast.error("PDF must be smaller than 50MB");
+                              if (voterPdfInputRef.current) voterPdfInputRef.current.value = "";
+                              return;
+                            }
+                            setVoterPdf(file);
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full justify-start gap-2"
+                        onClick={() => voterPdfInputRef.current?.click()}
+                      >
+                        <Upload className="size-4" />
+                        {voterPdf ? voterPdf.name : t("form.photo.pick")}
+                      </Button>
+                      {voterPdf ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setVoterPdf(null);
+                            if (voterPdfInputRef.current) voterPdfInputRef.current.value = "";
+                          }}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button variant="ghost" onClick={() => setPhotoSlipInfoOpen(false)}>
+                    {t("form.ward.clear")}
+                  </Button>
+                  <Button
+                    disabled={!voterPdf}
+                    onClick={() => {
+                      setPhotoSlipConsent(true);
+                      setPhotoSlip(true);
+                      setPhotoSlipInfoOpen(false);
+                    }}
+                  >
+                    {t("photo_slip.agree")}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Field id="design" label={t("form.design")} error={errors.design}>
+              <Select
+                value={design}
+                onValueChange={(val: DesignCode) => {
+                  setDesign(val);
+                  setErrors((p) => ({ ...p, design: undefined }));
+                }}
+              >
+                <SelectTrigger className="h-auto px-4 py-3">
+                  <SelectValue placeholder={t("form.design.hint")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {DESIGN_CODES.map((code) => {
+                    const meta = DESIGN_META[code];
+                    return (
+                      <SelectItem key={code} value={code} className="py-3">
+                        <div className="flex items-center gap-4">
+                          <div className="w-[4.5rem] shrink-0">
+                            <DesignPreview meta={meta} />
+                          </div>
+                          <div className="flex flex-col gap-0.5 text-left">
+                            <span className="font-bold text-navy">
+                              <span className="mr-2 inline-block rounded bg-navy px-1.5 py-0.5 text-[10px] font-black leading-none text-navy-foreground">
+                                {meta.label}
+                              </span>
+                              {meta.desc}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{meta.spec}</span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            {design && (
+              <div className="flex items-center justify-center rounded-xl border border-border bg-card p-4">
+                <div className="w-[40%] max-w-[8rem]">
+                  <DesignPreview meta={DESIGN_META[design as DesignCode]} />
+                </div>
+              </div>
+            )}
+          </div>
         </Section>
 
         {/* SECTION 4 — list options */}
         <Section icon={ListChecks} title={t("form.section.lists")} hint={t("form.lists.hint")}>
-          <div className="grid gap-2">
+          <div className="flex flex-wrap gap-2">
             {LIST_OPTIONS.map((option) => {
               const checked = lists.includes(option);
               return (
@@ -1006,20 +1144,21 @@ export function OrderForm() {
                   key={option}
                   htmlFor={`list-${option}`}
                   className={cn(
-                    "flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors",
+                    "flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                     checked ? "border-saffron bg-saffron/10 text-navy" : "border-border bg-card",
                   )}
                 >
                   <Checkbox
                     id={`list-${option}`}
                     checked={checked}
+                    className="size-4"
                     onCheckedChange={(value) =>
                       setLists((prev) =>
                         value ? [...prev, option] : prev.filter((item) => item !== option),
                       )
                     }
                   />
-                  {t(LIST_LABELS[option])}
+                  {t(`${LIST_LABELS[option]}.short` as TKey) || t(LIST_LABELS[option])}
                 </label>
               );
             })}
