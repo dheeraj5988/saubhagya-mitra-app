@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
 
 import {
   LEAD_STATUSES,
@@ -105,11 +106,19 @@ export const createOrder = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { loadPaymentConfig } = await import("./payment-config.server");
 
+    const forwarded = getRequestHeader("x-forwarded-for") ?? "";
+    const requestIp =
+      forwarded.split(",")[0]?.trim() ||
+      getRequestHeader("cf-connecting-ip") ||
+      getRequestHeader("x-real-ip") ||
+      "unknown";
+
+
     // Check blocklist
-    if (data.ip_address || data.contact_number) {
+    if (requestIp !== "unknown" || data.contact_number) {
       const orConditions: string[] = [];
-      if (data.contact_number) orConditions.push(`and(type.eq.PHONE,value.eq.${data.contact_number})`);
-      if (data.ip_address) orConditions.push(`and(type.eq.IP,value.eq.${data.ip_address})`);
+      if (data.contact_number) orConditions.push(`and(phone.eq.${data.contact_number},is_blocked.eq.true)`);
+      if (requestIp !== "unknown") orConditions.push(`and(ip_address.eq.${requestIp},is_blocked.eq.true)`);
       
       const { data: blockedRows } = await supabaseAdmin
         .from("blocked_entities")
@@ -122,24 +131,42 @@ export const createOrder = createServerFn({ method: "POST" })
       }
     }
 
-    // Task 6: Daily Limit (IP)
-    if (data.ip_address) {
-      const today = new Date();
-      today.setUTCHours(0,0,0,0);
-      
-      const { data: recentOrders } = await supabaseAdmin
+        // Task 6: Auto-flagging for spam (UNPAID older than 48h)
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    
+    // Check IP
+    if (requestIp !== "unknown") {
+      const { data: unpaidIpOrders } = await supabaseAdmin
         .from("orders")
         .select("id")
-        .eq("ip_address", data.ip_address)
+        .eq("ip_address", requestIp)
         .eq("payment_status", "UNPAID")
-        .gte("created_at", today.toISOString());
-        
-      if (recentOrders && recentOrders.length >= 3) {
-        // Automatically block this IP
-        await supabaseAdmin
-          .from("blocked_entities")
-          .insert({ type: "IP", value: data.ip_address, reason: "Exceeded daily UNPAID limit" });
-        throw new Error("Daily limit for unpaid orders exceeded. Please contact support.");
+        .lte("created_at", fortyEightHoursAgo);
+      if (unpaidIpOrders && unpaidIpOrders.length >= 3) {
+        await supabaseAdmin.from("blocked_entities").upsert({
+          ip_address: requestIp,
+          reason: "Auto-flagged: 3+ unpaid orders older than 48h",
+          unpaid_orders_count: unpaidIpOrders.length,
+          is_blocked: false
+        }, { onConflict: "ip_address" });
+      }
+    }
+
+    // Check Phone
+    if (data.contact_number) {
+      const { data: unpaidPhoneOrders } = await supabaseAdmin
+        .from("orders")
+        .select("id")
+        .eq("contact_number", data.contact_number)
+        .eq("payment_status", "UNPAID")
+        .lte("created_at", fortyEightHoursAgo);
+      if (unpaidPhoneOrders && unpaidPhoneOrders.length >= 3) {
+        await supabaseAdmin.from("blocked_entities").upsert({
+          phone: data.contact_number,
+          reason: "Auto-flagged: 3+ unpaid orders older than 48h",
+          unpaid_orders_count: unpaidPhoneOrders.length,
+          is_blocked: false
+        }, { onConflict: "phone" });
       }
     }
 
@@ -184,7 +211,7 @@ export const createOrder = createServerFn({ method: "POST" })
     let orderUuid: string | null = null;
 
     for (let attempt = 0; attempt < 15; attempt++) {
-      const payload: Record<string, unknown> = {
+      const payload: any = {
         order_id: orderId,
         candidate_name_hindi: data.candidate_name_hindi,
         candidate_name_english: data.candidate_name_english,
@@ -238,7 +265,7 @@ export const createOrder = createServerFn({ method: "POST" })
 
     // Task 2: Data Flywheel — log into the registry if photo_slip is on.
     if (data.photo_slip && data.voter_photo_pdf_path) {
-      const registryRows: Record<string, unknown>[] = wardSnapshots.map((w) => ({
+      const registryRows: any[] = wardSnapshots.map((w) => ({
         ward_id: w.ward_id,
         district: data.district,
         panchayat_samiti: data.panchayat_samiti,
@@ -253,7 +280,7 @@ export const createOrder = createServerFn({ method: "POST" })
       supabaseAdmin
         .from("ward_photo_data_registry")
         .insert(registryRows)
-        .then((res: unknown) => {
+        .then((res: any) => {
           if (res.error) console.error("Error inserting into photo registry:", res.error);
         });
     }

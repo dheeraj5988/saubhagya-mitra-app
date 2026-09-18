@@ -17,7 +17,6 @@ import { Route as RefundRouteImport } from './routes/refund'
 import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as RCodeRouteImport } from './routes/r.$code'
-import { Route as ApiPublicAdminBatchZipRouteImport } from './routes/api/public/admin/batch-zip'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,11 +58,6 @@ const RCodeRoute = RCodeRouteImport.update({
   path: '/r/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicAdminBatchZipRoute = ApiPublicAdminBatchZipRouteImport.update({
-  id: '/api/public/admin/batch-zip',
-  path: '/api/public/admin/batch-zip',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -74,7 +68,6 @@ export interface FileRoutesByFullPath {
   '/shipping': typeof ShippingRoute
   '/terms': typeof TermsRoute
   '/r/$code': typeof RCodeRoute
-  '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,7 +78,6 @@ export interface FileRoutesByTo {
   '/shipping': typeof ShippingRoute
   '/terms': typeof TermsRoute
   '/r/$code': typeof RCodeRoute
-  '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,7 +89,6 @@ export interface FileRoutesById {
   '/shipping': typeof ShippingRoute
   '/terms': typeof TermsRoute
   '/r/$code': typeof RCodeRoute
-  '/api/public/admin/batch-zip': typeof ApiPublicAdminBatchZipRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,7 +101,6 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/terms'
     | '/r/$code'
-    | '/api/public/admin/batch-zip'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -121,7 +111,6 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/terms'
     | '/r/$code'
-    | '/api/public/admin/batch-zip'
   id:
     | '__root__'
     | '/'
@@ -132,7 +121,6 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/terms'
     | '/r/$code'
-    | '/api/public/admin/batch-zip'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,7 +132,6 @@ export interface RootRouteChildren {
   ShippingRoute: typeof ShippingRoute
   TermsRoute: typeof TermsRoute
   RCodeRoute: typeof RCodeRoute
-  ApiPublicAdminBatchZipRoute: typeof ApiPublicAdminBatchZipRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -205,13 +192,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/admin/batch-zip': {
-      id: '/api/public/admin/batch-zip'
-      path: '/api/public/admin/batch-zip'
-      fullPath: '/api/public/admin/batch-zip'
-      preLoaderRoute: typeof ApiPublicAdminBatchZipRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -224,7 +204,6 @@ const rootRouteChildren: RootRouteChildren = {
   ShippingRoute: ShippingRoute,
   TermsRoute: TermsRoute,
   RCodeRoute: RCodeRoute,
-  ApiPublicAdminBatchZipRoute: ApiPublicAdminBatchZipRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

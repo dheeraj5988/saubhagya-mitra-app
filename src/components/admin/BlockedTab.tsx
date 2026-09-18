@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Trash2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,14 @@ import { formatDateTime } from "@/lib/admin-ui";
 
 type BlockedEntityRow = {
   id: string;
-  type: "IP" | "PHONE";
-  value: string;
+  ip_address: string | null;
+  phone: string | null;
   reason: string | null;
-  blocked_at: string;
+  unpaid_orders_count: number;
+  is_blocked: boolean;
+  blocked_by: string | null;
   created_at: string;
+  updated_at: string;
 };
 
 export function BlockedTab({
@@ -108,7 +111,7 @@ export function BlockedTab({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-card">
         <div className="flex-1"></div>
-        <span className="text-xs text-muted-foreground">{rows.length} blocked</span>
+        <span className="text-xs text-muted-foreground">{rows.length} records</span>
         <Button variant="outline" size="sm" onClick={() => void load()}>
           <RefreshCw className="size-4" /> Reload
         </Button>
@@ -168,7 +171,7 @@ export function BlockedTab({
           </div>
         ) : rows.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
-            No blocked entities.
+            No blocked entities or flagged records.
           </p>
         ) : (
           <table className="w-full text-sm">
@@ -176,31 +179,53 @@ export function BlockedTab({
               <tr>
                 <th className="px-3 py-2 w-24">Type</th>
                 <th className="px-3 py-2 w-48">Value</th>
-                <th className="px-3 py-2">Reason</th>
-                <th className="px-3 py-2 w-40">Blocked At</th>
+                <th className="px-3 py-2 w-20">Unpaid</th>
+                <th className="px-3 py-2">Status / Reason</th>
+                <th className="px-3 py-2 w-40">Updated At</th>
                 <th className="px-3 py-2 w-16 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {rows.map((r) => (
-                <tr key={r.id} className="hover:bg-muted/40">
-                  <td className="px-3 py-2 font-mono text-xs font-semibold">{r.type}</td>
-                  <td className="px-3 py-2 font-mono">{r.value}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{r.reason ?? "—"}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
-                    {r.blocked_at ? formatDateTime(r.blocked_at) : "—"}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemove(r.type, r.value)}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {rows.map((r) => {
+                const isIp = !!r.ip_address;
+                const typeLabel = isIp ? "IP" : "PHONE";
+                const val = r.ip_address || r.phone;
+                return (
+                  <tr key={r.id} className="hover:bg-muted/40">
+                    <td className="px-3 py-2 font-mono text-xs font-semibold">{typeLabel}</td>
+                    <td className="px-3 py-2 font-mono">{val}</td>
+                    <td className="px-3 py-2 font-mono">{r.unpaid_orders_count}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-col gap-1">
+                        {r.is_blocked ? (
+                          <span className="inline-flex w-fit items-center gap-1 rounded bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive">
+                            BLOCKED
+                          </span>
+                        ) : (
+                          <span className="inline-flex w-fit items-center gap-1 rounded bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+                            <ShieldAlert className="size-3" /> FLAGGED
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground">{r.reason ?? "—"}</span>
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
+                      {r.updated_at ? formatDateTime(r.updated_at) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {r.is_blocked && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemove(typeLabel, val as string)}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

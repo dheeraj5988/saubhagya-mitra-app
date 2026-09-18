@@ -18,49 +18,82 @@ export type Database = {
       blocked_entities: {
         Row: {
           id: string
-          type: "IP" | "PHONE"
-          value: string
+          ip_address: string | null
+          phone: string | null
           reason: string | null
+          unpaid_orders_count: number
+          is_blocked: boolean
+          blocked_by: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
-          type: "IP" | "PHONE"
-          value: string
+          ip_address?: string | null
+          phone?: string | null
           reason?: string | null
+          unpaid_orders_count?: number
+          is_blocked?: boolean
+          blocked_by?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
-          type?: "IP" | "PHONE"
-          value?: string
+          ip_address?: string | null
+          phone?: string | null
           reason?: string | null
+          unpaid_orders_count?: number
+          is_blocked?: boolean
+          blocked_by?: string | null
           created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
 
       ward_photo_data_registry: {
         Row: {
+          id: string
           ward_id: string
-          total_voters: number
-          verified_by: string | null
-          verified_at: string | null
+          district: string
+          panchayat_samiti: string
+          gram_panchayat: string
+          ward_number: string
+          voter_count: number
+          asset_id: string
+          pdf_path: string
+          extracted_at: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
+          id?: string
           ward_id: string
-          total_voters: number
-          verified_by?: string | null
-          verified_at?: string | null
+          district: string
+          panchayat_samiti: string
+          gram_panchayat: string
+          ward_number: string
+          voter_count: number
+          asset_id: string
+          pdf_path: string
+          extracted_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
+          id?: string
           ward_id?: string
-          total_voters?: number
-          verified_by?: string | null
-          verified_at?: string | null
+          district?: string
+          panchayat_samiti?: string
+          gram_panchayat?: string
+          ward_number?: string
+          voter_count?: number
+          asset_id?: string
+          pdf_path?: string
+          extracted_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

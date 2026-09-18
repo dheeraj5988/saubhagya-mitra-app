@@ -1,9 +1,11 @@
 CREATE TABLE public.blocked_entities (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  type text NOT NULL CHECK (type IN ('IP', 'PHONE')),
-  value text NOT NULL UNIQUE,
+  ip_address text UNIQUE,
+  phone text UNIQUE,
   reason text,
-  blocked_at timestamptz NOT NULL DEFAULT now(),
+  unpaid_orders_count integer DEFAULT 0,
+  is_blocked boolean NOT NULL DEFAULT false,
+  blocked_by text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

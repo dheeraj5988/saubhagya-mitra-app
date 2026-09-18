@@ -254,6 +254,7 @@ export function OrderForm() {
   // Photo voter slip toggle.
   const [photoSlip, setPhotoSlip] = useState(false);
   const [photoSlipConsent, setPhotoSlipConsent] = useState(false);
+  const [consentTicked, setConsentTicked] = useState(false);
   const [photoSlipInfoOpen, setPhotoSlipInfoOpen] = useState(false);
   const [voterPdf, setVoterPdf] = useState<File | null>(null);
 
@@ -356,7 +357,12 @@ export function OrderForm() {
 
     (async () => {
       let ip: string | null = null;
-      try {
+  
+    try {
+      if (photoSlip && !photoSlipConsent) {
+        toast.error(t("err.form"));
+        return;
+      }
         const res = await fetch("https://api.ipify.org?format=json");
         const json = (await res.json()) as { ip?: string };
         ip = json.ip ?? null;
@@ -530,7 +536,7 @@ export function OrderForm() {
       toast.success(`${t("success.toast")} — ${result.order_id}`);
     } catch (error: unknown) {
       console.error(error);
-      const msg = error?.message || "";
+      const msg = (error as Error)?.message || "";
       if (msg.includes("Cannot process order") || msg.includes("Daily limit")) {
         setBlockError(true);
       } else {
@@ -1074,13 +1080,24 @@ export function OrderForm() {
                       ) : null}
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-3 mt-2 p-3 bg-muted/30 rounded-lg border">
+                    <Checkbox
+                      id="photo-slip-consent"
+                      checked={consentTicked}
+                      onCheckedChange={(checked) => setConsentTicked(checked === true)}
+                    />
+                    <Label htmlFor="photo-slip-consent" className="text-sm font-medium leading-snug cursor-pointer">
+                      {t("photo_slip.consent.checkbox")}
+                    </Label>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button variant="ghost" onClick={() => setPhotoSlipInfoOpen(false)}>
                     {t("form.ward.clear")}
                   </Button>
                   <Button
-                    disabled={!voterPdf}
+                    disabled={!voterPdf || !consentTicked}
                     onClick={() => {
                       setPhotoSlipConsent(true);
                       setPhotoSlip(true);

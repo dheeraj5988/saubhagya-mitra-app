@@ -84,6 +84,7 @@ export const DICTIONARY = {
   },
   "photo_slip.pdf": { hi: "वोटर लिस्ट PDF अपलोड करें", en: "Upload Voter List PDF" },
   "photo_slip.agree": { hi: "मैं सहमत हूँ", en: "I agree" },
+  "photo_slip.consent.checkbox": { hi: "मैं घोषणा करता हूँ कि मैं चुनाव उद्देश्यों के लिए इन मतदाता रिकॉर्ड का उपयोग करने के लिए अधिकृत हूँ।", en: "I declare that I am authorized to use these voter records for election purposes." },
 
   "design.D1.title": { hi: "क्लासिक", en: "Classic" },
   "design.D1.desc": { hi: "फोटो बाएँ, चुनाव चिन्ह दाएँ", en: "Photo left, symbol right" },

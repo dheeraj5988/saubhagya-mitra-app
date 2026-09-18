@@ -1,51 +1,53 @@
 import { createServerFn } from "@tanstack/react-start";
-import { blockActionSchema, blockListSchema } from "./admin-blocked.schema";
+import { z } from "zod";
 
-export const adminListBlocked = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => blockListSchema.parse(data))
-  .handler(async ({ data }) => {
-    const { assertSession } = await import("./admin.server");
-    const db = await assertSession(data.token);
+import { blockListSchema, blockActionSchema } from "./admin-blocked.schema";
+import { assertSession } from "./admin.server";
 
-    const { data: rows, error } = await db
-      .from("blocked_entities")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(100);
+export const adminListBlocked = createServerFn({ method: "POST" }).validator((d: unknown) => d).handler(async ({ data: payload }) => {
+  const data = blockListSchema.parse(payload);
+  const db = await assertSession(data.token);
 
-    if (error) throw new Error(error.message);
-    return rows;
-  });
+  const { data: rows, error } = await db
+    .from("blocked_entities")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-export const adminBlockEntity = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => blockActionSchema.parse(data))
-  .handler(async ({ data }) => {
-    const { assertSession } = await import("./admin.server");
-    const db = await assertSession(data.token);
+  if (error) throw new Error(error.message);
+  return rows;
+});
 
-    const { error } = await db
-      .from("blocked_entities")
-      .insert({
-        type: data.type,
-        value: data.value,
-        reason: data.reason ?? null,
-      });
+export const adminBlockEntity = createServerFn({ method: "POST" }).validator((d: unknown) => d).handler(async ({ data: payload }) => {
+  const data = blockActionSchema.parse(payload);
+  const db = await assertSession(data.token);
 
-    if (error) throw new Error(error.message);
-    return { success: true };
-  });
+  const isIp = data.type === "IP";
+  const matchCol = isIp ? "ip_address" : "phone";
 
-export const adminUnblockEntity = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => blockActionSchema.parse(data))
-  .handler(async ({ data }) => {
-    const { assertSession } = await import("./admin.server");
-    const db = await assertSession(data.token);
+  // Upsert the block
+  const { error } = await db.from("blocked_entities").upsert({
+    ...(isIp ? { ip_address: data.value } : { phone: data.value }),
+    reason: data.reason ?? null,
+    is_blocked: true,
+    blocked_by: "ADMIN",
+    updated_at: new Date().toISOString(),
+  }, { onConflict: matchCol });
 
-    const { error } = await db
-      .from("blocked_entities")
-      .delete()
-      .match({ type: data.type, value: data.value });
+  if (error) throw new Error(error.message);
+  return { success: true };
+});
 
-    if (error) throw new Error(error.message);
-    return { success: true };
-  });
+export const adminUnblockEntity = createServerFn({ method: "POST" }).validator((d: unknown) => d).handler(async ({ data: payload }) => {
+  const data = blockActionSchema.parse(payload);
+  const db = await assertSession(data.token);
+
+  const matchCol = data.type === "IP" ? "ip_address" : "phone";
+
+  const { error } = await db
+    .from("blocked_entities")
+    .update({ is_blocked: false, updated_at: new Date().toISOString() })
+    .eq(matchCol, data.value);
+
+  if (error) throw new Error(error.message);
+  return { success: true };
+});
