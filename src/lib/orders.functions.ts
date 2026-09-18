@@ -184,7 +184,7 @@ export const createOrder = createServerFn({ method: "POST" })
     let orderUuid: string | null = null;
 
     for (let attempt = 0; attempt < 15; attempt++) {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         order_id: orderId,
         candidate_name_hindi: data.candidate_name_hindi,
         candidate_name_english: data.candidate_name_english,
@@ -238,7 +238,7 @@ export const createOrder = createServerFn({ method: "POST" })
 
     // Task 2: Data Flywheel — log into the registry if photo_slip is on.
     if (data.photo_slip && data.voter_photo_pdf_path) {
-      const registryRows: any[] = wardSnapshots.map((w) => ({
+      const registryRows: Record<string, unknown>[] = wardSnapshots.map((w) => ({
         ward_id: w.ward_id,
         district: data.district,
         panchayat_samiti: data.panchayat_samiti,
@@ -253,7 +253,7 @@ export const createOrder = createServerFn({ method: "POST" })
       supabaseAdmin
         .from("ward_photo_data_registry")
         .insert(registryRows)
-        .then((res: any) => {
+        .then((res: unknown) => {
           if (res.error) console.error("Error inserting into photo registry:", res.error);
         });
     }

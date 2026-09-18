@@ -528,7 +528,7 @@ export function OrderForm() {
         voterCount: result.voter_count,
       });
       toast.success(`${t("success.toast")} — ${result.order_id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       const msg = error?.message || "";
       if (msg.includes("Cannot process order") || msg.includes("Daily limit")) {
