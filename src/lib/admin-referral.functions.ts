@@ -53,33 +53,51 @@ export const adminListPartners = createServerFn({ method: "POST" })
       db.rpc("admin_referral_summary"),
       db.from("referral_partners").select("*").limit(1000),
     ]);
-    if (summary.error) throw new Error(summary.error.message);
     if (details.error) throw new Error(details.error.message);
+
+    // If RPC fails (e.g. dropped in a migration), fallback gracefully
+    if (summary.error) {
+      console.warn("admin_referral_summary failed, using fallback:", summary.error);
+    }
 
     const byId = new Map(((details.data ?? []) as Record<string, unknown>[]).map((r) => [r["id"] as string, r]));
 
-    const rows: AdminPartnerStats[] = ((summary.data ?? []) as unknown as SummaryRow[]).map((s) => {
-      const d = byId.get(s.partner_id) ?? {};
+    const summaryData = (!summary.error && summary.data ? summary.data : []) as unknown as SummaryRow[];
+    
+    // Create a base row for all partners, update with summary if available
+    const partnerIds = new Set([
+      ...summaryData.map(s => s.partner_id),
+      ...Array.from(byId.keys())
+    ]);
+
+    const rows: AdminPartnerStats[] = Array.from(partnerIds).map(id => {
+      const s = summaryData.find(x => x.partner_id === id);
+      const d = byId.get(id) ?? {};
+      
+      const partner_code = (s?.partner_code ?? d["partner_code"]) as string;
+      const full_name = (s?.full_name ?? d["full_name"]) as string;
+      const phone = (s?.phone ?? d["phone"]) as string | null;
+
       return {
-        id: s.partner_id,
-        partner_code: s.partner_code,
-        full_name: s.full_name,
-        phone: s.phone,
+        id,
+        partner_code,
+        full_name,
+        phone,
         whatsapp: (d["whatsapp"] as string | null) ?? null,
         district: (d["district"] as string | null) ?? null,
         notes: (d["notes"] as string | null) ?? null,
-        commission_type: s.commission_type as CommissionType,
-        commission_value: Number(s.commission_value ?? 0),
-        active: s.active,
-        click_count: Number(s.click_count ?? 0),
-        order_count: Number(s.order_count ?? 0),
-        paid_order_count: Number(s.paid_order_count ?? 0),
-        total_order_amount: Number(s.total_order_amount ?? 0),
-        commission_pending: Number(s.commission_pending ?? 0),
-        commission_approved: Number(s.commission_approved ?? 0),
-        commission_paid: Number(s.commission_paid ?? 0),
-        commission_payable: Number(s.commission_approved ?? 0),
-        last_activity_at: s.last_activity_at,
+        active: (s?.active ?? (d["active"] as boolean)) ?? false,
+        commission_type: ((s?.commission_type ?? d["commission_type"]) as CommissionType) ?? "FLAT",
+        commission_value: Number(s?.commission_value ?? d["commission_value"] ?? 0),
+        click_count: Number(s?.click_count ?? 0),
+        order_count: Number(s?.order_count ?? 0),
+        paid_order_count: Number(s?.paid_order_count ?? 0),
+        total_order_amount: Number(s?.total_order_amount ?? 0),
+        commission_pending: Number(s?.commission_pending ?? 0),
+        commission_approved: Number(s?.commission_approved ?? 0),
+        commission_paid: Number(s?.commission_paid ?? 0),
+        commission_payable: Number(s?.commission_approved ?? 0),
+        last_activity_at: s?.last_activity_at ?? null,
       };
     });
 
