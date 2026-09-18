@@ -143,6 +143,10 @@ export const DICTIONARY = {
   "err.form": { hi: "कृपया सभी आवश्यक जानकारी सही भरें।", en: "Please complete all required fields correctly." },
   "err.submit": { hi: "ऑर्डर सबमिट नहीं हो सका। कृपया दोबारा प्रयास करें।", en: "Could not submit the order. Please try again." },
 
+  "block.title": { hi: "ऑर्डर सबमिट नहीं किया जा सकता", en: "Order cannot be submitted" },
+  "block.desc": { hi: "आपके नेटवर्क या नंबर से कई अधूरे ऑर्डर प्राप्त हुए हैं। कृपया ऑर्डर पूरा करने के लिए WhatsApp पर हमसे संपर्क करें।", en: "We have received multiple incomplete orders from your network or number. Please contact us on WhatsApp to complete your order." },
+  "block.btn": { hi: "WhatsApp पर संपर्क करें", en: "Contact on WhatsApp" },
+
   "success.title": { hi: "आवेदन सफलतापूर्वक दर्ज हुआ!", en: "Your request has been recorded!" },
   "success.orderid": { hi: "आपका ऑर्डर आईडी", en: "Your order ID" },
   "success.toast": { hi: "ऑर्डर दर्ज हुआ", en: "Order recorded" },

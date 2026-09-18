@@ -259,6 +259,7 @@ export function OrderForm() {
 
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string | undefined>>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [blockError, setBlockError] = useState(false);
   const [success, setSuccess] = useState<{
     orderId: string;
     amount: number | null;
@@ -527,9 +528,14 @@ export function OrderForm() {
         voterCount: result.voter_count,
       });
       toast.success(`${t("success.toast")} — ${result.order_id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error(t("err.submit"));
+      const msg = error?.message || "";
+      if (msg.includes("Cannot process order") || msg.includes("Daily limit")) {
+        setBlockError(true);
+      } else {
+        toast.error(t("err.submit"));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -1230,6 +1236,28 @@ export function OrderForm() {
               </a>
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+
+      <Dialog open={blockError} onOpenChange={setBlockError}>
+        <DialogContent className="sm:max-w-md text-center p-6">
+          <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-destructive/15 text-destructive">
+            <AlertCircle className="size-6" />
+          </div>
+          <DialogTitle className="text-xl mb-2">{t("block.title")}</DialogTitle>
+          <DialogDescription className="text-base mb-6">
+            {t("block.desc")}
+          </DialogDescription>
+          <Button asChild variant="success" size="lg" className="w-full">
+            <a 
+              href={`https://wa.me/919413289046?text=${encodeURIComponent("Hello, I am facing an issue submitting my order on Saubhagya.")}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <MessageCircle className="size-5" /> {t("block.btn")}
+            </a>
+          </Button>
         </DialogContent>
       </Dialog>
     </>

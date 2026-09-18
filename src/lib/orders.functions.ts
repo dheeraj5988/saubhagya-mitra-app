@@ -105,6 +105,44 @@ export const createOrder = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { loadPaymentConfig } = await import("./payment-config.server");
 
+    // Check blocklist
+    if (data.ip_address || data.contact_number) {
+      const orConditions: string[] = [];
+      if (data.contact_number) orConditions.push(`and(type.eq.PHONE,value.eq.${data.contact_number})`);
+      if (data.ip_address) orConditions.push(`and(type.eq.IP,value.eq.${data.ip_address})`);
+      
+      const { data: blockedRows } = await (supabaseAdmin as any)
+        .from("blocked_entities")
+        .select("id")
+        .or(orConditions.join(","))
+        .limit(1);
+        
+      if (blockedRows && blockedRows.length > 0) {
+        throw new Error("Cannot process order at this time. Please contact support.");
+      }
+    }
+
+    // Task 6: Daily Limit (IP)
+    if (data.ip_address) {
+      const today = new Date();
+      today.setUTCHours(0,0,0,0);
+      
+      const { data: recentOrders } = await supabaseAdmin
+        .from("orders")
+        .select("id")
+        .eq("ip_address", data.ip_address)
+        .eq("payment_status", "UNPAID")
+        .gte("created_at", today.toISOString());
+        
+      if (recentOrders && recentOrders.length >= 3) {
+        // Automatically block this IP
+        await (supabaseAdmin as any)
+          .from("blocked_entities")
+          .insert({ type: "IP", value: data.ip_address, reason: "Exceeded daily UNPAID limit" });
+        throw new Error("Daily limit for unpaid orders exceeded. Please contact support.");
+      }
+    }
+
     // Price is always derived server-side: the ward's stored voter count times
     // the configured rate. A browser can never dictate the amount.
     const config = await loadPaymentConfig();

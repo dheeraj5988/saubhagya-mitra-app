@@ -85,6 +85,7 @@ import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
 import { GeographyTab } from "@/components/admin/GeographyTab";
 import { SampleRequestsTab } from "@/components/admin/SampleRequestsTab";
 import { ReferralTab } from "@/components/admin/ReferralTab";
+import { BlockedTab } from "@/components/admin/BlockedTab";
 import {
   adminAssignOrderPartner,
   adminListPartners,
@@ -897,6 +898,9 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               <TabsTrigger value="referrals">
                 <Share2 className="mr-1.5 size-4" /> Referrals
               </TabsTrigger>
+              <TabsTrigger value="blocked">
+                <ShieldAlert className="mr-1.5 size-4" /> Blocked
+              </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground">
@@ -1645,6 +1649,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
 
           <TabsContent value="referrals">
             <ReferralTab token={token} onError={handleError} />
+          </TabsContent>
+
+          <TabsContent value="blocked">
+            <BlockedTab token={token} onError={handleError} />
           </TabsContent>
         </Tabs>
 
