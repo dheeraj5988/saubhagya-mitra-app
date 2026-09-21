@@ -41,6 +41,8 @@ def process_order(order_data):
         "gram_panchayat": order_data.get("gram_panchayat"),
         "ward_number": order_data.get("ward_number"),
         "ward_snapshots": order_data.get("ward_snapshots", []),
+        "ward_key": order_data.get("ward_key"),
+        "ward_keys": order_data.get("ward_keys", []),
         "booth_snapshots": order_data.get("booth_snapshots", []),
         "list_options": order_data.get("list_options", ["slip"]),
         "banner_url": order_data.get("banner_url")

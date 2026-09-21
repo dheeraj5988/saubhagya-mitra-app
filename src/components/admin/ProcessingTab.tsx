@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProcessingDashboard, markOrderPaidAdmin } from "@/lib/admin-processing.functions";
+import {
+  adminTriggerTestJob,
+  getProcessingDashboard,
+  markOrderPaidAdmin,
+} from "@/lib/admin-processing.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { RefreshCcw, CheckCircle2, Clock, Plus, Trash2, Download, Pause, Play } from "lucide-react";
+import { RefreshCcw, CheckCircle2, Clock, Plus, Trash2, Download, Pause, Play, FlaskConical } from "lucide-react";
 import { addWorker, deleteWorker, toggleWorker } from "@/lib/worker-management.functions";
 import { PYTHON_WORKER_TEMPLATE } from "@/lib/worker-script-template";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { WardMappingImportCard } from "@/components/admin/WardMappingImportCard";
 
 export function ProcessingTab({ token }: { token: string }) {
   const queryClient = useQueryClient();
@@ -61,6 +66,15 @@ export function ProcessingTab({ token }: { token: string }) {
   const toggleMut = useMutation({
     mutationFn: ({ id, active }: { id: string, active: boolean }) => toggleWorker({ data: { token, id, active } }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["processing-dashboard"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const testJobMut = useMutation({
+    mutationFn: (workerId: string) => adminTriggerTestJob({ data: { token, worker_id: workerId } }),
+    onSuccess: (res) => {
+      toast.success(`Test job ${res.order_id} queued for ${res.worker_name}. Picked up on its next poll (~15s).`);
       queryClient.invalidateQueries({ queryKey: ["processing-dashboard"] });
     },
     onError: (e) => toast.error(e.message),
@@ -171,6 +185,16 @@ export function ProcessingTab({ token }: { token: string }) {
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => downloadScript(w, w.token_hash)} title="Download Script (Requires Raw Token in DB)">
                           <Download className="size-3.5" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          disabled={testJobMut.isPending}
+                          onClick={() => testJobMut.mutate(w.id)}
+                          title="Send a throwaway test order to this PC"
+                        >
+                          <FlaskConical className="size-3.5" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => { if(confirm("Delete this worker?")) deleteMut.mutate(w.id) }}>
                           <Trash2 className="size-3.5" />
                         </Button>
@@ -195,7 +219,10 @@ export function ProcessingTab({ token }: { token: string }) {
                 {processingOrders.length === 0 && <p className="text-xs text-muted-foreground">None</p>}
                 {processingOrders.map((o) => (
                   <div key={o.id} className="text-sm border p-2 rounded flex justify-between items-center">
-                    <span className="font-mono truncate">{o.id.substring(0, 8)}</span>
+                    <span className="font-mono truncate">
+                      {(o as any).order_id ?? o.id.substring(0, 8)}
+                      {(o as any).is_sample ? <Badge variant="outline" className="ml-1 border-purple-400 text-purple-600">TEST</Badge> : null}
+                    </span>
                     <Badge variant="outline" className="border-blue-500 text-blue-500">
                       PC: {workers.find(w => w.id === o.assigned_worker_id)?.name || "Unknown"}
                     </Badge>
@@ -208,7 +235,10 @@ export function ProcessingTab({ token }: { token: string }) {
                 {queuedOrders.length === 0 && <p className="text-xs text-muted-foreground">None</p>}
                 {queuedOrders.map((o) => (
                   <div key={o.id} className="text-sm border p-2 rounded flex justify-between items-center">
-                    <span className="font-mono truncate">{o.id.substring(0, 8)}</span>
+                    <span className="font-mono truncate">
+                      {(o as any).order_id ?? o.id.substring(0, 8)}
+                      {(o as any).is_sample ? <Badge variant="outline" className="ml-1 border-purple-400 text-purple-600">TEST</Badge> : null}
+                    </span>
                     <Clock className="size-4 text-orange-500" />
                   </div>
                 ))}
@@ -219,7 +249,10 @@ export function ProcessingTab({ token }: { token: string }) {
                 {readyOrders.length === 0 && <p className="text-xs text-muted-foreground">None</p>}
                 {readyOrders.map((o) => (
                   <div key={o.id} className="text-sm border p-2 rounded flex justify-between items-center">
-                    <span className="font-mono truncate">{o.id.substring(0, 8)}</span>
+                    <span className="font-mono truncate">
+                      {(o as any).order_id ?? o.id.substring(0, 8)}
+                      {(o as any).is_sample ? <Badge variant="outline" className="ml-1 border-purple-400 text-purple-600">TEST</Badge> : null}
+                    </span>
                     <CheckCircle2 className="size-4 text-green-500" />
                   </div>
                 ))}
@@ -249,6 +282,8 @@ export function ProcessingTab({ token }: { token: string }) {
           </Card>
         </div>
       </div>
+
+      <WardMappingImportCard token={token} />
     </div>
   );
 }

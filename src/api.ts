@@ -86,6 +86,27 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
           bannerSignedUrl = signed?.signedUrl ?? null;
         }
 
+        // app_key is looked up fresh from geo_wards at claim time (never
+        // stored on the order), so mapping a ward AFTER an order was placed
+        // still resolves correctly for any order still sitting in the queue.
+        let wardKey: string | null = null;
+        let wardKeys: string[] = [];
+        const wardIdsForLookup: string[] = Array.isArray(o.ward_ids) && o.ward_ids.length
+          ? o.ward_ids
+          : o.ward_id
+            ? [o.ward_id]
+            : [];
+        if (wardIdsForLookup.length) {
+          const { data: wardRows } = await (supabaseAdmin as any)
+            .from("geo_wards")
+            .select("id, app_key")
+            .in("id", wardIdsForLookup);
+          wardKeys = ((wardRows ?? []) as any[])
+            .map((w) => w.app_key)
+            .filter((k): k is string => Boolean(k));
+          wardKey = wardKeys[0] ?? null;
+        }
+
         const fullOrderData = {
           order_id: o.order_id,
           id: o.id,
@@ -104,6 +125,8 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
           ward_number: o.ward_number,
           ward_ids: o.ward_ids,
           ward_snapshots: o.ward_snapshots,
+          ward_key: wardKey,
+          ward_keys: wardKeys,
           booth_ids: o.booth_ids,
           booth_snapshots: o.booth_snapshots,
           list_options: o.list_options || ["slip", "hindi_alpha", "english_alpha", "family"],

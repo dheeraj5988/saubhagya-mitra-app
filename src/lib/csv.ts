@@ -184,3 +184,88 @@ export function compareWardNumbers(a: string, b: string) {
   if (Number.isFinite(na) && Number.isFinite(nb) && na !== nb) return na - nb;
   return a.localeCompare(b, "hi", { numeric: true });
 }
+
+// ---------------------------------------------------------------------------
+// Ward mapping CSV (district, panchayat_samiti, gram_panchayat, ward_number,
+// app_key) — links a website ward to the desk app's own ward key.
+// ---------------------------------------------------------------------------
+
+export type WardMappingCsvRow = {
+  district: string;
+  panchayat_samiti: string;
+  gram_panchayat: string;
+  ward_number: string;
+  app_key: string;
+};
+
+export type WardMappingCsvResult = {
+  rows: WardMappingCsvRow[];
+  errors: GeoCsvError[];
+};
+
+const WARD_MAPPING_ALIASES: Record<keyof WardMappingCsvRow, string[]> = {
+  district: ["district", "जिला"],
+  panchayat_samiti: ["panchayat_samiti", "panchayat samiti", "samiti", "block", "पंचायत समिति"],
+  gram_panchayat: ["gram_panchayat", "gram panchayat", "gp", "ग्राम पंचायत"],
+  ward_number: ["ward_number", "ward number", "ward", "वार्ड"],
+  app_key: ["app_key", "app key", "ward_key", "ward key", "desk key", "key"],
+};
+
+export const WARD_MAPPING_CSV_HEADER =
+  "district,panchayat_samiti,gram_panchayat,ward_number,app_key";
+
+/** Parses the desk-app ward export used to fill geo_wards.app_key. */
+export function parseWardMappingCsv(text: string): WardMappingCsvResult {
+  const table = parseCsvText(text);
+  if (!table.length) return { rows: [], errors: [{ line: 0, message: "File is empty." }] };
+
+  const first = table[0]!;
+  const map: Partial<Record<keyof WardMappingCsvRow, number>> = {};
+  first.forEach((cell, index) => {
+    const key = normalise(cell);
+    (Object.keys(WARD_MAPPING_ALIASES) as (keyof WardMappingCsvRow)[]).forEach((column) => {
+      if (map[column] === undefined && WARD_MAPPING_ALIASES[column].includes(key)) map[column] = index;
+    });
+  });
+  const missing = (Object.keys(WARD_MAPPING_ALIASES) as (keyof WardMappingCsvRow)[]).filter(
+    (column) => map[column] === undefined,
+  );
+  if (missing.length) {
+    return {
+      rows: [],
+      errors: [
+        {
+          line: 1,
+          message: `Missing column(s): ${missing.join(", ")}. Expected header: ${WARD_MAPPING_CSV_HEADER}`,
+        },
+      ],
+    };
+  }
+
+  const index = map as Record<keyof WardMappingCsvRow, number>;
+  const rows: WardMappingCsvRow[] = [];
+  const errors: GeoCsvError[] = [];
+
+  for (let r = 1; r < table.length; r++) {
+    const cells = table[r]!;
+    const line = r + 1;
+    const get = (key: keyof WardMappingCsvRow) => (cells[index[key]] ?? "").trim();
+    const row: WardMappingCsvRow = {
+      district: get("district"),
+      panchayat_samiti: get("panchayat_samiti"),
+      gram_panchayat: get("gram_panchayat"),
+      ward_number: get("ward_number"),
+      app_key: get("app_key"),
+    };
+    if (Object.values(row).every((v) => v === "")) continue; // blank line
+
+    const blanks = (Object.keys(row) as (keyof WardMappingCsvRow)[]).filter((k) => row[k] === "");
+    if (blanks.length) {
+      errors.push({ line, message: `Missing ${blanks.join(", ")}` });
+      continue;
+    }
+    rows.push(row);
+  }
+
+  return { rows, errors };
+}
