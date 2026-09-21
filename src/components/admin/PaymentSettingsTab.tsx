@@ -89,7 +89,7 @@ export function PaymentSettingsTab({
   }
 
   async function persistSecrets() {
-    if (!clientSecret.trim() && !saltKey.trim() && !saltIndex.trim()) {
+    if (!clientSecret.trim() && !saltKey.trim() && !saltIndex.trim() && !cashfreeSecret.trim()) {
       toast.error("Enter at least one credential to update.");
       return;
     }
@@ -101,6 +101,7 @@ export function PaymentSettingsTab({
           ...(clientSecret.trim() ? { client_secret: clientSecret.trim() } : {}),
           ...(saltKey.trim() ? { salt_key: saltKey.trim() } : {}),
           ...(saltIndex.trim() ? { salt_index: saltIndex.trim() } : {}),
+          ...(cashfreeSecret.trim() ? { cashfree_secret_key: cashfreeSecret.trim() } : {}),
         },
       });
       setClientSecret("");
