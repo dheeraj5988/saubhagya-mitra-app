@@ -470,9 +470,19 @@ export const createSampleRequest = createServerFn({ method: "POST" })
 export const createCashfreePaymentSession = createServerFn({ method: "POST" })
   .validator((d: { orderId: string; amount: number; customerPhone: string; customerName: string }) => d)
   .handler(async ({ data }) => {
-    const isSandbox = process.env["CASHFREE_ENV"] === "sandbox";
-    const appId = process.env["CASHFREE_APP_ID"];
-    const secretKey = process.env["CASHFREE_SECRET_KEY"];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [configRes, credsRes] = await Promise.all([
+      supabaseAdmin.from("payment_config").select("cashfree_enabled, cashfree_env, cashfree_app_id").eq("singleton", true).maybeSingle(),
+      supabaseAdmin.from("payment_credentials").select("cashfree_secret_key").eq("singleton", true).maybeSingle(),
+    ]);
+    const config = configRes.data;
+    const creds = credsRes.data;
+
+    if (!config?.cashfree_enabled) throw new Error("Payment gateway is currently disabled");
+    
+    const isSandbox = config.cashfree_env === "sandbox";
+    const appId = config.cashfree_app_id;
+    const secretKey = creds?.cashfree_secret_key;
     const endpoint = isSandbox ? "https://sandbox.cashfree.com/pg" : "https://api.cashfree.com/pg";
     if (!appId || !secretKey) throw new Error("Cashfree credentials missing");
     const payload = {
@@ -501,4 +511,11 @@ export const createCashfreePaymentSession = createServerFn({ method: "POST" })
     if (!res.ok) throw new Error("Failed to create Cashfree session");
     const result = await res.json();
     return { payment_session_id: result.payment_session_id };
+  });
+
+export const getPublicPaymentConfig = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.from("payment_config").select("cashfree_enabled, cashfree_env").eq("singleton", true).maybeSingle();
+    return { cashfree_enabled: Boolean(data?.cashfree_enabled), cashfree_env: data?.cashfree_env || "sandbox" };
   });

@@ -38,6 +38,9 @@ export const paymentConfigSchema = z.object({
   phonepe_client_id: z.string().trim().max(200).nullable().optional(),
   phonepe_redirect_url: z.string().trim().url().max(300).nullable().optional(),
   phonepe_callback_url: z.string().trim().url().max(300).nullable().optional(),
+  cashfree_enabled: z.boolean().default(false),
+  cashfree_env: z.string().nullable().optional(),
+  cashfree_app_id: z.string().nullable().optional(),
 });
 
 /** Secrets are write-only: they go in and are never read back to a browser. */
@@ -46,6 +49,7 @@ export const phonepeSecretsSchema = z.object({
   client_secret: z.string().trim().min(1).max(400).nullable().optional(),
   salt_key: z.string().trim().min(1).max(400).nullable().optional(),
   salt_index: z.string().trim().min(1).max(20).nullable().optional(),
+  cashfree_secret_key: z.string().nullable().optional(),
 });
 
 export const paymentStatusSchema = z.object({

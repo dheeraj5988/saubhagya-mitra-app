@@ -60,4 +60,8 @@ export type AdminPaymentConfig = {
   phonepe_callback_url: string | null;
   has_client_secret: boolean;
   has_salt_key: boolean;
+  cashfree_enabled: boolean;
+  cashfree_env: string | null;
+  cashfree_app_id: string | null;
+  has_cashfree_secret: boolean;
 };

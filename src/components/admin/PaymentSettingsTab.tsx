@@ -44,6 +44,7 @@ export function PaymentSettingsTab({
   const [clientSecret, setClientSecret] = useState("");
   const [saltKey, setSaltKey] = useState("");
   const [saltIndex, setSaltIndex] = useState("");
+  const [cashfreeSecret, setCashfreeSecret] = useState("");
   const [savingSecrets, setSavingSecrets] = useState(false);
 
   const load = useCallback(async () => {
@@ -105,6 +106,7 @@ export function PaymentSettingsTab({
       setClientSecret("");
       setSaltKey("");
       setSaltIndex("");
+      setCashfreeSecret("");
       toast.success("PhonePe credentials updated.");
       void load();
     } catch (err) {
@@ -180,6 +182,79 @@ export function PaymentSettingsTab({
                 setCfg({ ...cfg, free_sample_voter_count: num(e.target.value) ?? 24 })
               }
             />
+          </div>
+        </div>
+      </section>
+
+
+      <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-navy">Cashfree payment gateway</h3>
+            <p className="text-xs text-muted-foreground">
+              Configuration for Cashfree. Keys are stored server-side.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch
+              id="cashfree_enabled"
+              checked={cfg.cashfree_enabled}
+              onCheckedChange={(v) => setCfg({ ...cfg, cashfree_enabled: v })}
+            />
+            <Label htmlFor="cashfree_enabled">{cfg.cashfree_enabled ? "Enabled" : "Disabled"}</Label>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="cashfree_env">Environment</Label>
+            <Select
+              value={cfg.cashfree_env || "sandbox"}
+              onValueChange={(v) =>
+                setCfg({ ...cfg, cashfree_env: v })
+              }
+            >
+              <SelectTrigger id="cashfree_env">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sandbox">Sandbox</SelectItem>
+                <SelectItem value="production">Production</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cashfree_app_id">App ID</Label>
+            <Input
+              id="cashfree_app_id"
+              value={cfg.cashfree_app_id ?? ""}
+              onChange={(e) =>
+                setCfg({ ...cfg, cashfree_app_id: e.target.value || null })
+              }
+            />
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-dashed border-border p-4">
+          <h4 className="flex items-center gap-2 text-sm font-semibold text-navy">
+            <KeyRound className="size-4" /> Credentials
+          </h4>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Stored server-side. Currently on file: secret key{" "}
+            <strong>{cfg.has_cashfree_secret ? "yes" : "no"}</strong>.
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-1">
+            <div className="space-y-2">
+              <Label htmlFor="cashfree_secret">Secret key</Label>
+              <Input
+                id="cashfree_secret"
+                type="password"
+                autoComplete="off"
+                value={cashfreeSecret}
+                onChange={(e) => setCashfreeSecret(e.target.value)}
+                placeholder="Leave blank to keep current"
+              />
+            </div>
           </div>
         </div>
       </section>

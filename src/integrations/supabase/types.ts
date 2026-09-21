@@ -452,6 +452,9 @@ export type Database = {
           min_order_amount: number | null
           phonepe_callback_url: string | null
           phonepe_client_id: string | null
+          cashfree_enabled: boolean | null
+          cashfree_env: string | null
+          cashfree_app_id: string | null
           phonepe_enabled: boolean
           phonepe_environment: string
           phonepe_merchant_id: string | null
@@ -467,6 +470,9 @@ export type Database = {
           min_order_amount?: number | null
           phonepe_callback_url?: string | null
           phonepe_client_id?: string | null
+          cashfree_enabled?: boolean | null
+          cashfree_env?: string | null
+          cashfree_app_id?: string | null
           phonepe_enabled?: boolean
           phonepe_environment?: string
           phonepe_merchant_id?: string | null
@@ -482,6 +488,9 @@ export type Database = {
           min_order_amount?: number | null
           phonepe_callback_url?: string | null
           phonepe_client_id?: string | null
+          cashfree_enabled?: boolean | null
+          cashfree_env?: string | null
+          cashfree_app_id?: string | null
           phonepe_enabled?: boolean
           phonepe_environment?: string
           phonepe_merchant_id?: string | null
@@ -496,6 +505,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          cashfree_secret_key: string | null
           phonepe_client_secret: string | null
           phonepe_salt_index: string | null
           phonepe_salt_key: string | null
@@ -505,6 +515,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          cashfree_secret_key?: string | null
           phonepe_client_secret?: string | null
           phonepe_salt_index?: string | null
           phonepe_salt_key?: string | null
@@ -514,6 +525,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          cashfree_secret_key?: string | null
           phonepe_client_secret?: string | null
           phonepe_salt_index?: string | null
           phonepe_salt_key?: string | null

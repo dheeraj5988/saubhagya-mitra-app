@@ -18,6 +18,9 @@ export type PaymentConfig = {
   phonepe_client_id: string | null;
   phonepe_redirect_url: string | null;
   phonepe_callback_url: string | null;
+  cashfree_enabled: boolean;
+  cashfree_env: string | null;
+  cashfree_app_id: string | null;
 };
 
 export async function loadPaymentConfig(): Promise<PaymentConfig> {
@@ -38,6 +41,9 @@ export async function loadPaymentConfig(): Promise<PaymentConfig> {
     phonepe_client_id: data?.phonepe_client_id ?? null,
     phonepe_redirect_url: data?.phonepe_redirect_url ?? null,
     phonepe_callback_url: data?.phonepe_callback_url ?? null,
+    cashfree_enabled: Boolean(data?.cashfree_enabled),
+    cashfree_env: data?.cashfree_env ?? null,
+    cashfree_app_id: data?.cashfree_app_id ?? null,
   };
 }
 
@@ -46,11 +52,12 @@ export async function loadCredentialPresence() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("payment_credentials")
-    .select("phonepe_client_secret, phonepe_salt_key")
+    .select("phonepe_client_secret, phonepe_salt_key, cashfree_secret_key")
     .eq("singleton", true)
     .maybeSingle();
   return {
     has_client_secret: Boolean(data?.phonepe_client_secret),
     has_salt_key: Boolean(data?.phonepe_salt_key),
+    has_cashfree_secret: Boolean(data?.cashfree_secret_key),
   };
 }

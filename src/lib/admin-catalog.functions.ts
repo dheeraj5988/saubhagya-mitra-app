@@ -151,6 +151,9 @@ export const adminSavePaymentConfig = createServerFn({ method: "POST" })
         phonepe_client_id: data.phonepe_client_id ?? null,
         phonepe_redirect_url: data.phonepe_redirect_url ?? null,
         phonepe_callback_url: data.phonepe_callback_url ?? null,
+        cashfree_enabled: data.cashfree_enabled,
+        cashfree_env: data.cashfree_env ?? null,
+        cashfree_app_id: data.cashfree_app_id ?? null,
       })
       .eq("singleton", true);
     if (error) throw new Error(error.message);
@@ -167,10 +170,12 @@ export const adminSavePhonePeSecrets = createServerFn({ method: "POST" })
       phonepe_client_secret?: string | null;
       phonepe_salt_key?: string | null;
       phonepe_salt_index?: string | null;
+      cashfree_secret_key?: string | null;
     } = {};
     if (data.client_secret !== undefined) patch.phonepe_client_secret = data.client_secret ?? null;
     if (data.salt_key !== undefined) patch.phonepe_salt_key = data.salt_key ?? null;
     if (data.salt_index !== undefined) patch.phonepe_salt_index = data.salt_index ?? null;
+    if (data.cashfree_secret_key !== undefined) patch.cashfree_secret_key = data.cashfree_secret_key ?? null;
     if (Object.keys(patch).length === 0) return { ok: true as const };
 
     const { error } = await db.from("payment_credentials").update(patch).eq("singleton", true);

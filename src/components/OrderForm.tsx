@@ -47,7 +47,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { captureLeadPhone, createOrder, recordVisit } from "@/lib/orders.functions";
+import { captureLeadPhone, createOrder, recordVisit, createCashfreePaymentSession, getPublicPaymentConfig } from "@/lib/orders.functions";
+// @ts-expect-error no types for cashfree-js
+import { load } from "@cashfreepayments/cashfree-js";
 import {
   LIST_OPTIONS,
   PAD_LABELS,
@@ -332,6 +334,34 @@ export function OrderForm() {
   const visit = useServerFn(recordVisit);
   const capture = useServerFn(captureLeadPhone);
   const submitOrder = useServerFn(createOrder);
+  const createCashfreeSession = useServerFn(createCashfreePaymentSession);
+  const paymentConfigQuery = useQuery({ queryKey: ["paymentConfig"], queryFn: () => getPublicPaymentConfig() });
+  const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
+
+  async function handleOnlinePayment() {
+    if (!success) return;
+    setIsRedirectingToPayment(true);
+    try {
+      const result = await createCashfreeSession({
+        data: {
+          orderId: success.orderId,
+          amount: success.amount || 0,
+          customerPhone: contact.trim(),
+          customerName: nameHi.trim(),
+        },
+      });
+      const cashfree = await load({ mode: paymentConfigQuery.data?.cashfree_env === "production" ? "production" : "sandbox" });
+      await cashfree.checkout({
+        paymentSessionId: result.payment_session_id,
+        redirectTarget: "_self"
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error(t("err.submit") || "Payment failed");
+      setIsRedirectingToPayment(false);
+    }
+  }
+
   const fetchSymbols = useServerFn(listActiveSymbols);
   const resolvePartner = useServerFn(resolveReferralPartner);
   const fetchDistricts = useServerFn(listDistricts);
@@ -1696,11 +1726,26 @@ export function OrderForm() {
               ) : null}
             </div>
 
-            <Button asChild variant="success" size="lg" className="w-full">
-              <a href={waUrl()} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="size-5" /> {t("pay.whatsapp")}
-              </a>
-            </Button>
+            {paymentConfigQuery.data?.cashfree_enabled ? (
+              <Button
+                variant="hero"
+                size="lg"
+                className="w-full rounded-[10px]"
+                disabled={isRedirectingToPayment}
+                onClick={handleOnlinePayment}
+              >
+                {isRedirectingToPayment ? (
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                ) : null}
+                {"Pay Now"}
+              </Button>
+            ) : (
+              <Button asChild variant="success" size="lg" className="w-full">
+                <a href={waUrl()} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="size-5" /> {t("pay.whatsapp")}
+                </a>
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
