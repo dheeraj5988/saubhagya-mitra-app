@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { RefreshCcw, CheckCircle2, Clock } from "lucide-react";
+import { RefreshCcw, CheckCircle2, Clock, Plus, Trash2, Download, Pause, Play } from "lucide-react";
+import { addWorker, deleteWorker, toggleWorker } from "@/lib/worker-management.functions";
+import { PYTHON_WORKER_TEMPLATE } from "@/lib/worker-script-template";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export function ProcessingTab({ token }: { token: string }) {
   const queryClient = useQueryClient();
@@ -23,6 +28,60 @@ export function ProcessingTab({ token }: { token: string }) {
     },
     onError: (e) => toast.error(e.message),
   });
+
+
+  const [newWorkerName, setNewWorkerName] = useState("");
+  const [isAddOpen, setIsAddOpen] = useState(false);
+
+  const addMut = useMutation({
+    mutationFn: async (name: string) => {
+      const tokenString = crypto.randomUUID();
+      const res = await addWorker({ data: { token, name, workerToken: tokenString } });
+      return { worker: res, token: tokenString };
+    },
+    onSuccess: (data) => {
+      toast.success("Worker added!");
+      setIsAddOpen(false);
+      setNewWorkerName("");
+      queryClient.invalidateQueries({ queryKey: ["processing-dashboard"] });
+      downloadScript(data.worker, data.token);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteWorker({ data: { token, id } }),
+    onSuccess: () => {
+      toast.success("Worker deleted");
+      queryClient.invalidateQueries({ queryKey: ["processing-dashboard"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const toggleMut = useMutation({
+    mutationFn: ({ id, active }: { id: string, active: boolean }) => toggleWorker({ data: { token, id, active } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["processing-dashboard"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const downloadScript = (worker: any, workerToken: string) => {
+    let script = PYTHON_WORKER_TEMPLATE;
+    script = script.replace("{{SITE_URL}}", window.location.origin);
+    script = script.replace("{{WORKER_ID}}", worker.id);
+    script = script.replace("{{WORKER_TOKEN}}", workerToken);
+    
+    const blob = new Blob([script], { type: "text/x-python" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `worker_${worker.name}.py`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   if (isLoading) return <div>Loading dashboard...</div>;
 
@@ -52,8 +111,31 @@ export function ProcessingTab({ token }: { token: string }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Workers Panel */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Offline PCs (Workers)</CardTitle>
+            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm"><Plus className="size-4 mr-1" /> Add Worker</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Worker</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label>Worker Name</Label>
+                    <Input value={newWorkerName} onChange={(e) => setNewWorkerName(e.target.value)} placeholder="e.g. PC-1" />
+                  </div>
+                  <Button 
+                    className="w-full" 
+                    disabled={!newWorkerName.trim() || addMut.isPending} 
+                    onClick={() => addMut.mutate(newWorkerName)}
+                  >
+                    Generate & Download Script
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardHeader>
           <CardContent>
             {workers.length === 0 ? (
@@ -61,24 +143,38 @@ export function ProcessingTab({ token }: { token: string }) {
             ) : (
               <div className="space-y-4">
                 {workers.map((w) => (
+                  
                   <div key={w.id} className="flex justify-between items-center border p-3 rounded-lg">
                     <div>
-                      <div className="font-semibold">{w.name}</div>
+                      <div className="font-semibold">{w.name} {w.active === false && <Badge variant="outline" className="ml-2 text-destructive">Paused</Badge>}</div>
                       <div className="text-xs text-muted-foreground mt-1">
                         Jobs done: {w.jobs_done}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      {isOnline(w.last_seen_at) ? (
-                        <Badge variant="default" className="bg-green-500">Online</Badge>
-                      ) : (
-                        <Badge variant="secondary">Offline</Badge>
-                      )}
-                      {w.current_order_id && (
-                        <span className="text-xs font-mono text-muted-foreground truncate max-w-[100px]" title={w.current_order_id}>
-                          Working: {w.current_order_id.substring(0, 8)}...
-                        </span>
-                      )}
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="flex gap-2">
+                        {isOnline(w.last_seen_at) ? (
+                          <Badge variant="default" className="bg-green-500">Online</Badge>
+                        ) : (
+                          <Badge variant="secondary">Offline</Badge>
+                        )}
+                        {w.current_order_id && (
+                          <span className="text-xs font-mono text-muted-foreground truncate max-w-[100px]" title={w.current_order_id}>
+                            Working: {w.current_order_id.substring(0, 8)}...
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleMut.mutate({ id: w.id, active: !w.active })} title={w.active ? "Pause Worker" : "Resume Worker"}>
+                          {w.active ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => downloadScript(w, w.token_hash)} title="Download Script (Requires Raw Token in DB)">
+                          <Download className="size-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => { if(confirm("Delete this worker?")) deleteMut.mutate(w.id) }}>
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
