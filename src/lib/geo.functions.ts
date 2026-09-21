@@ -4,10 +4,13 @@ import {
   districtIdSchema,
   gramPanchayatIdSchema,
   samitiIdSchema,
+  wardIdsSchema,
+  type GeoBoothOption,
   type GeoOption,
   type GeoWardOption,
   type PublicPricing,
 } from "./geo.schema";
+import { SERIES_RATES } from "./pricing";
 
 /**
  * Public geography lookups. Only active rows and display fields are exposed;
@@ -71,6 +74,29 @@ export const listWards = createServerFn({ method: "POST" })
   });
 
 /**
+ * Booths (भाग) for the selected wards. Returns an empty list — never an
+ * error — when the geo_booths table has not been created or filled yet, so
+ * the form simply falls back to "whole ward".
+ */
+export const listBooths = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => wardIdsSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await (supabaseAdmin as any)
+      .from("geo_booths")
+      .select("id, ward_id, booth_number, booth_name, voter_count")
+      .in("ward_id", data.ward_ids)
+      .eq("active", true)
+      .order("booth_number")
+      .limit(2000);
+    if (error) {
+      console.warn("[geo] booths unavailable:", error.message);
+      return { options: [] as GeoBoothOption[] };
+    }
+    return { options: (rows ?? []) as GeoBoothOption[] };
+  });
+
+/**
  * Only the pricing inputs a visitor is allowed to see. Gateway credentials and
  * merchant identifiers never travel through this function.
  */
@@ -78,6 +104,7 @@ export const getPublicPricing = createServerFn({ method: "GET" }).handler(async 
   const { loadPaymentConfig } = await import("./payment-config.server");
   const cfg = await loadPaymentConfig();
   const pricing: PublicPricing = {
+    series_rates: { ...SERIES_RATES },
     rate_per_voter: cfg.rate_per_voter,
     free_sample_voter_count: cfg.free_sample_voter_count,
     min_order_amount: cfg.min_order_amount,

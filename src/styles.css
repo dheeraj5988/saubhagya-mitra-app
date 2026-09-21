@@ -20,8 +20,13 @@
 
 @theme inline {
   --font-sans:
-    "Noto Sans Devanagari", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Tiro Devanagari Hindi", "Noto Sans Devanagari", serif;
+    "Nirmala UI", "Noto Sans Devanagari", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Nirmala UI", "Noto Sans Devanagari", "Segoe UI", ui-sans-serif, sans-serif;
+  --color-brand-soft: var(--brand-soft);
+  --color-ink2: var(--ink2);
+  --color-gold: var(--gold);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
   --color-saffron: var(--saffron);
   --color-saffron-foreground: var(--saffron-foreground);
   --color-saffron-deep: var(--saffron-deep);
@@ -79,54 +84,65 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  /*
+   * Theme copied from the Windows app (सौभाग्य — वोटर स्लिप):
+   * bg #eef2f8 · card #fff · ink #0f1b2d · muted #64748b · line #dde5f0
+   * brand #1b4fd8 / #123bab / soft #e9f0ff · ok #0a7d55 · warn #a2570a · bad #b3261e
+   */
+  --radius: 0.5rem;
+  --background: oklch(0.960 0.009 258.3);
+  --foreground: oklch(0.221 0.039 258.3);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.221 0.039 258.3);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: oklch(0.221 0.039 258.3);
+  --primary: oklch(0.490 0.216 264.0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.935 0.015 260.7);
+  --secondary-foreground: oklch(0.221 0.039 258.3);
+  --muted: oklch(0.981 0.005 258.3);
+  --muted-foreground: oklch(0.554 0.041 257.4);
+  --accent: oklch(0.954 0.022 265.8);
+  --accent-foreground: oklch(0.408 0.184 264.1);
+  --destructive: oklch(0.501 0.178 28.7);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.919 0.017 256.3);
+  --input: oklch(0.919 0.017 256.3);
+  --ring: oklch(0.490 0.216 264.0);
+  --chart-1: oklch(0.490 0.216 264.0);
+  --chart-2: oklch(0.522 0.112 161.8);
+  --chart-3: oklch(0.535 0.125 57.3);
+  --chart-4: oklch(0.843 0.120 91.6);
+  --chart-5: oklch(0.501 0.178 28.7);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.221 0.039 258.3);
+  --sidebar-primary: oklch(0.490 0.216 264.0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.954 0.022 265.8);
+  --sidebar-accent-foreground: oklch(0.408 0.184 264.1);
+  --sidebar-border: oklch(0.919 0.017 256.3);
+  --sidebar-ring: oklch(0.490 0.216 264.0);
 
-  /* Campaign design system */
-  --navy: oklch(0.208 0.042 265.755);
-  --navy-foreground: oklch(0.984 0.003 247.858);
-  --saffron: oklch(0.677 0.187 45.1);
-  --saffron-deep: oklch(0.588 0.202 44.5);
-  --saffron-foreground: oklch(0.99 0.005 80);
-  --success: oklch(0.596 0.145 163.2);
-  --success-foreground: oklch(0.99 0.01 160);
-  --warning: oklch(0.795 0.161 82);
-  --warning-foreground: oklch(0.24 0.05 60);
-  --info: oklch(0.58 0.13 250);
-  --info-foreground: oklch(0.99 0.003 250);
-  --shadow-card: 0 1px 2px oklch(0.208 0.042 265.755 / 0.06), 0 8px 24px -12px oklch(0.208 0.042 265.755 / 0.18);
-  --shadow-elevated: 0 20px 50px -24px oklch(0.208 0.042 265.755 / 0.4);
+  /* Brand tokens. Old names (navy / saffron) are kept so every existing
+     class keeps working, but they now carry the Windows-app blues. */
+  --navy: oklch(0.260 0.080 264.5);
+  --navy-foreground: oklch(1 0 0);
+  --saffron: oklch(0.490 0.216 264.0);
+  --saffron-deep: oklch(0.408 0.184 264.1);
+  --saffron-foreground: oklch(1 0 0);
+  --brand-soft: oklch(0.954 0.022 265.8);
+  --ink2: oklch(0.346 0.047 258.3);
+  --gold: oklch(0.843 0.120 91.6);
+  --success: oklch(0.522 0.112 161.8);
+  --success-foreground: oklch(1 0 0);
+  --success-soft: oklch(0.959 0.024 167.1);
+  --warning: oklch(0.535 0.125 57.3);
+  --warning-foreground: oklch(1 0 0);
+  --warning-soft: oklch(0.964 0.024 73.6);
+  --info: oklch(0.490 0.216 264.0);
+  --info-foreground: oklch(1 0 0);
+  --shadow-card: 0 1px 2px oklch(0.221 0.039 258.3 / 0.05), 0 1px 3px oklch(0.221 0.039 258.3 / 0.04);
+  --shadow-elevated: 0 4px 14px oklch(0.221 0.039 258.3 / 0.09), 0 1px 3px oklch(0.221 0.039 258.3 / 0.05);
 }
 
 
@@ -179,6 +195,8 @@
 @layer base {
   body {
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -189,15 +207,21 @@
   }
 }
 
+/* Same header gradient as the Windows app. */
 @utility bg-hero-navy {
-  background-image:
-    radial-gradient(90% 60% at 15% 0%, oklch(0.677 0.187 45.1 / 0.28) 0%, transparent 60%),
-    radial-gradient(70% 60% at 100% 20%, oklch(0.588 0.202 44.5 / 0.22) 0%, transparent 65%),
-    linear-gradient(165deg, oklch(0.24 0.05 266) 0%, oklch(0.16 0.04 265) 100%);
+  background-image: linear-gradient(120deg, oklch(0.260 0.080 264.5) 0%, oklch(0.373 0.134 262.9) 45%, oklch(0.490 0.216 264.0) 100%);
 }
 
+/* Page background: soft glow at the top, like the Windows app. */
+@utility bg-page {
+  background:
+    radial-gradient(1200px 420px at 50% -180px, oklch(0.935 0.015 260.7), transparent 70%),
+    var(--background);
+}
+
+/* Primary button fill (Windows app .btn). */
 @utility bg-saffron-gradient {
-  background-image: linear-gradient(135deg, var(--saffron) 0%, var(--saffron-deep) 100%);
+  background-image: linear-gradient(140deg, var(--saffron) 0%, var(--saffron-deep) 100%);
 }
 
 @utility text-balance-hi {

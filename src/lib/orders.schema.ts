@@ -18,14 +18,44 @@ export const leadSchema = z.object({
   phone: phoneSchema,
 });
 
+/**
+ * Hindi-only text (Devanagari block + spaces). Full stop is allowed for
+ * "श्री." and ZWNJ/ZWJ because some phone keyboards insert them invisibly.
+ */
+export const HINDI_RE = /^[\u0900-\u097F\u200C\u200D\s.]+$/;
+export const isHindiText = (value: string) => HINDI_RE.test(value.trim());
+
+const hindiOptional = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .refine((v) => v === "" || HINDI_RE.test(v), "Only Hindi (Devanagari) text is allowed")
+    .default("");
+
+/** Post (पद) — panchayat elections only. */
+export const PAD_OPTIONS = ["panch", "sarpanch", "ps_sadasya", "zp_sadasya"] as const;
+export type Pad = (typeof PAD_OPTIONS)[number];
+export const PAD_LABELS: Record<Pad, { hi: string; en: string }> = {
+  panch: { hi: "पंच", en: "Panch" },
+  sarpanch: { hi: "सरपंच", en: "Sarpanch" },
+  ps_sadasya: { hi: "पंचायत समिति सदस्य", en: "Panchayat Samiti member" },
+  zp_sadasya: { hi: "ज़िला परिषद सदस्य", en: "Zila Parishad member" },
+};
+
 /** Extra slip lists a candidate can ask for alongside the voter slips. */
 export const LIST_OPTIONS = ["slip", "hindi_alpha", "english_alpha", "family"] as const;
 export type ListOption = (typeof LIST_OPTIONS)[number];
 
 export const orderSchema = z.object({
   // Section 2 is optional: only the area, design and mobile number are required.
-  candidate_name_hindi: z.string().trim().max(120).default(""),
+  // Candidate name is taken in Hindi only (same as the Windows app).
+  candidate_name_hindi: hindiOptional(120),
+  /** Legacy column (NOT NULL in the database); always sent empty now. */
   candidate_name_english: z.string().trim().max(120).default(""),
+  pad: z.enum(PAD_OPTIONS),
+  /** Booths (भाग) chosen inside the selected wards. Empty = whole wards. */
+  booth_ids: z.array(z.string().uuid()).max(500).default([]),
   contact_number: phoneSchema,
   district: z.string().trim().min(1).max(120),
   panchayat_samiti: z.string().trim().min(1).max(120),
@@ -40,7 +70,7 @@ export const orderSchema = z.object({
   election_symbol_id: z.string().uuid().nullable().optional(),
   party_name_snapshot: z.string().trim().max(120).nullable().optional(),
   symbol_name_snapshot: z.string().trim().max(120).nullable().optional(),
-  slogan: z.string().trim().max(200).optional().nullable(),
+  slogan: hindiOptional(200).nullable().optional(),
   body_name: z.string().trim().max(160).nullable().optional(),
   evm_serial: z.string().trim().max(20).nullable().optional(),
   poll_date: z.string().trim().max(40).nullable().optional(),

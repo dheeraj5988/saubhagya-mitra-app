@@ -93,12 +93,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "सौभाग्य मतदाता पर्ची सेवा" },
+      { title: "सौभाग्य वोटर स्लिप | Saubhagya Voter Slip" },
       {
         name: "description",
-        content: "राजस्थान के सरपंच एवं वार्ड पंच प्रत्याशियों के लिए डिजिटल मतदाता पर्ची सेवा।",
+        content:
+          "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल वोटर स्लिप (PDF) — पंच, सरपंच, पंचायत समिति व ज़िला परिषद सदस्य।",
       },
-      { name: "author", content: "Saubhagya" },
+      { name: "author", content: "Saubhagya Voter Slip" },
+      { name: "theme-color", content: "#10214a" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:image", content: "/logo-512.png" },
@@ -112,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Tiro+Devanagari+Hindi&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap",
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },

@@ -10,7 +10,7 @@ import {
   visitSchema,
 } from "./orders.schema";
 import { compareWardNumbers } from "./csv";
-import { computeAmount, designHasBanner, resolveRatePerVoter } from "./pricing";
+import { computeAmount, designHasBanner, rateFor } from "./pricing";
 import { REF_TTL_DAYS as REFERRAL_WINDOW_DAYS } from "./referral";
 
 /**
@@ -104,7 +104,6 @@ export const createOrder = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => orderSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { loadPaymentConfig } = await import("./payment-config.server");
 
     const forwarded = getRequestHeader("x-forwarded-for") ?? "";
     const requestIp =
@@ -113,42 +112,46 @@ export const createOrder = createServerFn({ method: "POST" })
       getRequestHeader("x-real-ip") ||
       "unknown";
 
-
     // Check blocklist
     if (requestIp !== "unknown" || data.contact_number) {
       const orConditions: string[] = [];
-      if (data.contact_number) orConditions.push(`and(phone.eq.${data.contact_number},is_blocked.eq.true)`);
-      if (requestIp !== "unknown") orConditions.push(`and(ip_address.eq.${requestIp},is_blocked.eq.true)`);
-      
-      const { data: blockedRows } = await supabaseAdmin
+      if (data.contact_number)
+        orConditions.push(`and(phone.eq.${data.contact_number},is_blocked.eq.true)`);
+      if (requestIp !== "unknown")
+        orConditions.push(`and(ip_address.eq.${requestIp},is_blocked.eq.true)`);
+
+      const { data: blockedRows } = await (supabaseAdmin as any)
         .from("blocked_entities")
         .select("id")
         .or(orConditions.join(","))
         .limit(1);
-        
+
       if (blockedRows && blockedRows.length > 0) {
         throw new Error("Cannot process order at this time. Please contact support.");
       }
     }
 
-        // Task 6: Auto-flagging for spam (UNPAID older than 48h)
+    // Task 6: Auto-flagging for spam (PENDING orders older than 48h)
     const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-    
+
     // Check IP
     if (requestIp !== "unknown") {
       const { data: unpaidIpOrders } = await supabaseAdmin
         .from("orders")
         .select("id")
         .eq("ip_address", requestIp)
-        .eq("payment_status", "UNPAID")
+        .eq("payment_status", "PENDING")
         .lte("created_at", fortyEightHoursAgo);
       if (unpaidIpOrders && unpaidIpOrders.length >= 3) {
-        await supabaseAdmin.from("blocked_entities").upsert({
-          ip_address: requestIp,
-          reason: "Auto-flagged: 3+ unpaid orders older than 48h",
-          unpaid_orders_count: unpaidIpOrders.length,
-          is_blocked: false
-        }, { onConflict: "ip_address" });
+        await (supabaseAdmin as any).from("blocked_entities").upsert(
+          {
+            ip_address: requestIp,
+            reason: "Auto-flagged: 3+ pending orders older than 48h",
+            unpaid_orders_count: unpaidIpOrders.length,
+            is_blocked: false,
+          },
+          { onConflict: "ip_address" },
+        );
       }
     }
 
@@ -158,21 +161,23 @@ export const createOrder = createServerFn({ method: "POST" })
         .from("orders")
         .select("id")
         .eq("contact_number", data.contact_number)
-        .eq("payment_status", "UNPAID")
+        .eq("payment_status", "PENDING")
         .lte("created_at", fortyEightHoursAgo);
       if (unpaidPhoneOrders && unpaidPhoneOrders.length >= 3) {
-        await supabaseAdmin.from("blocked_entities").upsert({
-          phone: data.contact_number,
-          reason: "Auto-flagged: 3+ unpaid orders older than 48h",
-          unpaid_orders_count: unpaidPhoneOrders.length,
-          is_blocked: false
-        }, { onConflict: "phone" });
+        await (supabaseAdmin as any).from("blocked_entities").upsert(
+          {
+            phone: data.contact_number,
+            reason: "Auto-flagged: 3+ pending orders older than 48h",
+            unpaid_orders_count: unpaidPhoneOrders.length,
+            is_blocked: false,
+          },
+          { onConflict: "phone" },
+        );
       }
     }
 
-    // Price is always derived server-side: the ward's stored voter count times
-    // the configured rate. A browser can never dictate the amount.
-    const config = await loadPaymentConfig();
+    // Price is always derived server-side: the stored voter count times the
+    // series rate (P / S / A / Ph). A browser can never dictate the amount.
 
     // The selected wards are re-read from master data; the browser's numbers
     // are never trusted for either the voter total or the amount.
@@ -191,16 +196,47 @@ export const createOrder = createServerFn({ method: "POST" })
         ward_number: w.ward_number as string,
         voter_count: w.voter_count as number,
       }));
-    const voterCount = wardSnapshots.reduce((sum, w) => sum + w.voter_count, 0);
-    const wardNumbers = wardSnapshots.map((w) => w.ward_number).join(", ");
 
-    // Rate is always derived server-side from the admin-configured base rate
-    // plus the design/photo-slip flags. A browser can never dictate the rate.
+    // Booths (भाग): a ward with booths selected counts only those booths; a
+    // ward without any selected booth counts in full.
+    type BoothSnapshot = {
+      booth_id: string;
+      ward_id: string;
+      booth_number: string;
+      booth_name: string | null;
+      voter_count: number;
+    };
+    let boothSnapshots: BoothSnapshot[] = [];
+    if (data.booth_ids.length) {
+      const { data: boothRows, error: boothError } = await (supabaseAdmin as any)
+        .from("geo_booths")
+        .select("id, ward_id, booth_number, booth_name, voter_count")
+        .in("id", data.booth_ids)
+        .in(
+          "ward_id",
+          wardSnapshots.map((w) => w.ward_id),
+        )
+        .eq("active", true);
+      if (boothError) throw new Error(boothError.message);
+      boothSnapshots = ((boothRows ?? []) as any[]).map((b) => ({
+        booth_id: b.id as string,
+        ward_id: b.ward_id as string,
+        booth_number: String(b.booth_number),
+        booth_name: (b.booth_name as string | null) ?? null,
+        voter_count: Number(b.voter_count ?? 0),
+      }));
+    }
+    const wardsWithBooths = new Set(boothSnapshots.map((b) => b.ward_id));
+    const voterCount =
+      wardSnapshots
+        .filter((w) => !wardsWithBooths.has(w.ward_id))
+        .reduce((sum, w) => sum + w.voter_count, 0) +
+      boothSnapshots.reduce((sum, b) => sum + b.voter_count, 0);
+    const wardNumbers = wardSnapshots.map((w) => w.ward_number).join(", ");
+    const boothLabel = boothSnapshots.map((b) => b.booth_number).join(", ");
+
     const bannerOption = designHasBanner(data.design_code);
-    const effectiveRate = resolveRatePerVoter(config.rate_per_voter, {
-      banner: bannerOption,
-      photoSlip: data.photo_slip,
-    });
+    const effectiveRate = rateFor(data.design_code, data.photo_slip);
     const amount = computeAmount(voterCount, effectiveRate);
 
     // The unique index on orders.order_id is the source of truth: we insert and
@@ -214,7 +250,7 @@ export const createOrder = createServerFn({ method: "POST" })
       const payload: any = {
         order_id: orderId,
         candidate_name_hindi: data.candidate_name_hindi,
-        candidate_name_english: data.candidate_name_english,
+        candidate_name_english: "",
         contact_number: data.contact_number,
         district: data.district,
         panchayat_samiti: data.panchayat_samiti,
@@ -232,7 +268,7 @@ export const createOrder = createServerFn({ method: "POST" })
         party_name_snapshot: data.party_name_snapshot ?? null,
         symbol_name_snapshot: data.symbol_name_snapshot ?? null,
         slogan: data.slogan || null,
-        body_name: data.body_name || null,
+        body_name: data.body_name || data.gram_panchayat || null,
         evm_serial: data.evm_serial || null,
         poll_date: data.poll_date || null,
         list_options: data.list_options ?? [],
@@ -240,17 +276,43 @@ export const createOrder = createServerFn({ method: "POST" })
         ip_address: data.ip_address ?? null,
         user_agent: data.user_agent ?? null,
         status: "New",
-        payment_status: "UNPAID",
+        payment_status: "PENDING",
         banner_option: bannerOption,
         photo_slip: data.photo_slip,
         voter_photo_pdf_path: data.voter_photo_pdf_path ?? null,
+        // Added by migration 20260921100000_pad_booths.sql
+        pad: data.pad,
+        booth_ids: boothSnapshots.map((b) => b.booth_id),
+        booth_snapshots: boothSnapshots,
       };
 
-      const { data: row, error } = await supabaseAdmin
+      let { data: row, error } = await supabaseAdmin
         .from("orders")
         .insert(payload)
         .select("id")
         .maybeSingle();
+
+      // Safety net until the pad/booth migration is applied: store the same
+      // information inside body_name so no order is ever lost.
+      if (error && (error.code === "PGRST204" || error.code === "42703")) {
+        console.warn("[orders] pad/booth columns missing — run the 20260921 migration");
+        const { pad, booth_ids, booth_snapshots, ...legacy } = payload;
+        void booth_ids;
+        void booth_snapshots;
+        legacy.body_name = [
+          legacy.body_name,
+          `पद: ${pad}`,
+          boothLabel ? `भाग: ${boothLabel}` : null,
+        ]
+          .filter(Boolean)
+          .join(" | ")
+          .slice(0, 160);
+        ({ data: row, error } = await supabaseAdmin
+          .from("orders")
+          .insert(legacy)
+          .select("id")
+          .maybeSingle());
+      }
 
       if (!error) {
         inserted = true;
@@ -277,7 +339,7 @@ export const createOrder = createServerFn({ method: "POST" })
       }));
 
       // Fire and forget; do not fail the order if the registry insertion fails.
-      supabaseAdmin
+      (supabaseAdmin as any)
         .from("ward_photo_data_registry")
         .insert(registryRows)
         .then((res: any) => {
@@ -374,7 +436,7 @@ export const createOrder = createServerFn({ method: "POST" })
     return { order_id: orderId, voter_count: voterCount, amount };
   });
 
-/** Free 24-voter sample request — no payment, no photo, no account. */
+/** Free sample request (given on request only) — no payment, no photo, no account. */
 export const createSampleRequest = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => sampleRequestSchema.parse(data))
   .handler(async ({ data }) => {
