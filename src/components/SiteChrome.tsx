@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -87,10 +87,22 @@ const POLICY_LINKS = [
   { to: "/contact", hi: "संपर्क करें", en: "Contact Us" },
 ] as const;
 
+/** Full business/legal block stays expanded on these pages (gateway requirement). */
+const LEGAL_EXPANDED_PAGES = new Set([
+  "/about",
+  "/contact",
+  "/terms",
+  "/privacy",
+  "/refund",
+  "/shipping",
+]);
+
 /** Footer with the legal line and bilingual policy links (gateway requirement). */
 export function SiteFooter() {
   const { lang } = useI18n();
   const en = lang === "en";
+  const pathname = useRouterState({ select: (st) => st.location.pathname });
+  const legalExpanded = LEGAL_EXPANDED_PAGES.has(pathname.replace(/\/$/, "") || "/");
   return (
     <footer className="mt-12 bg-navy px-4 pb-24 pt-10 text-white/85 sm:pb-10">
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.4fr_1fr]">
@@ -101,11 +113,19 @@ export function SiteFooter() {
               ? "Print-ready digital voter slips for Rajasthan panchayat election candidates. Digital delivery only — we do not print or ship."
               : "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल वोटर स्लिप। सिर्फ़ डिजिटल डिलीवरी — हम छपाई या कूरियर नहीं करते।"}
           </p>
-          <ul className="mt-4 space-y-1 text-[13px] leading-relaxed text-white/80">
-            {legalLine(lang).map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+          {/* Expanded on policy pages; a tidy dropdown on the homepage and elsewhere. */}
+          <details key={pathname} open={legalExpanded} className="group mt-4">
+            <summary className="cursor-pointer list-none text-[13px] font-semibold text-white/90 underline-offset-4 marker:content-none hover:underline">
+              {en ? "Business information" : "व्यवसाय की जानकारी"}
+              <span className="ml-1 text-white/55 transition-transform group-open:hidden">▸</span>
+              <span className="ml-1 hidden text-white/55 group-open:inline">▾</span>
+            </summary>
+            <ul className="mt-2 space-y-1 text-[13px] leading-relaxed text-white/80">
+              {legalLine(lang).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </details>
           <div className="mt-5 flex flex-wrap gap-2">
             <a
               href={buildEnquiryWhatsAppUrl(lang)}

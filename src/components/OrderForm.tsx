@@ -372,7 +372,7 @@ export function OrderForm() {
   const fetchWardPhoto = useServerFn(checkWardPhotoAvailability);
 
   // Card 1 — post and area.
-  const [pad, setPad] = useState<Pad | null>(null);
+  const [pad, setPad] = useState<Pad>("ps_sadasya");
   const [districtId, setDistrictId] = useState<string | null>(null);
   const [samitiId, setSamitiId] = useState<string | null>(null);
   const [gpId, setGpId] = useState<string | null>(null);
@@ -880,35 +880,30 @@ export function OrderForm() {
           {/* 1 — पद, क्षेत्र, वार्ड, भाग */}
           <Card num="1" title={tx("c1")} sub={tx("c1sub")}>
             <Field id="pad" label={tx("pad")} hint={tx("padHint")} required error={errors.pad}>
-              <div
-                id="pad"
-                role="radiogroup"
-                data-invalid={errors.pad ? "true" : undefined}
-                tabIndex={-1}
-                className="flex flex-wrap gap-2"
+              <Select
+                value={pad}
+                onValueChange={(value) => {
+                  const next = value as Pad;
+                  if (next !== "sarpanch" && pad === "sarpanch") setWardIds([]);
+                  setPad(next);
+                  clearError("pad");
+                }}
               >
-                {PAD_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    role="radio"
-                    aria-checked={pad === option}
-                    onClick={() => {
-                      setPad(option);
-                      clearError("pad");
-                      if (option !== "sarpanch" && pad === "sarpanch") setWardIds([]);
-                    }}
-                    className={cn(
-                      "rounded-full border px-3.5 py-1.5 text-[13.5px] transition-colors",
-                      pad === option
-                        ? "border-primary bg-brand-soft font-semibold text-saffron-deep"
-                        : "border-border bg-muted hover:border-primary/40",
-                    )}
-                  >
-                    {PAD_LABELS[option][lang]}
-                  </button>
-                ))}
-              </div>
+                <SelectTrigger
+                  id="pad"
+                  className={cn(selectCls, "sm:max-w-xs")}
+                  data-invalid={errors.pad ? "true" : undefined}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAD_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {PAD_LABELS[option][lang]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
 
             <div className="mt-4 grid gap-3.5 sm:grid-cols-3">
@@ -1244,33 +1239,6 @@ export function OrderForm() {
                 {en ? "slips per A4 page" : "स्लिप प्रति A4 पेज"}
               </p>
             ) : null}
-
-            <div className="mt-3.5 flex items-center justify-between gap-3 rounded-[10px] border border-border bg-muted px-3 py-2.5">
-              <Label
-                htmlFor="photo-slip-toggle"
-                className="flex min-w-0 cursor-pointer flex-col gap-0.5"
-              >
-                <span className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
-                  {tx("photoTitle")}
-                  {photoSlipDataAvailable ? (
-                    <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold text-success">
-                      {t("photo_slip.badge")}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="text-[11.5px] leading-tight text-muted-foreground">
-                  {tx("photoDesc")}
-                </span>
-              </Label>
-              <Switch
-                id="photo-slip-toggle"
-                checked={photoSlip}
-                onCheckedChange={(checked) => {
-                  if (checked && !photoSlipConsent) setPhotoSlipInfoOpen(true);
-                  else setPhotoSlip(checked);
-                }}
-              />
-            </div>
           </Card>
 
           {/* 3 — प्रत्याशी */}
@@ -1545,6 +1513,33 @@ export function OrderForm() {
                   </label>
                 );
               })}
+            </div>
+
+            <div className="mt-3.5 flex items-center justify-between gap-3 rounded-[10px] border border-border bg-muted px-3 py-2.5">
+              <Label
+                htmlFor="photo-slip-toggle"
+                className="flex min-w-0 cursor-pointer flex-col gap-0.5"
+              >
+                <span className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
+                  {tx("photoTitle")}
+                  {photoSlipDataAvailable ? (
+                    <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold text-success">
+                      {t("photo_slip.badge")}
+                    </span>
+                  ) : null}
+                </span>
+                <span className="text-[11.5px] leading-tight text-muted-foreground">
+                  {tx("photoDesc")}
+                </span>
+              </Label>
+              <Switch
+                id="photo-slip-toggle"
+                checked={photoSlip}
+                onCheckedChange={(checked) => {
+                  if (checked && !photoSlipConsent) setPhotoSlipInfoOpen(true);
+                  else setPhotoSlip(checked);
+                }}
+              />
             </div>
           </Card>
 
