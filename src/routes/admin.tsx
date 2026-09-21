@@ -1522,6 +1522,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           <TabsContent value="blocked">
             <BlockedTab token={token} onError={handleError} />
           </TabsContent>
+
+          <TabsContent value="processing">
+            <ProcessingTab token={token} />
+          </TabsContent>
         </Tabs>
 
         <Dialog open={!!assign} onOpenChange={(open) => (open ? null : setAssign(null))}>
