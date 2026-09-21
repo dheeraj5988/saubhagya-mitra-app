@@ -18,6 +18,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as OrderOrderIdRouteImport } from './routes/order/$orderId'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +66,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrderOrderIdRoute = OrderOrderIdRouteImport.update({
+  id: '/order/$orderId',
+  path: '/order/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/refund': typeof RefundRoute
   '/shipping': typeof ShippingRoute
   '/terms': typeof TermsRoute
+  '/order/$orderId': typeof OrderOrderIdRoute
   '/r/$code': typeof RCodeRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/refund': typeof RefundRoute
   '/shipping': typeof ShippingRoute
   '/terms': typeof TermsRoute
+  '/order/$orderId': typeof OrderOrderIdRoute
   '/r/$code': typeof RCodeRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/refund': typeof RefundRoute
   '/shipping': typeof ShippingRoute
   '/terms': typeof TermsRoute
+  '/order/$orderId': typeof OrderOrderIdRoute
   '/r/$code': typeof RCodeRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/refund'
     | '/shipping'
     | '/terms'
+    | '/order/$orderId'
     | '/r/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/refund'
     | '/shipping'
     | '/terms'
+    | '/order/$orderId'
     | '/r/$code'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/refund'
     | '/shipping'
     | '/terms'
+    | '/order/$orderId'
     | '/r/$code'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   RefundRoute: typeof RefundRoute
   ShippingRoute: typeof ShippingRoute
   TermsRoute: typeof TermsRoute
+  OrderOrderIdRoute: typeof OrderOrderIdRoute
   RCodeRoute: typeof RCodeRoute
 }
 
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/order/$orderId': {
+      id: '/order/$orderId'
+      path: '/order/$orderId'
+      fullPath: '/order/$orderId'
+      preLoaderRoute: typeof OrderOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/r/$code': {
       id: '/r/$code'
       path: '/r/$code'
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   RefundRoute: RefundRoute,
   ShippingRoute: ShippingRoute,
   TermsRoute: TermsRoute,
+  OrderOrderIdRoute: OrderOrderIdRoute,
   RCodeRoute: RCodeRoute,
 }
 export const routeTree = rootRouteImport

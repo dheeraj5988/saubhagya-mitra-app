@@ -466,3 +466,39 @@ export const createSampleRequest = createServerFn({ method: "POST" })
     }
     throw new Error("Could not generate a unique request id");
   });
+
+export const createCashfreePaymentSession = createServerFn({ method: "POST" })
+  .validator((d: { orderId: string; amount: number; customerPhone: string; customerName: string }) => d)
+  .handler(async ({ data }) => {
+    const isSandbox = process.env["CASHFREE_ENV"] === "sandbox";
+    const appId = process.env["CASHFREE_APP_ID"];
+    const secretKey = process.env["CASHFREE_SECRET_KEY"];
+    const endpoint = isSandbox ? "https://sandbox.cashfree.com/pg" : "https://api.cashfree.com/pg";
+    if (!appId || !secretKey) throw new Error("Cashfree credentials missing");
+    const payload = {
+      order_id: data.orderId,
+      order_amount: data.amount,
+      order_currency: "INR",
+      customer_details: {
+        customer_id: data.customerPhone,
+        customer_phone: data.customerPhone,
+        customer_name: data.customerName || "Customer",
+      },
+      order_meta: {
+        return_url: `${process.env["VITE_APP_URL"] || "http://localhost:3000"}/order/${data.orderId}`,
+      },
+    };
+    const res = await fetch(`${endpoint}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-version": "2023-08-01",
+        "x-client-id": appId,
+        "x-client-secret": secretKey,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("Failed to create Cashfree session");
+    const result = await res.json();
+    return { payment_session_id: result.payment_session_id };
+  });

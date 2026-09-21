@@ -8,7 +8,7 @@ export const adminListBlocked = createServerFn({ method: "POST" }).validator((d:
   const data = blockListSchema.parse(payload);
   const db = await assertSession(data.token);
 
-  const { data: rows, error } = await db
+  const { data: rows, error } = await (db as any)
     .from("blocked_entities")
     .select("*")
     .order("created_at", { ascending: false });
@@ -25,13 +25,13 @@ export const adminBlockEntity = createServerFn({ method: "POST" }).validator((d:
   const matchCol = isIp ? "ip_address" : "phone";
 
   // Upsert the block
-  const { error } = await db.from("blocked_entities").upsert({
+  const { error } = await (db as any).from("blocked_entities").upsert({
     ...(isIp ? { ip_address: data.value } : { phone: data.value }),
     reason: data.reason ?? null,
     is_blocked: true,
     blocked_by: "ADMIN",
     updated_at: new Date().toISOString(),
-  }, { onConflict: matchCol });
+  } as any, { onConflict: matchCol as any });
 
   if (error) throw new Error(error.message);
   return { success: true };
@@ -43,9 +43,9 @@ export const adminUnblockEntity = createServerFn({ method: "POST" }).validator((
 
   const matchCol = data.type === "IP" ? "ip_address" : "phone";
 
-  const { error } = await db
+  const { error } = await (db as any)
     .from("blocked_entities")
-    .update({ is_blocked: false, updated_at: new Date().toISOString() })
+    .update({ is_blocked: false, updated_at: new Date().toISOString() } as any)
     .eq(matchCol, data.value);
 
   if (error) throw new Error(error.message);

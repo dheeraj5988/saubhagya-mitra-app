@@ -64,7 +64,7 @@ export function BlockedTab({
   const load = useCallback(async () => {
     try {
       const res = await fetchBlocked({ data: { token } });
-      setRows(res as BlockedEntityRow[]);
+      setRows((res as unknown) as BlockedEntityRow[]);
     } catch (err) {
       onError(err, "Could not load blocked entities.");
     } finally {

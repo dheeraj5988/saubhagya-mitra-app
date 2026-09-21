@@ -85,6 +85,7 @@ import { GeographyTab } from "@/components/admin/GeographyTab";
 import { SampleRequestsTab } from "@/components/admin/SampleRequestsTab";
 import { ReferralTab } from "@/components/admin/ReferralTab";
 import { BlockedTab } from "@/components/admin/BlockedTab";
+import { ProcessingTab } from "@/components/admin/ProcessingTab";
 import { adminAssignOrderPartner, adminListPartners } from "@/lib/admin-referral.functions";
 import type { AdminPartnerStats } from "@/lib/admin-referral.schema";
 import { formatInr } from "@/lib/pricing";
@@ -803,6 +804,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           <div className="flex items-center justify-between">
             <TabsList>
               <TabsTrigger value="orders">Orders</TabsTrigger>
+              <TabsTrigger value="processing">Processing & PCs</TabsTrigger>
               <TabsTrigger value="leads">
                 <Users className="mr-1.5 size-4" /> Visitor &amp; Lead Tracker
               </TabsTrigger>

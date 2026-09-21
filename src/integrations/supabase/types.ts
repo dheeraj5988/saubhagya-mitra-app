@@ -14,89 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-
-      blocked_entities: {
-        Row: {
-          id: string
-          ip_address: string | null
-          phone: string | null
-          reason: string | null
-          unpaid_orders_count: number
-          is_blocked: boolean
-          blocked_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          ip_address?: string | null
-          phone?: string | null
-          reason?: string | null
-          unpaid_orders_count?: number
-          is_blocked?: boolean
-          blocked_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          ip_address?: string | null
-          phone?: string | null
-          reason?: string | null
-          unpaid_orders_count?: number
-          is_blocked?: boolean
-          blocked_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-
-      ward_photo_data_registry: {
-        Row: {
-          id: string
-          ward_id: string
-          district: string
-          panchayat_samiti: string
-          gram_panchayat: string
-          ward_number: string
-          voter_count: number
-          asset_id: string
-          pdf_path: string
-          extracted_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          ward_id: string
-          district: string
-          panchayat_samiti: string
-          gram_panchayat: string
-          ward_number: string
-          voter_count: number
-          asset_id: string
-          pdf_path: string
-          extracted_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          ward_id?: string
-          district?: string
-          panchayat_samiti?: string
-          gram_panchayat?: string
-          ward_number?: string
-          voter_count?: number
-          asset_id?: string
-          pdf_path?: string
-          extracted_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       admin_login_attempts: {
         Row: {
           client_key: string
@@ -325,6 +242,45 @@ export type Database = {
           },
         ]
       }
+      workers: {
+        Row: {
+          id: string
+          name: string
+          token_hash: string
+          active: boolean | null
+          paused: boolean | null
+          last_seen_at: string | null
+          current_order_id: string | null
+          jobs_done: number | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          token_hash: string
+          active?: boolean | null
+          paused?: boolean | null
+          last_seen_at?: string | null
+          current_order_id?: string | null
+          jobs_done?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          token_hash?: string
+          active?: boolean | null
+          paused?: boolean | null
+          last_seen_at?: string | null
+          current_order_id?: string | null
+          jobs_done?: number | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount: number | null
@@ -351,6 +307,10 @@ export type Database = {
           payment_status: string
           payment_txn_id: string | null
           payment_updated_at: string | null
+          payment_intent_id: string | null
+          processing_status: "new" | "queued" | "processing" | "ready" | "delivered" | "failed" | null
+          assigned_worker_id: string | null
+          output_files: any | null
           photo_path: string | null
           poll_date: string | null
           rate_per_voter: number | null
@@ -393,6 +353,10 @@ export type Database = {
           payment_status?: string
           payment_txn_id?: string | null
           payment_updated_at?: string | null
+          payment_intent_id?: string | null
+          processing_status?: "new" | "queued" | "processing" | "ready" | "delivered" | "failed" | null
+          assigned_worker_id?: string | null
+          output_files?: any | null
           photo_path?: string | null
           poll_date?: string | null
           rate_per_voter?: number | null
@@ -435,6 +399,10 @@ export type Database = {
           payment_status?: string
           payment_txn_id?: string | null
           payment_updated_at?: string | null
+          payment_intent_id?: string | null
+          processing_status?: "new" | "queued" | "processing" | "ready" | "delivered" | "failed" | null
+          assigned_worker_id?: string | null
+          output_files?: any | null
           photo_path?: string | null
           poll_date?: string | null
           rate_per_voter?: number | null
@@ -815,13 +783,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-
-      ward_photo_availability: {
-        Args: {
-          p_ward_ids: string[]
-        }
-        Returns: number
-      }
       admin_distinct_wards: {
         Args: never
         Returns: {
