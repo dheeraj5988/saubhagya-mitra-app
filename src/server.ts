@@ -45,11 +45,8 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
-export default {
+const ssrHandler = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
-    const url = new URL(request.url);
-    const apiResponse = await handleApiRoutes(request, url);
-    if (apiResponse) return apiResponse;
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
@@ -62,4 +59,20 @@ export default {
       });
     }
   },
+};
+
+export default {
+  async fetch(request: Request, env: unknown, ctx: unknown) {
+    try {
+      const url = new URL(request.url);
+      const apiResponse = await handleApiRoutes(request, url);
+      if (apiResponse) return apiResponse;
+    } catch (e: any) {
+      console.error("API Intercept Error:", e);
+      if (request.url.includes("/api/")) {
+        return new Response(e.message || "API Error", { status: 500 });
+      }
+    }
+    return ssrHandler.fetch(request, env, ctx);
+  }
 };
