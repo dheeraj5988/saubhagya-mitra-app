@@ -756,7 +756,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                 सौभाग्य — Admin Dashboard
               </p>
               <p className="text-[11px] text-navy-foreground/70">
-                मतदाता पर्ची सेवा · operations console
+                Saubhagya Voter Slip · Operations Console
               </p>
             </div>
           </div>
