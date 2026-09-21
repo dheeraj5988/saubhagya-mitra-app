@@ -4,69 +4,177 @@ import { generateUploadUrl } from "@/lib/r2.server";
 export async function handleApiRoutes(request: Request, url: URL): Promise<Response | null> {
   const path = url.pathname;
   
+  // 1. Cashfree Webhook
   if (request.method === "POST" && path === "/api/cashfree/webhook") {
     try {
-      const body = await request.json();
-      if (body.type === 'PAYMENT_SUCCESS_WEBHOOK' && body.data?.order?.order_id) {
-        const orderId = body.data.order.order_id;
-        const { error } = await supabaseAdmin
-          .from('orders')
+      const rawBody = await request.text();
+      const body = JSON.parse(rawBody);
+
+      // Support payment-link & order-pay events
+      const orderId = body.data?.order?.order_id || body.data?.link_id || body.data?.link_notes?.order_id;
+      const paymentStatus = body.data?.payment?.payment_status || body.type;
+
+      if (orderId && (paymentStatus === "SUCCESS" || body.type === "PAYMENT_SUCCESS_WEBHOOK")) {
+        // App vocabulary uses 'PENDING', not 'UNPAID'
+        const { error } = await (supabaseAdmin as any)
+          .from("orders")
           .update({
-            payment_status: 'PAID',
-            payment_intent_id: body.data.payment?.cf_payment_id?.toString() || null,
+            payment_status: "PAID",
+            payment_intent_id: body.data?.payment?.cf_payment_id?.toString() || null,
+            payment_updated_at: new Date().toISOString(),
           })
-          .eq('id', orderId as any)
-          .eq('payment_status', 'UNPAID');
-        if (error) console.error("Error updating order:", error);
+          .eq("order_id", String(orderId))
+          .eq("payment_status", "PENDING");
+
+        if (error) console.error("[Cashfree Webhook] DB Error:", error);
+        else console.log(`[Cashfree Webhook] Order ${orderId} marked PAID`);
       }
       return new Response("OK", { status: 200 });
     } catch (err) {
-      console.error(err);
+      console.error("[Cashfree Webhook] Error:", err);
       return new Response("Bad Request", { status: 400 });
     }
   }
 
+  // 2. Worker Endpoints
   if (request.method === "POST" && path.startsWith("/api/worker/")) {
     try {
       const body = await request.json();
       const { workerId, token } = body;
       
-      const { data: worker } = await supabaseAdmin.from('workers').select('id').eq('id', workerId).eq('token_hash', token).single();
+      const { data: worker } = await (supabaseAdmin as any)
+        .from("workers")
+        .select("id, paused, jobs_done")
+        .eq("id", workerId)
+        .eq("token_hash", token)
+        .eq("active", true)
+        .maybeSingle();
+
       if (!worker) return new Response("Unauthorized", { status: 401 });
 
+      // Always bump last_seen_at so PC shows ONLINE
+      await (supabaseAdmin as any)
+        .from("workers")
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq("id", workerId);
+
+      // Heartbeat
       if (path === "/api/worker/heartbeat") {
-        await supabaseAdmin.from('workers').update({ last_seen_at: new Date().toISOString() }).eq('id', workerId);
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
+        return new Response(JSON.stringify({ ok: true, paused: worker.paused }), { status: 200 });
       }
 
+      // Claim
       if (path === "/api/worker/claim") {
-        const { data: orderId, error } = await (supabaseAdmin.rpc as any)('claim_next_order', { p_worker: workerId });
+        if (worker.paused) return new Response(JSON.stringify({ orderId: null, paused: true }), { status: 200 });
+
+        const { data: orderUuid, error } = await (supabaseAdmin as any).rpc("claim_next_order", { p_worker: workerId });
         if (error) return new Response(error.message, { status: 400 });
-        if (!orderId) return new Response(JSON.stringify({ orderId: null }), { status: 200 });
-        const { data: orderData } = await supabaseAdmin.from('orders').select('*').eq('id', orderId as any).single();
-        return new Response(JSON.stringify({ orderId, orderData }), { status: 200 });
+        if (!orderUuid) return new Response(JSON.stringify({ orderId: null, paused: false }), { status: 200 });
+
+        const { data: o } = await (supabaseAdmin as any)
+          .from("orders")
+          .select("*")
+          .eq("id", orderUuid)
+          .single();
+
+        // Generate short-lived signed URL for candidate photo/banner if uploaded
+        let bannerSignedUrl: string | null = null;
+        if (o.photo_path) {
+          const { data: signed } = await supabaseAdmin.storage
+            .from("candidate-photos")
+            .createSignedUrl(o.photo_path, 3600);
+          bannerSignedUrl = signed?.signedUrl ?? null;
+        }
+
+        const fullOrderData = {
+          order_id: o.order_id,
+          id: o.id,
+          pad: o.pad,
+          template: o.design_code,
+          candidate_name_hindi: o.candidate_name_hindi,
+          election_symbol: o.election_symbol,
+          party_name_snapshot: o.party_name_snapshot,
+          symbol_name_snapshot: o.symbol_name_snapshot,
+          evm_serial: o.evm_serial,
+          slogan: o.slogan,
+          poll_date: o.poll_date,
+          district: o.district,
+          panchayat_samiti: o.panchayat_samiti,
+          gram_panchayat: o.gram_panchayat,
+          ward_number: o.ward_number,
+          ward_ids: o.ward_ids,
+          ward_snapshots: o.ward_snapshots,
+          booth_ids: o.booth_ids,
+          booth_snapshots: o.booth_snapshots,
+          list_options: o.list_options || ["slip", "hindi_alpha", "english_alpha", "family"],
+          voter_count: o.voter_count,
+          banner_url: bannerSignedUrl,
+        };
+
+        return new Response(JSON.stringify({ orderId: o.order_id, orderData: fullOrderData }), { status: 200 });
       }
 
+      // Upload URLs
       if (path === "/api/worker/upload-urls") {
         const { orderId, files } = body;
-        const urls = await Promise.all(files.map(async (f: any) => ({
-          name: f.name,
-          key: `orders/${orderId}/${f.name}`,
-          uploadUrl: await generateUploadUrl(`orders/${orderId}/${f.name}`, f.contentType)
-        })));
+        const urls = await Promise.all(
+          files.map(async (f: any) => ({
+            name: f.name,
+            key: `orders/${orderId}/${f.name}`,
+            uploadUrl: await generateUploadUrl(`orders/${orderId}/${f.name}`, f.contentType || "application/pdf")
+          }))
+        );
         return new Response(JSON.stringify({ urls }), { status: 200 });
       }
 
+      // Complete
       if (path === "/api/worker/complete") {
         const { orderId, outputFiles } = body;
-        await supabaseAdmin.from('orders').update({ processing_status: 'ready', output_files: outputFiles }).eq('id', orderId as any).eq('assigned_worker_id', workerId);
-        await supabaseAdmin.from('workers').update({ current_order_id: null }).eq('id', workerId);
-        // await supabaseAdmin.rpc('increment_jobs_done', { p_worker: workerId });
+        await (supabaseAdmin as any)
+          .from("orders")
+          .update({
+            processing_status: "ready",
+            processed_at: new Date().toISOString(),
+            output_files: outputFiles,
+            status: "Ready"
+          })
+          .eq("order_id", orderId)
+          .eq("assigned_worker_id", workerId);
+
+        // Increment jobs_done
+        await (supabaseAdmin as any).rpc("increment_jobs_done", { p_worker: workerId });
         return new Response(JSON.stringify({ success: true }), { status: 200 });
       }
+
+      // Fail / Retry Endpoint
+      if (path === "/api/worker/fail") {
+        const { orderId, error: errorMessage } = body;
+        const { data: currentOrder } = await (supabaseAdmin as any)
+          .from("orders")
+          .select("id, attempts")
+          .eq("order_id", orderId)
+          .maybeSingle();
+
+        const retry = Number(currentOrder?.attempts ?? 0) < 3;
+        await (supabaseAdmin as any)
+          .from("orders")
+          .update({
+            processing_status: retry ? "queued" : "failed",
+            assigned_worker_id: retry ? null : workerId,
+            processing_error: String(errorMessage || "Generation failed").slice(0, 500)
+          })
+          .eq("order_id", orderId);
+
+        await (supabaseAdmin as any)
+          .from("workers")
+          .update({ current_order_id: null })
+          .eq("id", workerId);
+
+        return new Response(JSON.stringify({ success: true, requeued: retry }), { status: 200 });
+      }
     } catch (err: any) {
-      console.error(err);
-      return new Response(err.message, { status: 500 });
+      console.error("[Worker API Error]:", err);
+      return new Response(err.message || "Internal Error", { status: 500 });
     }
   }
 
