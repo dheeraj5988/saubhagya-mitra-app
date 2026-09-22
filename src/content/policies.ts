@@ -79,7 +79,7 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
   {
     key: "sop",
     label: p("कैसे चलाएँ — SOP (PDF)", "How to use — SOP (PDF)"),
-    href: "/downloads/saubhagya-sop.pdf",
+    href: "",
     size: "0.2 MB",
   },
 ];
