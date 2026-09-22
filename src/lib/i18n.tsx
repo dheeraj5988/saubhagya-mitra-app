@@ -20,12 +20,12 @@ type Entry = { hi: string; en: string };
  * Candidate-entered values are never routed through here.
  */
 export const DICTIONARY = {
-  "brand.name": { hi: "सौभाग्य वोटर स्लिप", en: "Saubhagya Voter Slip" },
+  "brand.name": { hi: "सौभाग्य", en: "Saubhagya" },
   "brand.tagline": {
     hi: "पंचायत चुनाव · डिजिटल वोटर स्लिप (PDF)",
     en: "Panchayat elections · digital voter slips (PDF)",
   },
-  "brand.full": { hi: "सौभाग्य वोटर स्लिप", en: "Saubhagya Voter Slip" },
+  "brand.full": { hi: "सौभाग्य", en: "Saubhagya" },
 
   "lang.switch": { hi: "भाषा", en: "Language" },
   "lang.hi": { hi: "हिंदी", en: "हिंदी" },
@@ -33,7 +33,7 @@ export const DICTIONARY = {
 
   "nav.whatsapp": { hi: "WhatsApp", en: "WhatsApp" },
 
-  "order.heading": { hi: "वोटर स्लिप का ऑर्डर", en: "Order voter slips" },
+  "order.heading": { hi: "ऑर्डर", en: "Order" },
   "order.subheading": {
     hi: "क्षेत्र चुनें, ज़रूरी जानकारी भरें और डिज़ाइन चुनकर आवेदन भेजें।",
     en: "Select your area, add the details you want and choose a design.",

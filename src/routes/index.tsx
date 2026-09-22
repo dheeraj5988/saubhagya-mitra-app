@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
 const p = (r: number) => Math.round(r * 100);
 
 function Index() {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   const en = lang === "en";
 
   const deliver = [
@@ -76,7 +76,7 @@ function Index() {
         </div>
 
         <h1 className="text-xl font-bold text-foreground sm:text-2xl">
-          {en ? "Order voter slips" : "वोटर स्लिप का ऑर्डर"}
+          {t("order.heading")}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {en

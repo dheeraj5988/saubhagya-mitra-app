@@ -25,7 +25,7 @@ const NAV = [
 
 /** Sticky gradient header — same look as the Windows app's title bar. */
 export function SiteHeader() {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <header className="sticky top-0 z-40 bg-hero-navy text-white shadow-[var(--shadow-elevated)]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5">
@@ -37,7 +37,7 @@ export function SiteHeader() {
             सौ
           </span>
           <span className="truncate text-[17px] font-bold">
-            {lang === "en" ? TRADE_NAME_EN : TRADE_NAME_HI}
+            {t("brand.name")}
           </span>
         </Link>
         <span className="hidden rounded-full bg-white/15 px-2.5 py-0.5 text-[11.5px] text-blue-100 ring-1 ring-white/15 md:inline">
