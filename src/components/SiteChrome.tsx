@@ -18,6 +18,7 @@ const tel = `tel:+${CONTACT_DISPLAY.replace(/\D/g, "")}`;
 const NAV = [
   { to: "/", hi: "ऑर्डर", en: "Order" },
   { to: "/pricing", hi: "रेट सूची", en: "Pricing" },
+  { to: "/software", hi: "सॉफ़्टवेयर", en: "Software" },
   { to: "/about", hi: "हमारे बारे में", en: "About" },
   { to: "/contact", hi: "संपर्क", en: "Contact" },
 ] as const;
@@ -110,8 +111,8 @@ export function SiteFooter() {
           <p className="text-lg font-bold text-white">{en ? TRADE_NAME_EN : TRADE_NAME_HI}</p>
           <p className="mt-1 text-sm text-white/70">
             {en
-              ? "Print-ready digital voter slips for Rajasthan panchayat election candidates. Digital delivery only — we do not print or ship."
-              : "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल वोटर स्लिप। सिर्फ़ डिजिटल डिलीवरी — हम छपाई या कूरियर नहीं करते।"}
+              ? "Print-ready digital voter slips and voter-slip software for Rajasthan panchayat election candidates. Digital delivery only — we do not print or ship."
+              : "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल वोटर स्लिप और सॉफ़्टवेयर। सिर्फ़ डिजिटल डिलीवरी — हम छपाई या कूरियर नहीं करते।"}
           </p>
           {/* Expanded on policy pages; a tidy dropdown on the homepage and elsewhere. */}
           <details key={pathname} open={legalExpanded} className="group mt-4">
@@ -158,6 +159,10 @@ export function SiteFooter() {
             >
               {en ? "Ask on WhatsApp" : "WhatsApp पर माँगिए"}
             </a>
+            {" · "}
+            <Link to="/software" className="font-semibold text-white underline underline-offset-4">
+              {en ? "Free sample software" : "मुफ़्त नमूना सॉफ़्टवेयर"}
+            </Link>
           </p>
         </div>
 
