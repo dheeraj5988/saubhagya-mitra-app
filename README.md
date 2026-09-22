@@ -1,4 +1,4 @@
-# Saubhagya Voter Connect
+# Saubhagya 
 
 Build a production-ready, mobile-first election campaign website called “Saubhagya Matdata Parchi” (सौभाग्य - मतदाता पर्ची सेवा) for Rajasthan Sarpanch/Ward Panch candidates. Use React + TypeScript + Tailwind + shadcn/ui + Lucide icons, with a polished Indian election visual system: deep navy #0F172A, saffron/orange #EA580C/#F97316, white, emerald status badges. Use strong Devanagari typography, excellent spacing, large touch targets, clean cards, subtle shadows, responsive but intentionally mobile-first candidate experience.
 
