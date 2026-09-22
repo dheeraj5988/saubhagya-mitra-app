@@ -88,6 +88,10 @@ export type AdminOrder = {
   referral_code: string | null;
   referral_partner_id?: string | null;
   referral_partner_name: string | null;
+  pad: string | null;
+  booth_snapshots: { booth_number: string; booth_name: string | null }[] | null;
+  photo_slip: boolean;
+  voter_photo_pdf_path: string | null;
 };
 
 export type AdminLead = {

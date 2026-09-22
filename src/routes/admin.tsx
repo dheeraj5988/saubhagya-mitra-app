@@ -8,6 +8,7 @@ import {
   Download,
   Eraser,
   Eye,
+  FileText,
   Gift,
   ImageOff,
   Laptop,
@@ -79,6 +80,7 @@ import {
   adminDeleteLead,
   adminUpdatePaymentStatus,
 } from "@/lib/admin-catalog.functions";
+import { adminVoterPdfUrl } from "@/lib/admin-processing.functions";
 import { SymbolsTab } from "@/components/admin/SymbolsTab";
 import { PaymentSettingsTab } from "@/components/admin/PaymentSettingsTab";
 import { GeographyTab } from "@/components/admin/GeographyTab";
@@ -88,7 +90,7 @@ import { BlockedTab } from "@/components/admin/BlockedTab";
 import { ProcessingTab } from "@/components/admin/ProcessingTab";
 import { adminAssignOrderPartner, adminListPartners } from "@/lib/admin-referral.functions";
 import type { AdminPartnerStats } from "@/lib/admin-referral.schema";
-import { formatInr } from "@/lib/pricing";
+import { DESIGN_META, formatInr, isDesignCode } from "@/lib/pricing";
 import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
@@ -98,7 +100,7 @@ import {
 } from "@/lib/catalog.schema";
 
 import type { AdminKpis, AdminLead, AdminOrder } from "@/lib/admin.schema";
-import { ORDER_STATUSES, type OrderStatus } from "@/lib/orders.schema";
+import { ORDER_STATUSES, PAD_LABELS, type OrderStatus, type Pad } from "@/lib/orders.schema";
 import {
   ADMIN_TOKEN_KEY,
   downloadCsv,
@@ -338,6 +340,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const updateStatus = useServerFn(adminUpdateStatus);
   const deleteOrder = useServerFn(adminDeleteOrder);
   const photoUrl = useServerFn(adminPhotoUrl);
+  const voterPdfUrl = useServerFn(adminVoterPdfUrl);
   const updatePaymentStatus = useServerFn(adminUpdatePaymentStatus);
 
   const deleteLead = useServerFn(adminDeleteLead);
@@ -356,6 +359,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [busyPhoto, setBusyPhoto] = useState(false);
+  const [busyVoterPdf, setBusyVoterPdf] = useState(false);
 
   const [search, setSearch] = useState("");
   const [ward, setWard] = useState("all");
@@ -576,6 +580,26 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       handleError(err, "Could not download the photo.");
     } finally {
       setBusyPhoto(false);
+    }
+  }
+
+  async function downloadVoterPdf(order: AdminOrder) {
+    if (!order.voter_photo_pdf_path) {
+      toast.error("No voter list PDF stored for this order.");
+      return;
+    }
+    setBusyVoterPdf(true);
+    try {
+      const { url } = await voterPdfUrl({ data: { token, path: order.voter_photo_pdf_path } });
+      const a = document.createElement("a");
+      a.href = url;
+      a.rel = "noopener noreferrer";
+      a.download = `${order.order_id}-voter-list.pdf`;
+      a.click();
+    } catch (err) {
+      handleError(err, "Could not download the voter list PDF.");
+    } finally {
+      setBusyVoterPdf(false);
     }
   }
 
@@ -1027,12 +1051,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                             <p className="truncate font-medium" title={o.candidate_name_hindi}>
                               {o.candidate_name_hindi}
                             </p>
-                            <p
-                              className="truncate text-xs text-muted-foreground"
-                              title={o.candidate_name_english}
-                            >
-                              {o.candidate_name_english}
-                            </p>
                           </td>
                           <td className="px-3 py-2 text-xs">
                             <p
@@ -1090,7 +1108,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                               >
                                 <img
                                   src={o.photo_url}
-                                  alt={`${o.candidate_name_english} photo`}
+                                  alt={`${o.candidate_name_hindi} photo`}
                                   className="size-full object-cover"
                                   loading="lazy"
                                 />
@@ -1582,7 +1600,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
           {preview?.photo_url ? (
             <img
               src={preview.photo_url}
-              alt={`${preview.candidate_name_english} candidate photo`}
+              alt={`${preview.candidate_name_hindi} candidate photo`}
               className="max-h-[60vh] w-full rounded-lg object-contain"
             />
           ) : (
@@ -1617,6 +1635,11 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   {detail.status}
                 </Badge>
               ) : null}
+              {detail?.photo_slip ? (
+                <Badge variant="outline" className="text-[11px] font-semibold text-primary">
+                  फ़ोटो पर्ची (Ph)
+                </Badge>
+              ) : null}
             </DialogTitle>
             <DialogDescription>
               {detail ? formatDateTime(detail.created_at) : null}
@@ -1634,7 +1657,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   >
                     <img
                       src={detail.photo_url}
-                      alt={`${detail.candidate_name_english} candidate photo`}
+                      alt={`${detail.candidate_name_hindi} candidate photo`}
                       className="aspect-[3/4] w-full object-cover"
                     />
                   </button>
@@ -1658,6 +1681,22 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   )}{" "}
                   Download photo
                 </Button>
+                {detail.voter_photo_pdf_path ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    disabled={busyVoterPdf}
+                    onClick={() => void downloadVoterPdf(detail)}
+                  >
+                    {busyVoterPdf ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <FileText className="size-4" />
+                    )}{" "}
+                    Download Voter List PDF
+                  </Button>
+                ) : null}
               </div>
 
               <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
@@ -1665,13 +1704,35 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ["Order ID", detail.order_id],
                   ["Created", formatDateTime(detail.created_at)],
                   ["प्रत्याशी (हिंदी)", detail.candidate_name_hindi],
-                  ["Candidate (English)", detail.candidate_name_english],
                   ["Phone", detail.contact_number],
+                  [
+                    "पद (Post)",
+                    detail.pad && detail.pad in PAD_LABELS
+                      ? PAD_LABELS[detail.pad as Pad].hi
+                      : "—",
+                  ],
                   ["District", detail.district],
                   ["Panchayat Samiti", detail.panchayat_samiti],
                   ["Gram Panchayat", detail.gram_panchayat],
                   ["Ward Number", detail.ward_number],
+                  [
+                    "भाग (Booths)",
+                    detail.booth_snapshots?.length
+                      ? detail.booth_snapshots.map((b) => b.booth_number).join(", ")
+                      : "पूरा वार्ड",
+                  ],
                   ["Election Symbol", detail.election_symbol],
+                  [
+                    "Design",
+                    detail.design_code && isDesignCode(detail.design_code)
+                      ? `${DESIGN_META[detail.design_code].label} (${DESIGN_META[detail.design_code].series})`
+                      : (detail.design_code ?? "—"),
+                  ],
+                  [
+                    "Voter Count",
+                    detail.voter_count == null ? "—" : detail.voter_count.toLocaleString("en-IN"),
+                  ],
+                  ["Order Amount", formatInr(detail.amount)],
                   ["IP Address", detail.ip_address ?? "—"],
                   ["Status", detail.status],
                   ["Party", detail.party_name_snapshot ?? "—"],

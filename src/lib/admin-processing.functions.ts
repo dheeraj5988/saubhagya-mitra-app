@@ -71,7 +71,9 @@ export const adminTriggerTestJob = createServerFn({ method: "POST" })
       list_options: ["slip"],
       status: "New",
       payment_status: "PAID",
-      payment_method: "MANUAL",
+      // Left unset (NULL) on purpose: the legacy orders_payment_method_check
+      // constraint only allows real gateway values, and a test job has no
+      // real payment method behind it.
       payment_updated_at: new Date().toISOString(),
       processing_status: "queued" as const,
       assigned_worker_id: data.worker_id,
@@ -97,6 +99,20 @@ export const adminTriggerTestJob = createServerFn({ method: "POST" })
       orderId = makeOrderId(attempt + 1, "TEST");
     }
     throw new Error("Could not generate a unique test order id.");
+  });
+
+/** Signed 1-hour link to the customer's uploaded voter-list PDF (photo-slip orders). */
+export const adminVoterPdfUrl = createServerFn({ method: "POST" })
+  .validator((d: { token: string; path: string }) => d)
+  .handler(async ({ data }) => {
+    const { assertSession } = await import("./admin.server");
+    await assertSession(data.token);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: res, error } = await supabaseAdmin.storage
+      .from("voter-raw-lists")
+      .createSignedUrl(data.path, 3600);
+    if (error) throw new Error(error.message);
+    return { url: res.signedUrl };
   });
 
 export const markOrderPaidAdmin = createServerFn({ method: "POST" })

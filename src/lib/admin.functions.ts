@@ -20,7 +20,6 @@ const SIGNED_URL_TTL_SECONDS = 300;
 const ORDER_SEARCH_COLUMNS = [
   "order_id",
   "candidate_name_hindi",
-  "candidate_name_english",
   "contact_number",
   "district",
   "panchayat_samiti",
