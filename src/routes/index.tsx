@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { FileText, ListOrdered, MessageCircle, Send } from "lucide-react";
+import { Download, FileText, ListOrdered, MessageCircle, Send } from "lucide-react";
 
 import { OrderForm } from "@/components/OrderForm";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
@@ -92,7 +92,7 @@ function Index() {
           <h2 className="text-lg font-bold text-foreground">
             {en ? "What we deliver" : "हम क्या देते हैं"}
           </h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {deliver.map((item) => (
               <div
                 key={item.title}
@@ -103,6 +103,23 @@ function Index() {
                 <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
               </div>
             ))}
+            <Link
+              to="/software"
+              className="rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-primary"
+            >
+              <Download className="size-5 text-primary" aria-hidden />
+              <p className="mt-2 font-bold text-foreground">
+                {en ? "Software licence" : "सॉफ़्टवेयर लाइसेंस"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {en
+                  ? "For a whole panchayat samiti or district — make unlimited slips on your own computer."
+                  : "पूरी पंचायत समिति या ज़िले के लिए — अपने कंप्यूटर पर जितनी चाहें पर्चियाँ।"}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-primary underline underline-offset-4">
+                {en ? "Download the free sample" : "मुफ़्त नमूना डाउनलोड कीजिए"}
+              </p>
+            </Link>
           </div>
         </section>
       </main>

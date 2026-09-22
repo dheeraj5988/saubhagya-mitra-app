@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://saubhagya.net/</loc><lastmod>2026-09-20</lastmod><priority>1.0</priority></url>
-  <url><loc>https://saubhagya.net/pricing</loc><lastmod>2026-09-20</lastmod><priority>0.8</priority></url>
-  <url><loc>https://saubhagya.net/about</loc><lastmod>2026-09-20</lastmod><priority>0.7</priority></url>
-  <url><loc>https://saubhagya.net/contact</loc><lastmod>2026-09-20</lastmod><priority>0.7</priority></url>
-  <url><loc>https://saubhagya.net/terms</loc><lastmod>2026-09-20</lastmod><priority>0.5</priority></url>
-  <url><loc>https://saubhagya.net/privacy</loc><lastmod>2026-09-20</lastmod><priority>0.5</priority></url>
-  <url><loc>https://saubhagya.net/refund</loc><lastmod>2026-09-20</lastmod><priority>0.5</priority></url>
-  <url><loc>https://saubhagya.net/shipping</loc><lastmod>2026-09-20</lastmod><priority>0.5</priority></url>
+  <url><loc>https://saubhagya.net/</loc><lastmod>2026-09-22</lastmod><priority>1.0</priority></url>
+  <url><loc>https://saubhagya.net/pricing</loc><lastmod>2026-09-22</lastmod><priority>0.8</priority></url>
+  <url><loc>https://saubhagya.net/software</loc><lastmod>2026-09-22</lastmod><priority>0.8</priority></url>
+  <url><loc>https://saubhagya.net/about</loc><lastmod>2026-09-22</lastmod><priority>0.7</priority></url>
+  <url><loc>https://saubhagya.net/contact</loc><lastmod>2026-09-22</lastmod><priority>0.7</priority></url>
+  <url><loc>https://saubhagya.net/terms</loc><lastmod>2026-09-22</lastmod><priority>0.5</priority></url>
+  <url><loc>https://saubhagya.net/privacy</loc><lastmod>2026-09-22</lastmod><priority>0.5</priority></url>
+  <url><loc>https://saubhagya.net/refund</loc><lastmod>2026-09-22</lastmod><priority>0.5</priority></url>
+  <url><loc>https://saubhagya.net/shipping</loc><lastmod>2026-09-22</lastmod><priority>0.5</priority></url>
 </urlset>
