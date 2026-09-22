@@ -57,14 +57,17 @@ export const LICENCE_RATES = { all: 0.3, one: 0.2 } as const;
 export const SAMPLE_CODE = "Guest@123";
 
 /**
- * Files on the /software page. Put the file in public/downloads/ and fill its
- * href; an empty href hides the button (a WhatsApp request button shows instead).
+ * Files on the /software page. Fill href with a public direct-download link
+ * (a file in public/downloads/, or a Google Drive link in the form
+ * https://drive.google.com/uc?export=download&id=FILE_ID). An empty href
+ * hides the button; with no EXE link a WhatsApp request button shows instead.
+ * The sample data (code Guest@123) is built into both EXE files.
  */
 export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: string }[] = [
   {
     key: "exe",
     label: p("सॉफ़्टवेयर — Windows 10 / 11", "Software — Windows 10 / 11"),
-    href: "",
+    href: "https://drive.google.com/uc?export=download&id=1Ztn6mg2UBoBKx7GbJPakt_QLYtIq19zG",
     size: "37 MB",
   },
   {
@@ -73,7 +76,7 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
       "सॉफ़्टवेयर — Windows 7 / 8 (10 / 11 पर भी चलता है)",
       "Software — Windows 7 / 8 (also runs on 10 / 11)",
     ),
-    href: "",
+    href: "https://drive.google.com/uc?export=download&id=1b1h3Pft24fEFLOwzQbOuYwMbheh6AyuE",
     size: "20 MB",
   },
   {
@@ -862,8 +865,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("नमूने में क्या है", "What the sample contains"),
       paras: [
         p(
-          `राजस्थान की हर पंचायत समिति की एक ग्राम पंचायत के 15-15 मतदाता (नमूना-मात्र), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
-          `15 voters from one gram panchayat of every panchayat samiti in Rajasthan (sample only), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
+          `नमूना डेटा इसी फ़ाइल के अंदर है — अलग से कुछ डाउनलोड नहीं करना। सॉफ़्टवेयर वही है जो लाइसेंस में मिलता है; नमूने में बस मतदाता कम हैं: राजस्थान की हर पंचायत समिति की एक ग्राम पंचायत के 15-15 मतदाता (नमूना-मात्र), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
+          `The sample data is inside the same file — nothing else to download. It is the same software you get with a licence; the sample just has fewer voters: 15 voters from one gram panchayat of every panchayat samiti in Rajasthan (sample only), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
         ),
       ],
     },
@@ -871,7 +874,10 @@ export const SOFTWARE: PolicyDoc = {
       title: p("कैसे चलाएँ", "How to run it"),
       paras: [],
       list: [
-        p("फ़ाइल डाउनलोड कीजिए और खोलिए।", "Download the file and open it."),
+        p(
+          'ऊपर के हरे बटन से फ़ाइल डाउनलोड कीजिए (ब्राउज़र चेतावनी दिखाए तो "Keep / रखें" चुनिए) और खोलिए।',
+          'Download the file with the green button above (if the browser warns, choose "Keep") and open it.',
+        ),
         p(`कोड ${SAMPLE_CODE} डालिए।`, `Enter the code ${SAMPLE_CODE}.`),
         p(
           "ज़िला → पंचायत समिति → पद → क्षेत्र चुनिए, डिज़ाइन चुनिए और PDF बनाइए।",
