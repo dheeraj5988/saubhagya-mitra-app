@@ -1,7 +1,13 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { LegalPage, LegalSection, policyHead } from "@/components/LegalPage";
-import { PRICING_EXAMPLE_VOTERS, PRICING_NOTES, PRICING_ROWS } from "@/content/policies";
+import {
+  LICENCE_ROWS,
+  PRICING_EXAMPLE_VOTERS,
+  PRICING_NOTES,
+  PRICING_ROWS,
+  SAMPLE_CODE,
+} from "@/content/policies";
 import { useI18n } from "@/lib/i18n";
 import { computeAmount, formatInr } from "@/lib/pricing";
 
@@ -9,7 +15,7 @@ export const Route = createFileRoute("/pricing")({
   head: () =>
     policyHead(
       "Pricing | Saubhagya Voter Slip",
-      "Per-slip rates for digital voter slips: P 15 paise, S / A 16 paise, Ph 20 paise. Amount = voters × rate.",
+      "Per-slip rates for digital voter slips: P 15 paise, S / A 16 paise, Ph 20 paise. Software licence: 30 paise (all four posts) or 20 paise (one post) per voter.",
     ),
   component: PricingPage,
 });
@@ -67,6 +73,62 @@ function PricingPage() {
               </td>
               <td className="px-4 py-3 text-ink2" colSpan={2}>
                 {en ? "Sample slips on request (WhatsApp)" : "अनुरोध पर नमूना (WhatsApp)"}
+              </td>
+              <td className="px-4 py-3 font-bold">₹0</td>
+              <td className="px-4 py-3">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 className="pt-2 text-lg font-bold text-foreground">
+        {en ? "Software licence (for a full area)" : "सॉफ़्टवेयर लाइसेंस (पूरे क्षेत्र के लिए)"}
+      </h2>
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
+        <table className="w-full min-w-[560px] text-left text-sm">
+          <thead className="bg-brand-soft text-[13px] text-saffron-deep">
+            <tr>
+              <th className="px-4 py-3 font-bold">{en ? "Licence" : "लाइसेंस"}</th>
+              <th className="px-4 py-3 font-bold">{en ? "What you get" : "क्या मिलता है"}</th>
+              <th className="px-4 py-3 font-bold">{en ? "Rate" : "रेट"}</th>
+              <th className="px-4 py-3 font-bold">
+                {en ? `For ${example} voters` : `${example} मतदाता पर`}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {LICENCE_ROWS.map((row) => (
+              <tr key={row.code} className="border-t border-border">
+                <td className="px-4 py-3">
+                  <span className="rounded-md bg-navy px-2 py-0.5 text-xs font-bold text-white">
+                    {row.code}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-ink2">{row.what[lang]}</td>
+                <td className="px-4 py-3 whitespace-nowrap font-bold">
+                  {Math.round(row.rate * 100)} {en ? "paise / voter" : "पैसे / मतदाता"}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap font-bold text-saffron-deep">
+                  {formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}
+                </td>
+              </tr>
+            ))}
+            <tr className="border-t border-border">
+              <td className="px-4 py-3">
+                <span className="rounded-md bg-muted-foreground px-2 py-0.5 text-xs font-bold text-white">
+                  {en ? "Sample" : "नमूना"}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-ink2">
+                {en
+                  ? `Free sample software — sample data for every panchayat samiti, code ${SAMPLE_CODE}. `
+                  : `मुफ़्त नमूना सॉफ़्टवेयर — हर पंचायत समिति का नमूना डेटा, कोड ${SAMPLE_CODE}। `}
+                <Link
+                  to="/software"
+                  className="font-semibold text-primary underline underline-offset-4"
+                >
+                  {en ? "Download" : "डाउनलोड"}
+                </Link>
               </td>
               <td className="px-4 py-3 font-bold">₹0</td>
               <td className="px-4 py-3">—</td>
