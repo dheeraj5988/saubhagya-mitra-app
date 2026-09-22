@@ -21,6 +21,8 @@ export const PROPRIETOR_NAME = "PREETI SHARMA";
 export const GSTIN = "";
 /** "composition" | "regular" — only used when GSTIN is filled. */
 export const GST_SCHEME: "composition" | "regular" = "composition";
+/** Udyam (MSME) registration number. Leave empty to hide. */
+export const UDYAM_NUMBER = "UDYAM-RJ-30-0145497";
 
 export const WHATSAPP_NUMBER = "919983333119";
 export const CONTACT_DISPLAY = "+91 99833 33119";
@@ -38,8 +40,8 @@ export const HOURS_HI = "सुबह 9 से रात 9 बजे तक, स
 export const HOURS_EN = "9 am – 9 pm IST, all days · online orders 24×7";
 
 /** Effective date printed on every policy page. */
-export const POLICY_DATE_HI = "20 सितम्बर 2026";
-export const POLICY_DATE_EN = "20 September 2026";
+export const POLICY_DATE_HI = "22 सितम्बर 2026";
+export const POLICY_DATE_EN = "22 September 2026";
 
 export const SITE_URL = "https://saubhagya.net";
 
