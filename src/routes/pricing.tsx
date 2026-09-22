@@ -35,14 +35,18 @@ function PricingPage() {
       }
     >
       <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
-        <table className="w-full min-w-[560px] text-left text-sm">
+        <table className="w-full text-left text-sm">
           <thead className="bg-brand-soft text-[13px] text-saffron-deep">
             <tr>
-              <th className="px-4 py-3 font-bold">{en ? "Series" : "सीरीज़"}</th>
-              <th className="px-4 py-3 font-bold">{en ? "What you get" : "क्या मिलता है"}</th>
-              <th className="px-4 py-3 font-bold">{en ? "Designs" : "डिज़ाइन"}</th>
-              <th className="px-4 py-3 font-bold">{en ? "Rate" : "रेट"}</th>
-              <th className="px-4 py-3 font-bold">
+              <th className="px-3 py-3 font-bold sm:px-4">{en ? "Series" : "सीरीज़"}</th>
+              <th className="px-3 py-3 font-bold sm:px-4">
+                {en ? "What you get" : "क्या मिलता है"}
+              </th>
+              <th className="hidden px-4 py-3 font-bold md:table-cell">
+                {en ? "Designs" : "डिज़ाइन"}
+              </th>
+              <th className="px-3 py-3 font-bold sm:px-4">{en ? "Rate" : "रेट"}</th>
+              <th className="hidden px-4 py-3 font-bold sm:table-cell">
                 {en ? `For ${example} voters` : `${example} मतदाता पर`}
               </th>
             </tr>
@@ -50,32 +54,45 @@ function PricingPage() {
           <tbody>
             {PRICING_ROWS.map((row) => (
               <tr key={row.series} className="border-t border-border">
-                <td className="px-4 py-3">
+                <td className="px-3 py-3 sm:px-4">
                   <span className="rounded-md bg-navy px-2 py-0.5 text-xs font-bold text-white">
                     {row.series}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-ink2">{row.what[lang]}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{row.designs}</td>
-                <td className="px-4 py-3 whitespace-nowrap font-bold">
-                  {Math.round(row.rate * 100)} {en ? "paise / slip" : "पैसे / पर्ची"}
+                <td className="px-3 py-3 text-ink2 sm:px-4">
+                  {row.what[lang]}
+                  {row.designs !== "—" ? (
+                    <span className="mt-0.5 block text-xs text-muted-foreground md:hidden">
+                      {row.designs}
+                    </span>
+                  ) : null}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap font-bold text-saffron-deep">
+                <td className="hidden px-4 py-3 whitespace-nowrap text-muted-foreground md:table-cell">
+                  {row.designs}
+                </td>
+                <td className="px-3 py-3 whitespace-nowrap font-bold sm:px-4">
+                  {Math.round(row.rate * 100)} {en ? "paise / slip" : "पैसे / पर्ची"}
+                  <span className="mt-0.5 block text-xs font-semibold text-saffron-deep sm:hidden">
+                    {formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}
+                  </span>
+                </td>
+                <td className="hidden px-4 py-3 whitespace-nowrap font-bold text-saffron-deep sm:table-cell">
                   {formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}
                 </td>
               </tr>
             ))}
             <tr className="border-t border-border">
-              <td className="px-4 py-3">
+              <td className="px-3 py-3 sm:px-4">
                 <span className="rounded-md bg-muted-foreground px-2 py-0.5 text-xs font-bold text-white">
                   {en ? "Sample" : "नमूना"}
                 </span>
               </td>
-              <td className="px-4 py-3 text-ink2" colSpan={2}>
+              <td className="px-3 py-3 text-ink2 sm:px-4">
                 {en ? "Sample slips on request (WhatsApp)" : "अनुरोध पर नमूना (WhatsApp)"}
               </td>
-              <td className="px-4 py-3 font-bold">₹0</td>
-              <td className="px-4 py-3">—</td>
+              <td className="hidden px-4 py-3 md:table-cell">—</td>
+              <td className="px-3 py-3 font-bold sm:px-4">₹0</td>
+              <td className="hidden px-4 py-3 sm:table-cell">—</td>
             </tr>
           </tbody>
         </table>
@@ -85,13 +102,15 @@ function PricingPage() {
         {en ? "Software licence (for a full area)" : "सॉफ़्टवेयर लाइसेंस (पूरे क्षेत्र के लिए)"}
       </h2>
       <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
-        <table className="w-full min-w-[560px] text-left text-sm">
+        <table className="w-full text-left text-sm">
           <thead className="bg-brand-soft text-[13px] text-saffron-deep">
             <tr>
-              <th className="px-4 py-3 font-bold">{en ? "Licence" : "लाइसेंस"}</th>
-              <th className="px-4 py-3 font-bold">{en ? "What you get" : "क्या मिलता है"}</th>
-              <th className="px-4 py-3 font-bold">{en ? "Rate" : "रेट"}</th>
-              <th className="px-4 py-3 font-bold">
+              <th className="px-3 py-3 font-bold sm:px-4">{en ? "Licence" : "लाइसेंस"}</th>
+              <th className="px-3 py-3 font-bold sm:px-4">
+                {en ? "What you get" : "क्या मिलता है"}
+              </th>
+              <th className="px-3 py-3 font-bold sm:px-4">{en ? "Rate" : "रेट"}</th>
+              <th className="hidden px-4 py-3 font-bold sm:table-cell">
                 {en ? `For ${example} voters` : `${example} मतदाता पर`}
               </th>
             </tr>
@@ -99,27 +118,30 @@ function PricingPage() {
           <tbody>
             {LICENCE_ROWS.map((row) => (
               <tr key={row.code} className="border-t border-border">
-                <td className="px-4 py-3">
+                <td className="px-3 py-3 sm:px-4">
                   <span className="rounded-md bg-navy px-2 py-0.5 text-xs font-bold text-white">
                     {row.code}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-ink2">{row.what[lang]}</td>
-                <td className="px-4 py-3 whitespace-nowrap font-bold">
+                <td className="px-3 py-3 text-ink2 sm:px-4">{row.what[lang]}</td>
+                <td className="px-3 py-3 whitespace-nowrap font-bold sm:px-4">
                   {Math.round(row.rate * 100)} {en ? "paise / voter" : "पैसे / मतदाता"}
+                  <span className="mt-0.5 block text-xs font-semibold text-saffron-deep sm:hidden">
+                    {formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}
+                  </span>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap font-bold text-saffron-deep">
+                <td className="hidden px-4 py-3 whitespace-nowrap font-bold text-saffron-deep sm:table-cell">
                   {formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}
                 </td>
               </tr>
             ))}
             <tr className="border-t border-border">
-              <td className="px-4 py-3">
+              <td className="px-3 py-3 sm:px-4">
                 <span className="rounded-md bg-muted-foreground px-2 py-0.5 text-xs font-bold text-white">
                   {en ? "Sample" : "नमूना"}
                 </span>
               </td>
-              <td className="px-4 py-3 text-ink2">
+              <td className="px-3 py-3 text-ink2 sm:px-4">
                 {en
                   ? `Free sample software — sample data for every panchayat samiti, code ${SAMPLE_CODE}. `
                   : `मुफ़्त नमूना सॉफ़्टवेयर — हर पंचायत समिति का नमूना डेटा, कोड ${SAMPLE_CODE}। `}
@@ -130,8 +152,8 @@ function PricingPage() {
                   {en ? "Download" : "डाउनलोड"}
                 </Link>
               </td>
-              <td className="px-4 py-3 font-bold">₹0</td>
-              <td className="px-4 py-3">—</td>
+              <td className="px-3 py-3 font-bold sm:px-4">₹0</td>
+              <td className="hidden px-4 py-3 sm:table-cell">—</td>
             </tr>
           </tbody>
         </table>
