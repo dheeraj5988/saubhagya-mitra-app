@@ -11,7 +11,7 @@ export const Route = createFileRoute("/software")({
   head: () =>
     policyHead(
       "Software | Saubhagya Voter Slip",
-      "Free sample of the Saubhagya Voter Slip software for Windows, with the SOP. Software licences for a full panchayat samiti or district.",
+      "Free sample of the Saubhagya Voter Slip software for Windows, with the sample data inside. Software licences for a full panchayat samiti or district.",
     ),
   component: SoftwarePage,
 });
@@ -24,6 +24,9 @@ function SoftwarePage() {
   const askText = en
     ? "Hello, please send me the free sample of the Saubhagya Voter Slip software."
     : "नमस्ते, मुझे सौभाग्य वोटर स्लिप सॉफ़्टवेयर का मुफ़्त नमूना चाहिए।";
+  const helpText = en
+    ? "Hello, the Saubhagya Voter Slip sample software is not downloading."
+    : "नमस्ते, सौभाग्य वोटर स्लिप का नमूना सॉफ़्टवेयर डाउनलोड नहीं हो रहा।";
 
   return (
     <LegalPage title={SOFTWARE.title[lang]} intro={SOFTWARE.intro?.[lang]} showDate={false}>
@@ -34,8 +37,14 @@ function SoftwarePage() {
         <div className="mt-3 flex flex-wrap gap-2">
           {files.map((f) =>
             f.key.startsWith("exe") ? (
-              <Button key={f.key} asChild variant="success" size="sm">
-                <a href={f.href} download>
+              <Button
+                key={f.key}
+                asChild
+                variant="success"
+                size="sm"
+                className="h-auto min-h-8 whitespace-normal py-1.5 text-left"
+              >
+                <a href={f.href} download target="_blank" rel="noopener noreferrer">
                   <Download /> {f.label[lang]} ({f.size})
                 </a>
               </Button>
@@ -56,6 +65,19 @@ function SoftwarePage() {
             </Button>
           )}
         </div>
+        {exeReady ? (
+          <p className="mt-2 text-[13px] text-muted-foreground">
+            {en ? "Trouble downloading? " : "डाउनलोड में दिक़्क़त हो तो "}
+            <a
+              href={whatsappLink(helpText)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary underline underline-offset-4"
+            >
+              {en ? "tell us on WhatsApp" : "WhatsApp पर बताइए"}
+            </a>
+          </p>
+        ) : null}
         <p className="mt-4 text-[14.5px] text-ink2">
           {en ? "Code to open the sample:" : "नमूना खोलने का कोड:"}{" "}
           <span className="text-2xl font-extrabold tracking-wide text-destructive">
