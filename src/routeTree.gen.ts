@@ -17,6 +17,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as ShippingRouteImport } from './routes/shipping'
+import { Route as SoftwareRouteImport } from './routes/software'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as OrderOrderIdRouteImport } from './routes/order/$orderId'
 import { Route as RCodeRouteImport } from './routes/r.$code'
@@ -61,6 +62,11 @@ const ShippingRoute = ShippingRouteImport.update({
   path: '/shipping',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SoftwareRoute = SoftwareRouteImport.update({
+  id: '/software',
+  path: '/software',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/shipping': typeof ShippingRoute
+  '/software': typeof SoftwareRoute
   '/terms': typeof TermsRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/r/$code': typeof RCodeRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/shipping': typeof ShippingRoute
+  '/software': typeof SoftwareRoute
   '/terms': typeof TermsRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/r/$code': typeof RCodeRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/shipping': typeof ShippingRoute
+  '/software': typeof SoftwareRoute
   '/terms': typeof TermsRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/r/$code': typeof RCodeRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refund'
     | '/shipping'
+    | '/software'
     | '/terms'
     | '/order/$orderId'
     | '/r/$code'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refund'
     | '/shipping'
+    | '/software'
     | '/terms'
     | '/order/$orderId'
     | '/r/$code'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refund'
     | '/shipping'
+    | '/software'
     | '/terms'
     | '/order/$orderId'
     | '/r/$code'
@@ -168,6 +180,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RefundRoute: typeof RefundRoute
   ShippingRoute: typeof ShippingRoute
+  SoftwareRoute: typeof SoftwareRoute
   TermsRoute: typeof TermsRoute
   OrderOrderIdRoute: typeof OrderOrderIdRoute
   RCodeRoute: typeof RCodeRoute
@@ -231,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShippingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/software': {
+      id: '/software'
+      path: '/software'
+      fullPath: '/software'
+      preLoaderRoute: typeof SoftwareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -264,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RefundRoute: RefundRoute,
   ShippingRoute: ShippingRoute,
+  SoftwareRoute: SoftwareRoute,
   TermsRoute: TermsRoute,
   OrderOrderIdRoute: OrderOrderIdRoute,
   RCodeRoute: RCodeRoute,
