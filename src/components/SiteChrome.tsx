@@ -30,15 +30,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 bg-hero-navy text-white shadow-[var(--shadow-elevated)]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5">
         <Link to="/" className="flex min-w-0 items-center gap-2.5">
-          <span
-            aria-hidden
-            className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-gold text-sm font-extrabold text-navy"
-          >
-            सौ
-          </span>
-          <span className="truncate text-[17px] font-bold">
-            {t("brand.name")}
-          </span>
+          <img
+            src="/logo-mark.png"
+            alt=""
+            width={36}
+            height={36}
+            className="size-9 shrink-0 rounded-[9px] ring-1 ring-white/25"
+          />
+          <span className="truncate text-[17px] font-bold">{t("brand.name")}</span>
         </Link>
         <span className="hidden rounded-full bg-white/15 px-2.5 py-0.5 text-[11.5px] text-blue-100 ring-1 ring-white/15 md:inline">
           {lang === "en" ? "Rajasthan panchayat elections" : "राजस्थान पंचायत चुनाव"}
@@ -108,7 +107,16 @@ export function SiteFooter() {
     <footer className="mt-12 bg-navy px-4 pb-24 pt-10 text-white/85 sm:pb-10">
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.4fr_1fr]">
         <div>
-          <p className="text-lg font-bold text-white">{en ? TRADE_NAME_EN : TRADE_NAME_HI}</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo-mark.png"
+              alt=""
+              width={44}
+              height={44}
+              className="size-11 rounded-[10px] ring-1 ring-white/25"
+            />
+            <p className="text-lg font-bold text-white">{en ? TRADE_NAME_EN : TRADE_NAME_HI}</p>
+          </div>
           <p className="mt-1 text-sm text-white/70">
             {en
               ? "Print-ready digital voter slips and voter-slip software for Rajasthan panchayat election candidates. Digital delivery only — we do not print or ship."
