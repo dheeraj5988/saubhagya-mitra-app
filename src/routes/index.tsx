@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Download, FileText, ListOrdered, MessageCircle, Send } from "lucide-react";
 
-import { OrderForm } from "@/components/OrderForm";
+import { LiveOrder } from "@/components/LiveOrder";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { buildEnquiryWhatsAppUrl } from "@/lib/campaign";
 import { useI18n } from "@/lib/i18n";
@@ -85,7 +85,7 @@ function Index() {
         </p>
 
         <div className="mt-5">
-          <OrderForm />
+          <LiveOrder />
         </div>
 
         <section className="mt-10">
