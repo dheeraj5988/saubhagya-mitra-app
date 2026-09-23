@@ -68,7 +68,7 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
     key: "exe",
     label: p("सॉफ़्टवेयर — Windows 10 / 11", "Software — Windows 10 / 11"),
     href: "https://drive.google.com/uc?export=download&id=1Ztn6mg2UBoBKx7GbJPakt_QLYtIq19zG",
-    size: "37 MB",
+    size: "73 MB",
   },
   {
     key: "exe-win7",
@@ -77,7 +77,7 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
       "Software — Windows 7 / 8 (also runs on 10 / 11)",
     ),
     href: "https://drive.google.com/uc?export=download&id=1b1h3Pft24fEFLOwzQbOuYwMbheh6AyuE",
-    size: "20 MB",
+    size: "57 MB",
   },
   {
     key: "sop",
@@ -865,8 +865,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("नमूने में क्या है", "What the sample contains"),
       paras: [
         p(
-          `नमूना डेटा इसी फ़ाइल के अंदर है — अलग से कुछ डाउनलोड नहीं करना। सॉफ़्टवेयर वही है जो लाइसेंस में मिलता है; नमूने में बस मतदाता कम हैं: राजस्थान की हर पंचायत समिति की एक ग्राम पंचायत के 15-15 मतदाता (नमूना-मात्र), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
-          `The sample data is inside the same file — nothing else to download. It is the same software you get with a licence; the sample just has fewer voters: 15 voters from one gram panchayat of every panchayat samiti in Rajasthan (sample only), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
+          `नमूना डेटा इसी फ़ाइल के अंदर है — अलग से कुछ डाउनलोड नहीं करना। सॉफ़्टवेयर वही है जो लाइसेंस में मिलता है; नमूने में बस मतदाता कम हैं: राजस्थान के सभी 41 ज़िलों के हर वार्ड / क्षेत्र के पहले 15 मतदाता (नमूना-मात्र; ऐप में ज़िला चुनिए), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
+          `The sample data is inside the same file — nothing else to download. It is the same software you get with a licence; the sample just has fewer voters: the first 15 voters of every ward / constituency in all 41 districts of Rajasthan (sample only; pick a district in the app), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
         ),
       ],
     },
