@@ -342,8 +342,8 @@ export const TERMS: PolicyDoc = {
           "Slips and data are prepared from the State Election Commission's published, public electoral rolls as available at the time of the order. We do not add, remove or change any name in the roll.",
         ),
         p(
-          "ऑर्डर के बाद आयोग द्वारा किया गया संशोधन पहले से बनी फ़ाइल में अपने-आप नहीं आता — उसके लिए नया ऑर्डर लगेगा। सूची में आयोग की ओर से रह गई त्रुटि के लिए हम ज़िम्मेदार नहीं हैं।",
-          "Revisions the Commission makes after your order do not flow into files already made — they need a new order. We are not responsible for errors in the roll itself.",
+          "ऑर्डर के बाद आयोग द्वारा किया गया संशोधन पहले से बनी PDF में अपने-आप नहीं आता — उसके लिए नया ऑर्डर लगेगा। सॉफ़्टवेयर लाइसेंस में ऐसा नहीं है — वहाँ नया डेटा मतदान तिथि तक मुफ़्त मिलता है (खंड 9)। सूची में आयोग की ओर से रह गई त्रुटि के लिए हम ज़िम्मेदार नहीं हैं।",
+          "Revisions the Commission makes after your order do not flow into PDFs already made — those need a new order. Software licences are different: there the updated data is free until the polling date (clause 9). We are not responsible for errors in the roll itself.",
         ),
       ],
     },
@@ -437,8 +437,8 @@ export const TERMS: PolicyDoc = {
           "Exclusivity: a whole-district licence (all four posts) means we do not license that district to anyone else for that election (except panchayat samitis already licensed). Panchayat-samiti-level or single-post licences are not exclusive. This does not apply to the PDF service.",
         ),
         p(
-          "अपडेट: लाइसेंस अवधि में सॉफ़्टवेयर के सुधार / अपडेट निःशुल्क। आयोग की सूची बदलने पर नया डेटा अलग ऑर्डर होगा।",
-          "Updates: software fixes / updates are free during the licence period. New data after the Commission revises the roll is a separate order.",
+          "अपडेट: लाइसेंस अवधि में सॉफ़्टवेयर के सुधार और डेटा — दोनों निःशुल्क। आयोग की सूची बदलने (पूरक / संशोधित सूची) पर उसी लाइसेंस का नया डेटा हम अपनी ओर से, बिना किसी शुल्क के, उस चुनाव की अंतिम मतदान तिथि तक भेजते रहते हैं — आपका कोड वही रहता है। आपने एक से ज़्यादा क्षेत्र लिए हों तो सबका अपडेट एक ही फ़ाइल में आता है।",
+          "Updates: both software fixes and data are free during the licence period. When the Commission revises the roll (supplementary / revised list), we send the updated data for that licence ourselves, free of charge, until the final polling date of that election — your code stays the same. If you hold more than one area, all of them arrive in a single file.",
         ),
         p(
           "समाप्ति: इन शर्तों के उल्लंघन (जैसे कच्चा डेटा बेचना) पर लाइसेंस बिना रिफंड समाप्त किया जा सकता है।",
