@@ -378,8 +378,8 @@ export const TERMS: PolicyDoc = {
       title: p("6. ऑर्डर की पुष्टि और भुगतान", "6. Order confirmation and payment"),
       paras: [
         p(
-          "सभी सेवाओं का भुगतान पहले (100% अग्रिम) होता है। भुगतान की पुष्टि होने पर ऑर्डर पक्का माना जाता है और काम शुरू होता है।",
-          "All services are paid in advance (100%). The order is confirmed once payment is confirmed, and work then begins.",
+          "ऑर्डर दर्ज होने के बाद हम उसे तैयार करते हैं; तैयार होते ही भुगतान का अनुरोध (QR / लिंक) भेजा जाता है। भुगतान मिलते ही फ़ाइलें और बिल भेज दिए जाते हैं। भुगतान 100% अग्रिम है — डिलीवरी से पहले। ऊपर दिए दाम कर-रहित हैं; कोई भी कर (GST आदि) लागू होने पर वह ग्राहक द्वारा देय होगा।",
+          "After an order is placed we prepare it; as soon as it is ready we send the payment request (QR / link). Files and the bill are sent as soon as payment is received. Payment is 100% in advance — before delivery. Prices shown are exclusive of tax; any applicable tax (GST etc.) is payable by the customer.",
         ),
         p(
           "अभी भुगतान WhatsApp पर बताए गए UPI से होता है। ऑनलाइन भुगतान शुरू होने पर वह हमारे payment gateway partner के सुरक्षित पेज पर होगा। कार्ड / UPI / बैंक की जानकारी हमारे सर्वर पर कभी नहीं आती। रिफंड और रद्दीकरण: saubhagya.net/refund",
@@ -602,8 +602,8 @@ export const PRIVACY: PolicyDoc = {
       title: p("जानकारी कब तक रहती है / हटवाना", "Retention and deletion"),
       paras: [
         p(
-          "तैयार PDF के डाउनलोड-लिंक सीमित समय के लिए होते हैं; अवधि बीतने पर फ़ाइल स्टोरेज से हट जाती है। बैनर और फ़ोटो सहित मतदाता-सूची उस चुनाव की अंतिम मतदान तिथि के 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
-          "Download links for finished PDFs are time-limited; the file is removed from storage when the link expires. Banners and photo rolls are deleted within 90 days of the final polling date of that election. Order and bill records are kept for accounting and legal needs.",
+          "तैयार PDF हम 30 दिन तक रखते हैं; डाउनलोड-लिंक सीमित समय के लिए होते हैं और 30 दिन बाद फ़ाइल स्टोरेज से अपने आप हट जाती है। बैनर और फ़ोटो सहित मतदाता-सूची उस चुनाव की अंतिम मतदान तिथि के 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
+          "We keep finished PDFs for 30 days; download links are time-limited and the file is removed from storage automatically after 30 days. Banners and photo rolls are deleted within 90 days of the final polling date of that election. Order and bill records are kept for accounting and legal needs.",
         ),
         p(
           `अपनी जानकारी देखने, सुधारने या हटवाने के लिए ${ORDERS_EMAIL} या WhatsApp ${CONTACT_DISPLAY} पर लिखिए — 7 कार्यदिवस में जवाब मिलेगा। जो रिकॉर्ड क़ानूनन रखना ज़रूरी है, वह उस अवधि तक रहेगा।`,
@@ -634,8 +634,8 @@ export const REFUND: PolicyDoc = {
       title: p("1. भुगतान से पहले", "1. Before payment"),
       paras: [
         p(
-          "कोई भी ऑर्डर WhatsApp पर बताकर कभी भी, बिना किसी शुल्क के, रद्द किया जा सकता है।",
-          "You can cancel any order at any time, free of charge, by telling us on WhatsApp.",
+          "कोई भी ऑर्डर WhatsApp पर बताकर कभी भी, बिना किसी शुल्क के, रद्द किया जा सकता है — फ़ाइलें बन चुकी हों तब भी, जब तक भुगतान नहीं हुआ।",
+          "You can cancel any order at any time, free of charge, by telling us on WhatsApp — even after the files have been prepared, as long as payment has not been made.",
         ),
       ],
     },
@@ -742,8 +742,8 @@ export const DELIVERY: PolicyDoc = {
       paras: [],
       list: [
         p(
-          "वोटर स्लिप PDF: भुगतान की पुष्टि होते ही फ़ाइलें बनती हैं और ऑर्डर में दिए WhatsApp नंबर पर भेजी जाती हैं — फ़ाइल के रूप में या डाउनलोड लिंक के रूप में।",
-          "Voter-slip PDFs: once payment is confirmed the files are prepared and sent to the WhatsApp number in the order — as files or as a download link.",
+          "वोटर स्लिप PDF: ऑर्डर मिलते ही फ़ाइलें बनना शुरू हो जाती हैं। तैयार होने पर भुगतान का अनुरोध (QR / लिंक) भेजा जाता है, और भुगतान की पुष्टि होते ही फ़ाइलें ऑर्डर में दिए WhatsApp नंबर पर भेज दी जाती हैं — फ़ाइल के रूप में या डाउनलोड लिंक के रूप में। लिंक 30 दिन तक चलता है।",
+          "Voter-slip PDFs: preparation starts as soon as the order is received. When the files are ready we send the payment request (QR / link), and once payment is confirmed the files are sent to the WhatsApp number in the order — as files or as a download link. The link stays valid for 30 days.",
         ),
         p(
           'सॉफ़्टवेयर: इसी वेबसाइट के "सॉफ़्टवेयर" पेज (saubhagya.net/software) से डाउनलोड होता है।',
