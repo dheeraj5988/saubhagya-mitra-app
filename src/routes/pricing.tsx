@@ -47,7 +47,7 @@ function PricingPage() {
               </th>
               <th className="px-3 py-3 font-bold sm:px-4">{en ? "Rate" : "रेट"}</th>
               <th className="hidden px-4 py-3 font-bold sm:table-cell">
-                {en ? `For ${example} voters` : `${example} मतदाता पर`}
+                {en ? `e.g. for ${example} voters` : `उदाहरण — ${example} मतदाता पर`}
               </th>
             </tr>
           </thead>
@@ -73,7 +73,7 @@ function PricingPage() {
                 <td className="px-3 py-3 whitespace-nowrap font-bold sm:px-4">
                   {Math.round(row.rate * 100)} {en ? "paise / slip" : "पैसे / पर्ची"}
                   <span className="mt-0.5 block text-xs font-semibold text-saffron-deep sm:hidden">
-                    {formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}
+                    {en ? `e.g. ${example} voters = ${formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}` : `उदा. ${example} मतदाता = ${formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}`}
                   </span>
                 </td>
                 <td className="hidden px-4 py-3 whitespace-nowrap font-bold text-saffron-deep sm:table-cell">
@@ -111,7 +111,7 @@ function PricingPage() {
               </th>
               <th className="px-3 py-3 font-bold sm:px-4">{en ? "Rate" : "रेट"}</th>
               <th className="hidden px-4 py-3 font-bold sm:table-cell">
-                {en ? `For ${example} voters` : `${example} मतदाता पर`}
+                {en ? `e.g. for ${example} voters` : `उदाहरण — ${example} मतदाता पर`}
               </th>
             </tr>
           </thead>
@@ -127,7 +127,7 @@ function PricingPage() {
                 <td className="px-3 py-3 whitespace-nowrap font-bold sm:px-4">
                   {Math.round(row.rate * 100)} {en ? "paise / voter" : "पैसे / मतदाता"}
                   <span className="mt-0.5 block text-xs font-semibold text-saffron-deep sm:hidden">
-                    {formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}
+                    {en ? `e.g. ${example} voters = ${formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}` : `उदा. ${example} मतदाता = ${formatInr(computeAmount(PRICING_EXAMPLE_VOTERS, row.rate))}`}
                   </span>
                 </td>
                 <td className="hidden px-4 py-3 whitespace-nowrap font-bold text-saffron-deep sm:table-cell">
