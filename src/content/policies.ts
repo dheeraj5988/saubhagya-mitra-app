@@ -631,11 +631,11 @@ export const REFUND: PolicyDoc = {
   title: p("रिफंड एवं रद्दीकरण नीति", "Refund & Cancellation Policy"),
   sections: [
     {
-      title: p("1. भुगतान से पहले", "1. Before payment"),
+      title: p("1. फ़ाइलें तैयार होने से पहले", "1. Before the files are ready"),
       paras: [
         p(
-          "कोई भी ऑर्डर WhatsApp पर बताकर कभी भी, बिना किसी शुल्क के, रद्द किया जा सकता है — फ़ाइलें बन चुकी हों तब भी, जब तक भुगतान नहीं हुआ।",
-          "You can cancel any order at any time, free of charge, by telling us on WhatsApp — even after the files have been prepared, as long as payment has not been made.",
+          "जब तक आपकी फ़ाइलें तैयार नहीं हुई हैं, ऑर्डर पेज से या WhatsApp पर बताकर ऑर्डर बिना किसी शुल्क के रद्द किया जा सकता है। भुगतान का QR फ़ाइलें तैयार होने के बाद ही भेजा जाता है — इसलिए QR बन जाने के बाद ऑर्डर रद्द नहीं होता। QR बनने के बाद भुगतान न करें तो QR तय समय में अपने-आप समाप्त हो जाता है और कोई राशि देय नहीं होती।",
+          "Until your files are ready, an order can be cancelled free of charge from the order page or by telling us on WhatsApp. The payment QR is sent only after the files are ready — so once the QR has been generated, the order can no longer be cancelled. If you do not pay after the QR is generated, the QR simply expires after its validity period and nothing is owed.",
         ),
       ],
     },
