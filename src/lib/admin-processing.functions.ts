@@ -9,25 +9,39 @@ export const getProcessingDashboard = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const db = await assertSession(data.token);
 
-    const { data: workers, error: wErr } = await db
-      .from("workers")
-      .select("*")
-      .order("name", { ascending: true });
-      
-    if (wErr) throw new Error(wErr.message);
+    const [workersRes, ordersRes, configRes] = await Promise.all([
+      db.from("workers").select("*").order("name", { ascending: true }),
+      db
+        .from("orders")
+        .select(
+          "id, order_id, is_sample, payment_status, processing_status, assigned_worker_id, created_at, candidate_name_english",
+        )
+        .in("processing_status", ["queued", "processing", "ready", "new"])
+        .order("created_at", { ascending: false })
+        .limit(50),
+      db.from("payment_config").select("web_worker_queue_enabled").eq("singleton", true).maybeSingle(),
+    ]);
 
-    const { data: orders, error: oErr } = await db
-      .from("orders")
-      .select(
-        "id, order_id, is_sample, payment_status, processing_status, assigned_worker_id, created_at, candidate_name_english",
-      )
-      .in("processing_status", ["queued", "processing", "ready", "new"])
-      .order("created_at", { ascending: false })
-      .limit(50);
-      
-    if (oErr) throw new Error(oErr.message);
+    if (workersRes.error) throw new Error(workersRes.error.message);
+    if (ordersRes.error) throw new Error(ordersRes.error.message);
 
-    return { workers, orders };
+    return {
+      workers: workersRes.data,
+      orders: ordersRes.data,
+      web_worker_queue_enabled: Boolean(configRes.data?.web_worker_queue_enabled),
+    };
+  });
+
+export const adminToggleWebWorkerQueue = createServerFn({ method: "POST" })
+  .validator((d: { token: string; enabled: boolean }) => d)
+  .handler(async ({ data }) => {
+    const db = await assertSession(data.token);
+    const { error } = await db
+      .from("payment_config")
+      .update({ web_worker_queue_enabled: data.enabled })
+      .eq("singleton", true);
+    if (error) throw new Error(error.message);
+    return { ok: true, web_worker_queue_enabled: data.enabled };
   });
 
 const testJobSchema = adminTokenSchema.extend({
@@ -63,7 +77,8 @@ export const adminTriggerTestJob = createServerFn({ method: "POST" })
       panchayat_samiti: "TEST",
       gram_panchayat: "TEST",
       ward_number: "TEST-1",
-      design_code: "D2",
+      design_code: "P-16",
+      source: "test",
       voter_count: 15,
       rate_per_voter: 0.15,
       amount: 2.25,

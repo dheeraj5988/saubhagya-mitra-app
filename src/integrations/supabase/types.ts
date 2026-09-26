@@ -308,9 +308,22 @@ export type Database = {
           payment_txn_id: string | null
           payment_updated_at: string | null
           payment_intent_id: string | null
+          payment_gateway_order_id: string | null
           processing_status: "new" | "queued" | "processing" | "ready" | "delivered" | "failed" | null
           assigned_worker_id: string | null
           output_files: any | null
+          attempts: number | null
+          processing_error: string | null
+          processing_started_at: string | null
+          processed_at: string | null
+          source: string | null
+          synced_to_pc_at: string | null
+          pc_order_no: string | null
+          hold_reason: string | null
+          pad: string | null
+          booth_ids: Json | null
+          booth_snapshots: Json | null
+          voter_photo_pdf_path: string | null
           photo_path: string | null
           poll_date: string | null
           rate_per_voter: number | null
@@ -354,9 +367,22 @@ export type Database = {
           payment_txn_id?: string | null
           payment_updated_at?: string | null
           payment_intent_id?: string | null
+          payment_gateway_order_id?: string | null
           processing_status?: "new" | "queued" | "processing" | "ready" | "delivered" | "failed" | null
           assigned_worker_id?: string | null
           output_files?: any | null
+          attempts?: number | null
+          processing_error?: string | null
+          processing_started_at?: string | null
+          processed_at?: string | null
+          source?: string | null
+          synced_to_pc_at?: string | null
+          pc_order_no?: string | null
+          hold_reason?: string | null
+          pad?: string | null
+          booth_ids?: Json | null
+          booth_snapshots?: Json | null
+          voter_photo_pdf_path?: string | null
           photo_path?: string | null
           poll_date?: string | null
           rate_per_voter?: number | null
@@ -400,9 +426,22 @@ export type Database = {
           payment_txn_id?: string | null
           payment_updated_at?: string | null
           payment_intent_id?: string | null
+          payment_gateway_order_id?: string | null
           processing_status?: "new" | "queued" | "processing" | "ready" | "delivered" | "failed" | null
           assigned_worker_id?: string | null
           output_files?: any | null
+          attempts?: number | null
+          processing_error?: string | null
+          processing_started_at?: string | null
+          processed_at?: string | null
+          source?: string | null
+          synced_to_pc_at?: string | null
+          pc_order_no?: string | null
+          hold_reason?: string | null
+          pad?: string | null
+          booth_ids?: Json | null
+          booth_snapshots?: Json | null
+          voter_photo_pdf_path?: string | null
           photo_path?: string | null
           poll_date?: string | null
           rate_per_voter?: number | null
@@ -455,6 +494,8 @@ export type Database = {
           cashfree_enabled: boolean | null
           cashfree_env: string | null
           cashfree_app_id: string | null
+          phonepe_client_version: number | null
+          web_worker_queue_enabled: boolean | null
           phonepe_enabled: boolean
           phonepe_environment: string
           phonepe_merchant_id: string | null
@@ -473,6 +514,8 @@ export type Database = {
           cashfree_enabled?: boolean | null
           cashfree_env?: string | null
           cashfree_app_id?: string | null
+          phonepe_client_version?: number | null
+          web_worker_queue_enabled?: boolean | null
           phonepe_enabled?: boolean
           phonepe_environment?: string
           phonepe_merchant_id?: string | null
@@ -491,6 +534,8 @@ export type Database = {
           cashfree_enabled?: boolean | null
           cashfree_env?: string | null
           cashfree_app_id?: string | null
+          phonepe_client_version?: number | null
+          web_worker_queue_enabled?: boolean | null
           phonepe_enabled?: boolean
           phonepe_environment?: string
           phonepe_merchant_id?: string | null
@@ -531,6 +576,72 @@ export type Database = {
           phonepe_salt_key?: string | null
           singleton?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_events: {
+        Row: {
+          id: string
+          provider: string
+          event_type: string | null
+          order_id: string | null
+          payment_gateway_order_id: string | null
+          amount: number | null
+          payload: Json | null
+          raw_body: string | null
+          verified: boolean
+          consumed_by_pc_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          provider: string
+          event_type?: string | null
+          order_id?: string | null
+          payment_gateway_order_id?: string | null
+          amount?: number | null
+          payload?: Json | null
+          raw_body?: string | null
+          verified?: boolean
+          consumed_by_pc_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          provider?: string
+          event_type?: string | null
+          order_id?: string | null
+          payment_gateway_order_id?: string | null
+          amount?: number | null
+          payload?: Json | null
+          raw_body?: string | null
+          verified?: boolean
+          consumed_by_pc_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      order_lookup_attempts: {
+        Row: {
+          id: string
+          order_id: string | null
+          ip_address: string | null
+          attempted_at: string | null
+          success: boolean | null
+        }
+        Insert: {
+          id?: string
+          order_id?: string | null
+          ip_address?: string | null
+          attempted_at?: string | null
+          success?: boolean | null
+        }
+        Update: {
+          id?: string
+          order_id?: string | null
+          ip_address?: string | null
+          attempted_at?: string | null
+          success?: boolean | null
         }
         Relationships: []
       }
@@ -830,6 +941,22 @@ export type Database = {
           p_voters: number
         }
         Returns: number
+      }
+      claim_next_order: {
+        Args: {
+          p_worker: string
+        }
+        Returns: string | null
+      }
+      increment_jobs_done: {
+        Args: {
+          p_worker: string
+        }
+        Returns: void
+      }
+      schema_health: {
+        Args: Record<string, never>
+        Returns: Json
       }
     }
     Enums: {

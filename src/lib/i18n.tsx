@@ -245,6 +245,26 @@ export const DICTIONARY = {
     hi: "ऑनलाइन भुगतान जल्द शुरू होगा। अभी भुगतान के लिए WhatsApp पर संपर्क कीजिए — ऑर्डर आईडी साथ भेजिए।",
     en: "Online payment is coming soon. For now, contact us on WhatsApp to pay — include your order ID.",
   },
+  "pay.fallback_notice": {
+    hi: "आपका ऑर्डर मिल गया। हमारा कंप्यूटर चालू होते ही आपको असली ऑर्डर नंबर (VS…) और भुगतान का QR WhatsApp पर मिलेगा।",
+    en: "Your order has been received. As soon as our computer starts, you will receive the real order number (VS…) and the payment QR on WhatsApp.",
+  },
+  "pay.hold_notice": {
+    hi: "आपका ऑर्डर दर्ज हो गया है, लेकिन पूर्व बकाया के कारण यह समीक्षा में है। WhatsApp पर संपर्क करें।",
+    en: "Your order has been recorded, but is under review due to previous pending orders. Please contact us on WhatsApp.",
+  },
+  "err.store_failed.title": {
+    hi: "ऑर्डर वेबसाइट पर दर्ज नहीं हो सका",
+    en: "Could not record order on website",
+  },
+  "err.store_failed.desc": {
+    hi: "सर्वर से संपर्क नहीं हो सका। चिंता न करें — नीचे दिए बटन से अपना ऑर्डर विवरण सीधे WhatsApp पर भेजें।",
+    en: "Could not connect to server. Don't worry — click below to send your order details directly via WhatsApp.",
+  },
+  "err.store_failed.btn": {
+    hi: "WhatsApp पर ऑर्डर भेजें",
+    en: "Send Order on WhatsApp",
+  },
   "pay.whatsapp": { hi: "WhatsApp पर भुगतान के लिए संपर्क करें", en: "Contact on WhatsApp to pay" },
   "pay.call": { hi: "कॉल करें", en: "Call us" },
 

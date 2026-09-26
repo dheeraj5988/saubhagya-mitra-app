@@ -157,7 +157,7 @@ type OrdersQuery = ReturnType<typeof ordersQuerySchema.parse>;
 
 async function selectOrders(
   db: Awaited<ReturnType<(typeof import("./admin.server"))["assertSession"]>>,
-  filters: Pick<OrdersQuery, "search" | "ward" | "status" | "payment_status">,
+  filters: Pick<OrdersQuery, "search" | "ward" | "status" | "payment_status" | "pc_synced">,
   range: { from: number; to: number },
   withCount: boolean,
 ) {
@@ -173,6 +173,8 @@ async function selectOrders(
   if (filters.ward !== "all") query = query.eq("ward_number", filters.ward);
   if (filters.status !== "all") query = query.eq("status", filters.status);
   if (filters.payment_status !== "all") query = query.eq("payment_status", filters.payment_status);
+  if (filters.pc_synced === "unsynced") query = query.is("synced_to_pc_at", null);
+  if (filters.pc_synced === "synced") query = query.not("synced_to_pc_at", "is", null);
 
   const term = sanitizeSearch(filters.search);
   if (term) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  adminToggleWebWorkerQueue,
   adminTriggerTestJob,
   getProcessingDashboard,
   markOrderPaidAdmin,
@@ -8,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { RefreshCcw, CheckCircle2, Clock, Plus, Trash2, Download, Pause, Play, FlaskConical } from "lucide-react";
 import { addWorker, deleteWorker, toggleWorker } from "@/lib/worker-management.functions";
@@ -80,6 +82,15 @@ export function ProcessingTab({ token }: { token: string }) {
     onError: (e) => toast.error(e.message),
   });
 
+  const toggleQueueMut = useMutation({
+    mutationFn: (enabled: boolean) => adminToggleWebWorkerQueue({ data: { token, enabled } }),
+    onSuccess: (res) => {
+      toast.success(res.web_worker_queue_enabled ? "वेब-कतार चालू की गई" : "वेब-कतार बंद की गई");
+      queryClient.invalidateQueries({ queryKey: ["processing-dashboard"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const downloadScript = (worker: any, workerToken: string) => {
     let script = PYTHON_WORKER_TEMPLATE;
     script = script.replace("{{SITE_URL}}", window.location.origin);
@@ -120,6 +131,38 @@ export function ProcessingTab({ token }: { token: string }) {
         <Button onClick={() => refetch()} variant="outline" size="sm">
           <RefreshCcw className="size-4 mr-2" /> Refresh
         </Button>
+      </div>
+
+      {/* Web worker queue status & notice banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-amber-200 bg-amber-50/80 text-amber-900 shadow-sm">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span
+              className={`size-2.5 rounded-full ${
+                data?.web_worker_queue_enabled ? "bg-emerald-500 animate-pulse" : "bg-zinc-400"
+              }`}
+            />
+            <span className="font-semibold text-sm">
+              {data?.web_worker_queue_enabled
+                ? "वेब-कतार सक्रिय (Active)"
+                : "वेब-कतार बंद है (Disabled)"}
+            </span>
+          </div>
+          <p className="text-xs text-amber-800">
+            वेब-कतार बंद है — PDF मुख्य PC और कारीगर PC बनाते हैं (डेस्क)। सिर्फ़ टेस्ट के लिए चालू करें।
+          </p>
+        </div>
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <Label htmlFor="web-queue-toggle" className="text-xs font-medium cursor-pointer">
+            {data?.web_worker_queue_enabled ? "चालू" : "बंद"}
+          </Label>
+          <Switch
+            id="web-queue-toggle"
+            checked={Boolean(data?.web_worker_queue_enabled)}
+            disabled={toggleQueueMut.isPending}
+            onCheckedChange={(checked) => toggleQueueMut.mutate(checked)}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
