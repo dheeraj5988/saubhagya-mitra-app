@@ -87,21 +87,12 @@ export const orderSchema = z.object({
   /** Referral code captured from a /r/:code link; verified server-side. */
   referral_code: z.string().trim().max(32).nullable().optional(),
   referral_captured_at: z.string().trim().max(40).nullable().optional(),
-  /** Honeypot anti-bot field; must be empty. */
-  website: z.string().max(0).optional(),
-  /** Form mount timestamp in ms for 6-second anti-bot check. */
-  form_started_at: z.number().int().optional(),
   /** True when the selected design includes an ad banner (D5–D8); derived at submit time. */
   banner_option: z.boolean().default(false),
   /** True when the candidate selected a photo voter slip. */
   photo_slip: z.boolean().default(false),
   /** Storage path for the uploaded voter-roll PDF (photo-slip orders only). */
-  voter_photo_pdf_path: z
-    .string()
-    .trim()
-    .regex(/^uploads\/[0-9a-fA-F-]{36}\.pdf$/, "Invalid voter PDF path")
-    .nullable()
-    .optional(),
+  voter_photo_pdf_path: z.string().trim().max(512).nullable().optional(),
   /** ISO timestamp when the candidate consented to the photo-slip terms. */
   photo_consent_at: z.string().trim().max(40).nullable().optional(),
 });
@@ -120,12 +111,18 @@ export const sampleRequestSchema = z.object({
   ip_address: z.string().trim().max(64).nullable().optional(),
 });
 
-const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L
-export function makeOrderId(_attempt = 0, prefix = "SBG") {
-  const bytes = crypto.getRandomValues(new Uint8Array(6));
-  let s = "";
-  for (const b of bytes) s += ALPHABET[b % ALPHABET.length];
-  return `${prefix}-${s}`; // e.g. SBG-K7QM2X
+/**
+ * Order IDs stay in the requested `SBG-####` shape (always exactly four
+ * digits). The first attempt is time-derived so IDs trend upward; retries draw
+ * a cryptographically random suffix so a collision resolves immediately
+ * instead of colliding again on the same millisecond.
+ */
+export function makeOrderId(attempt = 0, prefix = "SBG") {
+  if (attempt === 0) {
+    return `${prefix}-${Date.now().toString().slice(-4)}`;
+  }
+  const random = crypto.getRandomValues(new Uint32Array(1))[0]! % 10_000;
+  return `${prefix}-${random.toString().padStart(4, "0")}`;
 }
 
 /** Processing pipeline for an order, in workflow order. */
@@ -136,8 +133,6 @@ export const ORDER_STATUSES = [
   "Ready",
   "Delivered",
   "Closed",
-  "On Hold",
-  "Cancelled",
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 

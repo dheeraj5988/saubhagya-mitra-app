@@ -365,7 +365,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
   const [ward, setWard] = useState("all");
   const [status, setStatus] = useState<OrderStatus | "all">("all");
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | "all">("all");
-  const [pcSynced, setPcSynced] = useState<"all" | "unsynced" | "synced">("all");
   const [page, setPage] = useState(1);
 
   const [leadSearch, setLeadSearch] = useState("");
@@ -406,7 +405,7 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
     [signOut],
   );
 
-  useEffect(() => setPage(1), [debouncedSearch, ward, status, paymentStatus, pcSynced]);
+  useEffect(() => setPage(1), [debouncedSearch, ward, status, paymentStatus]);
   useEffect(() => setLeadPage(1), [debouncedLeadSearch, leadDate]);
 
   const ordersQuery = useMemo(
@@ -415,11 +414,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       ward,
       status,
       payment_status: paymentStatus,
-      pc_synced: pcSynced,
       page,
       page_size: PAGE_SIZE,
     }),
-    [debouncedSearch, ward, status, paymentStatus, pcSynced, page],
+    [debouncedSearch, ward, status, paymentStatus, page],
   );
   const leadsQuery = useMemo(
     () => ({
@@ -939,19 +937,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   ))}
                 </SelectContent>
               </Select>
-              <Select
-                value={pcSynced}
-                onValueChange={(v) => setPcSynced(v as "all" | "unsynced" | "synced")}
-              >
-                <SelectTrigger className="h-10 w-[180px]">
-                  <SelectValue placeholder="PC Sync" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">PC Sync: All</SelectItem>
-                  <SelectItem value="unsynced">PC में नहीं पहुँचे</SelectItem>
-                  <SelectItem value="synced">PC में पहुँचे</SelectItem>
-                </SelectContent>
-              </Select>
               <Button
                 variant="ghost"
                 size="sm"
@@ -960,7 +945,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                   setWard("all");
                   setStatus("all");
                   setPaymentStatus("all");
-                  setPcSynced("all");
                 }}
               >
                 <X className="size-4" /> Clear filters
@@ -1013,9 +997,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                       <col className="w-[68px]" />
                       <col className="w-[150px]" />
                       <col className="w-[190px]" />
-                      <col className="w-[90px]" />
-                      <col className="w-[110px]" />
-                      <col className="w-[140px]" />
                       <col className="w-[190px]" />
                     </colgroup>
                     <thead className="sticky top-0 z-10 bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground shadow-[inset_0_-1px_0_var(--color-border)]">
@@ -1039,9 +1020,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                           "Photo",
                           "Status",
                           "Payment",
-                          "Source",
-                          "PC",
-                          "Hold reason",
                           "Actions",
                         ].map((h) => (
                           <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">
@@ -1203,35 +1181,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                                 </SelectContent>
                               </Select>
                             </div>
-                          </td>
-                          <td className="px-3 py-2 text-xs">
-                            <span className="inline-block rounded bg-muted px-1.5 py-0.5 text-[11px] font-mono">
-                              {o.source || "web"}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-xs">
-                            {o.pc_order_no ? (
-                              <span className="font-mono font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                                {o.pc_order_no}
-                              </span>
-                            ) : o.synced_to_pc_at ? (
-                              <span className="text-[11px] text-muted-foreground" title={formatDateTime(o.synced_to_pc_at)}>
-                                Synced
-                              </span>
-                            ) : (
-                              <span className="inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 border border-amber-200">
-                                PC में बाकी
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-xs max-w-[160px]">
-                            {o.hold_reason ? (
-                              <span className="line-clamp-2 text-destructive font-medium text-[11px]" title={o.hold_reason}>
-                                {o.hold_reason}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
                           </td>
                           <td className="px-3 py-2">
                             <div className="flex items-center gap-0.5">
@@ -1819,13 +1768,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
                     "Payment Updated",
                     detail.payment_updated_at ? formatDateTime(detail.payment_updated_at) : "—",
                   ],
-                  ["Source", detail.source ?? "web"],
-                  [
-                    "PC Order No",
-                    detail.pc_order_no ??
-                      (detail.synced_to_pc_at ? "Synced" : "PC में बाकी"),
-                  ],
-                  ["Hold Reason", detail.hold_reason ?? "—"],
                 ].map(([label, value]) => (
                   <div key={label} className="min-w-0">
                     <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

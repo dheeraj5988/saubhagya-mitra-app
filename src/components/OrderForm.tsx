@@ -47,8 +47,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { captureLeadPhone, createOrder, recordVisit, createCashfreePaymentSession, createPhonePePayment, getPublicPaymentConfig } from "@/lib/orders.functions";
-import { createUploadTicket } from "@/lib/uploads.functions";
+import { captureLeadPhone, createOrder, recordVisit, createCashfreePaymentSession, getPublicPaymentConfig } from "@/lib/orders.functions";
 // @ts-expect-error no types for cashfree-js
 import { load } from "@cashfreepayments/cashfree-js";
 import {
@@ -327,7 +326,7 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
+export function OrderForm() {
   const { t, lang } = useI18n();
   const tx = (key: TxKey) => TX[key][lang];
   const en = lang === "en";
@@ -335,9 +334,7 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
   const visit = useServerFn(recordVisit);
   const capture = useServerFn(captureLeadPhone);
   const submitOrder = useServerFn(createOrder);
-  const getTicket = useServerFn(createUploadTicket);
   const createCashfreeSession = useServerFn(createCashfreePaymentSession);
-  const createPhonePePay = useServerFn(createPhonePePayment);
   const paymentConfigQuery = useQuery({ queryKey: ["paymentConfig"], queryFn: () => getPublicPaymentConfig() });
   const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
 
@@ -345,34 +342,19 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
     if (!success) return;
     setIsRedirectingToPayment(true);
     try {
-      if (paymentConfigQuery.data?.phonepe_enabled) {
-        const res = await createPhonePePay({
-          data: {
-            orderId: success.orderId,
-            amount: success.amount || 0,
-          },
-        });
-        if (res.redirectUrl) {
-          window.location.href = res.redirectUrl;
-          return;
-        }
-      }
-      if (paymentConfigQuery.data?.cashfree_enabled) {
-        const result = await createCashfreeSession({
-          data: {
-            orderId: success.orderId,
-            amount: success.amount || 0,
-            customerPhone: contact.trim(),
-            customerName: nameHi.trim(),
-          },
-        });
-        const cashfree = await load({ mode: paymentConfigQuery.data?.cashfree_env === "production" ? "production" : "sandbox" });
-        await cashfree.checkout({
-          paymentSessionId: result.payment_session_id,
-          redirectTarget: "_self",
-        });
-        return;
-      }
+      const result = await createCashfreeSession({
+        data: {
+          orderId: success.orderId,
+          amount: success.amount || 0,
+          customerPhone: contact.trim(),
+          customerName: nameHi.trim(),
+        },
+      });
+      const cashfree = await load({ mode: paymentConfigQuery.data?.cashfree_env === "production" ? "production" : "sandbox" });
+      await cashfree.checkout({
+        paymentSessionId: result.payment_session_id,
+        redirectTarget: "_self"
+      });
     } catch (e) {
       console.error(e);
       toast.error(t("err.submit") || "Payment failed");
@@ -427,15 +409,10 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string | undefined>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [blockError, setBlockError] = useState(false);
-  const [storeFailedError, setStoreFailedError] = useState<string | null>(null);
-  const [website, setWebsite] = useState("");
-  const formStartedAtRef = useRef<number>(Date.now());
   const [success, setSuccess] = useState<{
     orderId: string;
     amount: number | null;
     voterCount: number | null;
-    status?: string | null;
-    holdReason?: string | null;
   } | null>(null);
   const [referralName, setReferralName] = useState<string | null>(null);
 
@@ -687,9 +664,9 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
     return Object.keys(next).length === 0;
   }
 
-  function waUrl(overrideOrderId?: string) {
+  function waUrl() {
     return buildWhatsAppUrl({
-      order_id: overrideOrderId ?? success?.orderId ?? "",
+      order_id: success?.orderId ?? "",
       candidate_name_hindi: nameHi.trim(),
       pad_label: pad ? PAD_LABELS[pad].hi : null,
       gram_panchayat: label(selectedGp),
@@ -704,8 +681,8 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
       design_label: meta ? `${meta.label}${photoSlip ? " + फ़ोटो (Ph)" : ""}` : null,
       banner_needed: Boolean(bannerSize),
       banner_attached: Boolean(photo),
-      voter_count: success?.voterCount ?? totalVoters ?? null,
-      amount: success?.amount ?? estimatedAmount ?? null,
+      voter_count: success?.voterCount ?? null,
+      amount: success?.amount ?? null,
       payment_status: "PENDING",
     });
   }
@@ -726,42 +703,27 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
     try {
       let photoPath: string | null = null;
       if (photo && bannerSize) {
-        const ticket = await getTicket({
-          data: {
-            kind: "banner",
-            contentType: (photo.type === "image/png" ? "image/png" : "image/jpeg") as any,
-            size: photo.size,
-          },
-        });
+        const ext = photo.type === "image/png" ? "png" : "jpg";
+        photoPath = `orders/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
-          .from(ticket.bucket)
-          .uploadToSignedUrl(ticket.path, ticket.token, photo, { contentType: photo.type });
+          .from("candidate-photos")
+          .upload(photoPath, photo, { contentType: photo.type, upsert: false });
         if (uploadError) throw new Error(uploadError.message);
-        photoPath = ticket.path;
       }
 
       let pdfPath: string | null = null;
       let consentTime: string | null = null;
       if (photoSlip && voterPdf) {
-        const ticket = await getTicket({
-          data: {
-            kind: "roll_pdf",
-            contentType: "application/pdf",
-            size: voterPdf.size,
-          },
-        });
+        pdfPath = `uploads/${crypto.randomUUID()}.pdf`;
         const { error: pdfUploadError } = await supabase.storage
-          .from(ticket.bucket)
-          .uploadToSignedUrl(ticket.path, ticket.token, voterPdf, { contentType: "application/pdf" });
+          .from("voter-raw-lists")
+          .upload(pdfPath, voterPdf, { contentType: "application/pdf", upsert: false });
         if (pdfUploadError) throw new Error(pdfUploadError.message);
-        pdfPath = ticket.path;
         consentTime = new Date().toISOString();
       }
 
       const result = await submitOrder({
         data: {
-          website,
-          form_started_at: formStartedAtRef.current,
           candidate_name_hindi: printsCandidate ? nameHi.trim() : "",
           candidate_name_english: "",
           pad: pad as Pad,
@@ -801,8 +763,6 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
         orderId: result.order_id,
         amount: result.amount,
         voterCount: result.voter_count,
-        status: (result as any).status,
-        holdReason: (result as any).hold_reason,
       });
       toast.success(`${t("success.toast")} — ${result.order_id}`);
     } catch (error: unknown) {
@@ -810,14 +770,8 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
       const msg = (error as Error)?.message || "";
       if (msg.includes("Cannot process order") || msg.includes("Daily limit")) {
         setBlockError(true);
-      } else if (
-        msg.includes("ORDER_STORE_FAILED") ||
-        msg.includes("Could not record") ||
-        msg.includes("Failed to fetch")
-      ) {
-        setStoreFailedError(msg);
       } else {
-        toast.error(msg || t("err.submit"));
+        toast.error(t("err.submit"));
       }
     } finally {
       setSubmitting(false);
@@ -916,23 +870,6 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
     <>
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <form id="order-form" onSubmit={onSubmit} noValidate className="space-y-4">
-          {/* Anti-bot honeypot */}
-          <div style={{ display: "none" }} aria-hidden="true">
-            <input
-              type="text"
-              name="website"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              tabIndex={-1}
-              autoComplete="off"
-            />
-          </div>
-          {isFallback ? (
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-              <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
-              वैकल्पिक फ़ॉर्म (Fallback Order Form)
-            </div>
-          ) : null}
           {referralName ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-brand-soft px-3 py-1 text-sm font-medium text-primary">
               <User className="size-3.5" aria-hidden />
@@ -1777,14 +1714,14 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
                 </div>
               </dl>
               <p className="mt-3 rounded-[10px] border border-[oklch(0.88_0.06_73)] bg-warning-soft px-3 py-2 text-[13px] text-warning">
-                {success?.status === "On Hold" ? t("pay.hold_notice") : t("pay.fallback_notice")}
+                {t("pay.soon")}
               </p>
               {bannerSize && !photo ? (
                 <p className="mt-2 text-[12.5px] text-muted-foreground">{tx("noBanner")}</p>
               ) : null}
             </div>
 
-            {paymentConfigQuery.data?.phonepe_enabled || paymentConfigQuery.data?.cashfree_enabled ? (
+            {paymentConfigQuery.data?.cashfree_enabled ? (
               <Button
                 variant="hero"
                 size="lg"
@@ -1795,9 +1732,7 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
                 {isRedirectingToPayment ? (
                   <Loader2 className="mr-2 size-5 animate-spin" />
                 ) : null}
-                {paymentConfigQuery.data?.phonepe_enabled
-                  ? (en ? "Pay online (PhonePe / UPI / Card)" : "ऑनलाइन भुगतान (PhonePe / UPI / कार्ड)")
-                  : "Pay Now"}
+                {"Pay Now"}
               </Button>
             ) : (
               <Button asChild variant="success" size="lg" className="w-full">
@@ -1827,29 +1762,6 @@ export function OrderForm({ isFallback }: { isFallback?: boolean } = {}) {
               <MessageCircle className="size-5" /> {t("block.btn")}
             </a>
           </Button>
-        </DialogContent>
-      </Dialog>
-
-      {/* Fallback WhatsApp Dialog on store failure */}
-      <Dialog open={Boolean(storeFailedError)} onOpenChange={(open) => !open && setStoreFailedError(null)}>
-        <DialogContent className="p-6 text-center sm:max-w-md">
-          <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-warning-soft text-warning">
-            <AlertCircle className="size-6" />
-          </div>
-          <DialogTitle className="mb-2 text-xl font-bold">{t("err.store_failed.title")}</DialogTitle>
-          <DialogDescription className="mb-6 text-sm text-muted-foreground">
-            {t("err.store_failed.desc")}
-          </DialogDescription>
-          <div className="space-y-3">
-            <Button asChild variant="success" size="lg" className="w-full">
-              <a href={waUrl("MANUAL")} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="size-5 mr-2" /> {t("err.store_failed.btn")}
-              </a>
-            </Button>
-            <Button variant="outline" size="sm" className="w-full" onClick={() => setStoreFailedError(null)}>
-              {lang === "hi" ? "बंद करें" : "Close"}
-            </Button>
-          </div>
         </DialogContent>
       </Dialog>
     </>

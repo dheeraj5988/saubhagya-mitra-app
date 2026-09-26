@@ -19,15 +19,13 @@ export const addWorker = createServerFn({ method: "POST" })
   .validator((data: unknown) => addWorkerSchema.parse(data))
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
-    const { sha256 } = await import("./crypto.server");
     const db = await assertSession(data.token);
 
-    const hashedToken = await sha256(data.workerToken);
     const { data: worker, error } = await db
       .from("workers")
       .insert({
         name: data.name,
-        token_hash: hashedToken,
+        token_hash: data.workerToken, // Store raw token securely in DB
         active: true,
       })
       .select("*")

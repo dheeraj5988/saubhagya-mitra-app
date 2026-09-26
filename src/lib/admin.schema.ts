@@ -31,7 +31,6 @@ export const ordersQuerySchema = z.object({
   ward: z.string().max(40).default("all"),
   status: z.enum([...ORDER_STATUSES, "all"]).default("all"),
   payment_status: z.enum([...PAYMENT_STATUSES, "all"]).default("all"),
-  pc_synced: z.enum(["all", "unsynced", "synced"]).default("all"),
   page: z.number().int().min(1).max(10_000).default(1),
   page_size: z.number().int().min(1).max(100).default(25),
 });
@@ -93,10 +92,6 @@ export type AdminOrder = {
   booth_snapshots: { booth_number: string; booth_name: string | null }[] | null;
   photo_slip: boolean;
   voter_photo_pdf_path: string | null;
-  source: string | null;
-  synced_to_pc_at: string | null;
-  pc_order_no: string | null;
-  hold_reason: string | null;
 };
 
 export type AdminLead = {
