@@ -68,7 +68,7 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
     key: "exe",
     label: p("सॉफ़्टवेयर — Windows 10 / 11", "Software — Windows 10 / 11"),
     href: "https://drive.google.com/uc?export=download&id=1Ztn6mg2UBoBKx7GbJPakt_QLYtIq19zG",
-    size: "37 MB",
+    size: "73 MB",
   },
   {
     key: "exe-win7",
@@ -77,7 +77,7 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
       "Software — Windows 7 / 8 (also runs on 10 / 11)",
     ),
     href: "https://drive.google.com/uc?export=download&id=1b1h3Pft24fEFLOwzQbOuYwMbheh6AyuE",
-    size: "20 MB",
+    size: "57 MB",
   },
   {
     key: "sop",
@@ -342,8 +342,8 @@ export const TERMS: PolicyDoc = {
           "Slips and data are prepared from the State Election Commission's published, public electoral rolls as available at the time of the order. We do not add, remove or change any name in the roll.",
         ),
         p(
-          "ऑर्डर के बाद आयोग द्वारा किया गया संशोधन पहले से बनी फ़ाइल में अपने-आप नहीं आता — उसके लिए नया ऑर्डर लगेगा। सूची में आयोग की ओर से रह गई त्रुटि के लिए हम ज़िम्मेदार नहीं हैं।",
-          "Revisions the Commission makes after your order do not flow into files already made — they need a new order. We are not responsible for errors in the roll itself.",
+          "ऑर्डर के बाद आयोग द्वारा किया गया संशोधन पहले से बनी PDF में अपने-आप नहीं आता — उसके लिए नया ऑर्डर लगेगा। सॉफ़्टवेयर लाइसेंस में ऐसा नहीं है — वहाँ नया डेटा मतदान तिथि तक मुफ़्त मिलता है (खंड 9)। सूची में आयोग की ओर से रह गई त्रुटि के लिए हम ज़िम्मेदार नहीं हैं।",
+          "Revisions the Commission makes after your order do not flow into PDFs already made — those need a new order. Software licences are different: there the updated data is free until the polling date (clause 9). We are not responsible for errors in the roll itself.",
         ),
       ],
     },
@@ -378,8 +378,8 @@ export const TERMS: PolicyDoc = {
       title: p("6. ऑर्डर की पुष्टि और भुगतान", "6. Order confirmation and payment"),
       paras: [
         p(
-          "सभी सेवाओं का भुगतान पहले (100% अग्रिम) होता है। भुगतान की पुष्टि होने पर ऑर्डर पक्का माना जाता है और काम शुरू होता है।",
-          "All services are paid in advance (100%). The order is confirmed once payment is confirmed, and work then begins.",
+          "ऑर्डर दर्ज होने के बाद हम उसे तैयार करते हैं; तैयार होते ही भुगतान का अनुरोध (QR / लिंक) भेजा जाता है। भुगतान मिलते ही फ़ाइलें और बिल भेज दिए जाते हैं। भुगतान 100% अग्रिम है — डिलीवरी से पहले। ऊपर दिए दाम कर-रहित हैं; कोई भी कर (GST आदि) लागू होने पर वह ग्राहक द्वारा देय होगा।",
+          "After an order is placed we prepare it; as soon as it is ready we send the payment request (QR / link). Files and the bill are sent as soon as payment is received. Payment is 100% in advance — before delivery. Prices shown are exclusive of tax; any applicable tax (GST etc.) is payable by the customer.",
         ),
         p(
           "अभी भुगतान WhatsApp पर बताए गए UPI से होता है। ऑनलाइन भुगतान शुरू होने पर वह हमारे payment gateway partner के सुरक्षित पेज पर होगा। कार्ड / UPI / बैंक की जानकारी हमारे सर्वर पर कभी नहीं आती। रिफंड और रद्दीकरण: saubhagya.net/refund",
@@ -437,8 +437,8 @@ export const TERMS: PolicyDoc = {
           "Exclusivity: a whole-district licence (all four posts) means we do not license that district to anyone else for that election (except panchayat samitis already licensed). Panchayat-samiti-level or single-post licences are not exclusive. This does not apply to the PDF service.",
         ),
         p(
-          "अपडेट: लाइसेंस अवधि में सॉफ़्टवेयर के सुधार / अपडेट निःशुल्क। आयोग की सूची बदलने पर नया डेटा अलग ऑर्डर होगा।",
-          "Updates: software fixes / updates are free during the licence period. New data after the Commission revises the roll is a separate order.",
+          "अपडेट: लाइसेंस अवधि में सॉफ़्टवेयर के सुधार और डेटा — दोनों निःशुल्क। आयोग की सूची बदलने (पूरक / संशोधित सूची) पर उसी लाइसेंस का नया डेटा हम अपनी ओर से, बिना किसी शुल्क के, उस चुनाव की अंतिम मतदान तिथि तक भेजते रहते हैं — आपका कोड वही रहता है। आपने एक से ज़्यादा क्षेत्र लिए हों तो सबका अपडेट एक ही फ़ाइल में आता है।",
+          "Updates: both software fixes and data are free during the licence period. When the Commission revises the roll (supplementary / revised list), we send the updated data for that licence ourselves, free of charge, until the final polling date of that election — your code stays the same. If you hold more than one area, all of them arrive in a single file.",
         ),
         p(
           "समाप्ति: इन शर्तों के उल्लंघन (जैसे कच्चा डेटा बेचना) पर लाइसेंस बिना रिफंड समाप्त किया जा सकता है।",
@@ -602,8 +602,8 @@ export const PRIVACY: PolicyDoc = {
       title: p("जानकारी कब तक रहती है / हटवाना", "Retention and deletion"),
       paras: [
         p(
-          "तैयार PDF के डाउनलोड-लिंक सीमित समय के लिए होते हैं; अवधि बीतने पर फ़ाइल स्टोरेज से हट जाती है। बैनर और फ़ोटो सहित मतदाता-सूची उस चुनाव की अंतिम मतदान तिथि के 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
-          "Download links for finished PDFs are time-limited; the file is removed from storage when the link expires. Banners and photo rolls are deleted within 90 days of the final polling date of that election. Order and bill records are kept for accounting and legal needs.",
+          "तैयार PDF हम 30 दिन तक रखते हैं; डाउनलोड-लिंक सीमित समय के लिए होते हैं और 30 दिन बाद फ़ाइल स्टोरेज से अपने आप हट जाती है। बैनर और फ़ोटो सहित मतदाता-सूची उस चुनाव की अंतिम मतदान तिथि के 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
+          "We keep finished PDFs for 30 days; download links are time-limited and the file is removed from storage automatically after 30 days. Banners and photo rolls are deleted within 90 days of the final polling date of that election. Order and bill records are kept for accounting and legal needs.",
         ),
         p(
           `अपनी जानकारी देखने, सुधारने या हटवाने के लिए ${ORDERS_EMAIL} या WhatsApp ${CONTACT_DISPLAY} पर लिखिए — 7 कार्यदिवस में जवाब मिलेगा। जो रिकॉर्ड क़ानूनन रखना ज़रूरी है, वह उस अवधि तक रहेगा।`,
@@ -631,11 +631,11 @@ export const REFUND: PolicyDoc = {
   title: p("रिफंड एवं रद्दीकरण नीति", "Refund & Cancellation Policy"),
   sections: [
     {
-      title: p("1. भुगतान से पहले", "1. Before payment"),
+      title: p("1. फ़ाइलें तैयार होने से पहले", "1. Before the files are ready"),
       paras: [
         p(
-          "कोई भी ऑर्डर WhatsApp पर बताकर कभी भी, बिना किसी शुल्क के, रद्द किया जा सकता है।",
-          "You can cancel any order at any time, free of charge, by telling us on WhatsApp.",
+          "जब तक आपकी फ़ाइलें तैयार नहीं हुई हैं, ऑर्डर पेज से या WhatsApp पर बताकर ऑर्डर बिना किसी शुल्क के रद्द किया जा सकता है। भुगतान का QR फ़ाइलें तैयार होने के बाद ही भेजा जाता है — इसलिए QR बन जाने के बाद ऑर्डर रद्द नहीं होता। QR बनने के बाद भुगतान न करें तो QR तय समय में अपने-आप समाप्त हो जाता है और कोई राशि देय नहीं होती।",
+          "Until your files are ready, an order can be cancelled free of charge from the order page or by telling us on WhatsApp. The payment QR is sent only after the files are ready — so once the QR has been generated, the order can no longer be cancelled. If you do not pay after the QR is generated, the QR simply expires after its validity period and nothing is owed.",
         ),
       ],
     },
@@ -742,8 +742,8 @@ export const DELIVERY: PolicyDoc = {
       paras: [],
       list: [
         p(
-          "वोटर स्लिप PDF: भुगतान की पुष्टि होते ही फ़ाइलें बनती हैं और ऑर्डर में दिए WhatsApp नंबर पर भेजी जाती हैं — फ़ाइल के रूप में या डाउनलोड लिंक के रूप में।",
-          "Voter-slip PDFs: once payment is confirmed the files are prepared and sent to the WhatsApp number in the order — as files or as a download link.",
+          "वोटर स्लिप PDF: ऑर्डर मिलते ही फ़ाइलें बनना शुरू हो जाती हैं। तैयार होने पर भुगतान का अनुरोध (QR / लिंक) भेजा जाता है, और भुगतान की पुष्टि होते ही फ़ाइलें ऑर्डर में दिए WhatsApp नंबर पर भेज दी जाती हैं — फ़ाइल के रूप में या डाउनलोड लिंक के रूप में। लिंक 30 दिन तक चलता है।",
+          "Voter-slip PDFs: preparation starts as soon as the order is received. When the files are ready we send the payment request (QR / link), and once payment is confirmed the files are sent to the WhatsApp number in the order — as files or as a download link. The link stays valid for 30 days.",
         ),
         p(
           'सॉफ़्टवेयर: इसी वेबसाइट के "सॉफ़्टवेयर" पेज (saubhagya.net/software) से डाउनलोड होता है।',
@@ -865,8 +865,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("नमूने में क्या है", "What the sample contains"),
       paras: [
         p(
-          `नमूना डेटा इसी फ़ाइल के अंदर है — अलग से कुछ डाउनलोड नहीं करना। सॉफ़्टवेयर वही है जो लाइसेंस में मिलता है; नमूने में बस मतदाता कम हैं: राजस्थान की हर पंचायत समिति की एक ग्राम पंचायत के 15-15 मतदाता (नमूना-मात्र), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
-          `The sample data is inside the same file — nothing else to download. It is the same software you get with a licence; the sample just has fewer voters: 15 voters from one gram panchayat of every panchayat samiti in Rajasthan (sample only), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
+          `नमूना डेटा इसी फ़ाइल के अंदर है — अलग से कुछ डाउनलोड नहीं करना। सॉफ़्टवेयर वही है जो लाइसेंस में मिलता है; नमूने में बस मतदाता कम हैं: राजस्थान के सभी 41 ज़िलों के हर वार्ड / क्षेत्र के पहले 15 मतदाता (नमूना-मात्र; ऐप में ज़िला चुनिए), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
+          `The sample data is inside the same file — nothing else to download. It is the same software you get with a licence; the sample just has fewer voters: the first 15 voters of every ward / constituency in all 41 districts of Rajasthan (sample only; pick a district in the app), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
         ),
       ],
     },

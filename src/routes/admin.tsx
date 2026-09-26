@@ -791,6 +791,16 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
               <Laptop className="size-3.5" /> Desktop workstation
             </span>
             <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-navy-foreground/40 bg-navy-foreground/10 text-navy-foreground hover:bg-navy-foreground/20"
+            >
+              <a href="https://order.saubhagya.net/order/register" target="_blank" rel="noopener noreferrer">
+                ऑर्डर रजिस्टर (PC)
+              </a>
+            </Button>
+            <Button
               variant="outline"
               size="sm"
               className="border-navy-foreground/40 bg-navy-foreground/10 text-navy-foreground hover:bg-navy-foreground/20"

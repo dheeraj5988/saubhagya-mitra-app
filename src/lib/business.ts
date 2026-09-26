@@ -32,16 +32,16 @@ export const ORDERS_EMAIL = "orders@saubhagya.net";
 /** General enquiries. Forwards to the team Gmail (Cloudflare). */
 export const CONTACT_EMAIL = "contact@saubhagya.net";
 
-export const ADDRESS_HI = "1, मिश्रा मार्केट, बैंक स्ट्रीट, लक्ष्मणगढ़, ज़िला सीकर, राजस्थान – 332311";
+export const ADDRESS_HI = "मिश्रा मार्केट, बैंक स्ट्रीट, लक्ष्मणगढ़, ज़िला सीकर, राजस्थान – 332311";
 export const ADDRESS_EN =
-  "1, Mishra Market, Bank Street, Laxmangarh, Sikar, Rajasthan – 332311, India";
+  "Mishra Market, Bank Street, Laxmangarh, Sikar, Rajasthan – 332311, India";
 
 export const HOURS_HI = "सुबह 9 से रात 9 बजे तक, सातों दिन · ऑनलाइन ऑर्डर 24×7";
 export const HOURS_EN = "9 am – 9 pm IST, all days · online orders 24×7";
 
 /** Effective date printed on every policy page. */
-export const POLICY_DATE_HI = "22 सितम्बर 2026";
-export const POLICY_DATE_EN = "22 September 2026";
+export const POLICY_DATE_HI = "23 सितम्बर 2026";
+export const POLICY_DATE_EN = "23 September 2026";
 
 export const SITE_URL = "https://saubhagya.net";
 
