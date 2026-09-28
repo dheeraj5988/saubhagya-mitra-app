@@ -93,13 +93,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "सौभाग्य वोटर स्लिप | Saubhagya Voter Slip" },
+      { title: "सौभाग्य | Saubhagya" },
       {
         name: "description",
         content:
-          "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल वोटर स्लिप (PDF) — पंच, सरपंच, पंचायत समिति व ज़िला परिषद सदस्य।",
+          "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल अभियान पर्चियाँ और अभियान पर्ची सॉफ़्टवेयर — पंच, सरपंच, पंचायत समिति व ज़िला परिषद सदस्य।",
       },
-      { name: "author", content: "Saubhagya Voter Slip" },
+      { name: "author", content: "Saubhagya" },
       { name: "theme-color", content: "#10214a" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

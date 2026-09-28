@@ -146,9 +146,9 @@ const TX = {
   c2: { hi: "डिज़ाइन", en: "Design" },
   c2sub: { hi: "जिस डिज़ाइन की पर्ची चाहिए उस पर क्लिक कीजिए", en: "Tap the design you want" },
   perSlip: { hi: "पैसे / पर्ची", en: "paise / slip" },
-  photoTitle: { hi: "मतदाता की फ़ोटो सहित पर्ची (Ph)", en: "Slip with voter photo (Ph)" },
+  photoTitle: { hi: "फ़ोटो सहित पर्ची (Ph)", en: "Slip with photo (Ph)" },
   photoDesc: {
-    hi: "जहाँ फ़ोटो वाली मतदाता-सूची उपलब्ध हो — 20 पैसे / पर्ची",
+    hi: "जहाँ फ़ोटो वाली सूची उपलब्ध हो — 20 पैसे / पर्ची",
     en: "Where the photo roll is available — 20 paise / slip",
   },
   c3: { hi: "प्रत्याशी", en: "Candidate" },
@@ -188,7 +188,7 @@ const TX = {
   phone: { hi: "मोबाइल नंबर (WhatsApp)", en: "Mobile number (WhatsApp)" },
   poll: { hi: "मतदान दिनांक", en: "Polling date" },
   summary: { hi: "सार", en: "Summary" },
-  voters: { hi: "मतदाता", en: "Voters" },
+  voters: { hi: "रिकॉर्ड", en: "Records" },
   pages: { hi: "लगभग पेज", en: "Approx. pages" },
   rate: { hi: "रेट", en: "Rate" },
   amount: { hi: "राशि", en: "Amount" },
@@ -204,8 +204,8 @@ const TX = {
   bannerPending: { hi: "बैनर बाद में", en: "Banner later" },
   padErr: { hi: "पद चुनना आवश्यक है।", en: "Please choose a post." },
   blockMsg: {
-    hi: "नमस्ते, मुझे सौभाग्य वोटर स्लिप की वेबसाइट पर ऑर्डर दर्ज करने में दिक़्क़त आ रही है।",
-    en: "Hello, I am unable to place an order on the Saubhagya Voter Slip website.",
+    hi: "नमस्ते, मुझे सौभाग्य की वेबसाइट पर ऑर्डर दर्ज करने में दिक़्क़त आ रही है।",
+    en: "Hello, I am unable to place an order on the Saubhagya website.",
   },
 } as const;
 

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 
@@ -12,6 +14,7 @@ import {
 } from "@/lib/business";
 import { buildEnquiryWhatsAppUrl, buildSampleWhatsAppUrl } from "@/lib/campaign";
 import { useI18n } from "@/lib/i18n";
+import { getPublicPaymentConfig } from "@/lib/orders.functions";
 
 const tel = `tel:+${CONTACT_DISPLAY.replace(/\D/g, "")}`;
 
@@ -26,6 +29,15 @@ const NAV = [
 /** Sticky gradient header — same look as the Windows app's title bar. */
 export function SiteHeader() {
   const { t, lang } = useI18n();
+  const fetchConfig = useServerFn(getPublicPaymentConfig);
+  const { data: config } = useQuery({
+    queryKey: ["publicPaymentConfig"],
+    queryFn: () => fetchConfig(),
+    staleTime: 30_000,
+  });
+  const softwareActive = Boolean(config?.software_enabled);
+  const navItems = NAV.filter((item) => softwareActive || item.to !== "/software");
+
   return (
     <header className="sticky top-0 z-40 bg-hero-navy text-white shadow-[var(--shadow-elevated)]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5">
@@ -43,7 +55,7 @@ export function SiteHeader() {
           {lang === "en" ? "Rajasthan panchayat elections" : "राजस्थान पंचायत चुनाव"}
         </span>
         <nav className="order-last flex w-full gap-1 overflow-x-auto text-[13px] sm:order-none sm:ml-2 sm:w-auto">
-          {NAV.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -103,6 +115,14 @@ export function SiteFooter() {
   const en = lang === "en";
   const pathname = useRouterState({ select: (st) => st.location.pathname });
   const legalExpanded = LEGAL_EXPANDED_PAGES.has(pathname.replace(/\/$/, "") || "/");
+  const fetchConfig = useServerFn(getPublicPaymentConfig);
+  const { data: config } = useQuery({
+    queryKey: ["publicPaymentConfig"],
+    queryFn: () => fetchConfig(),
+    staleTime: 30_000,
+  });
+  const softwareActive = Boolean(config?.software_enabled);
+
   return (
     <footer className="mt-12 bg-navy px-4 pb-24 pt-10 text-white/85 sm:pb-10">
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.4fr_1fr]">
@@ -119,8 +139,8 @@ export function SiteFooter() {
           </div>
           <p className="mt-1 text-sm text-white/70">
             {en
-              ? "Print-ready digital voter slips and voter-slip software for Rajasthan panchayat election candidates. Digital delivery only — we do not print or ship."
-              : "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल वोटर स्लिप और सॉफ़्टवेयर। सिर्फ़ डिजिटल डिलीवरी — हम छपाई या कूरियर नहीं करते।"}
+              ? "Print-ready digital campaign slips and campaign slip software for Rajasthan panchayat election candidates. Digital delivery only — we do not print or ship."
+              : "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल अभियान पर्चियाँ और सॉफ़्टवेयर। सिर्फ़ डिजिटल डिलीवरी — हम छपाई या कूरियर नहीं करते।"}
           </p>
           {/* Expanded on policy pages; a tidy dropdown on the homepage and elsewhere. */}
           <details key={pathname} open={legalExpanded} className="group mt-4">
@@ -167,10 +187,14 @@ export function SiteFooter() {
             >
               {en ? "Ask on WhatsApp" : "WhatsApp पर माँगिए"}
             </a>
-            {" · "}
-            <Link to="/software" className="font-semibold text-white underline underline-offset-4">
-              {en ? "Free sample software" : "मुफ़्त नमूना सॉफ़्टवेयर"}
-            </Link>
+            {softwareActive && (
+              <>
+                {" · "}
+                <Link to="/software" className="font-semibold text-white underline underline-offset-4">
+                  {en ? "Free sample software" : "मुफ़्त नमूना सॉफ़्टवेयर"}
+                </Link>
+              </>
+            )}
           </p>
         </div>
 

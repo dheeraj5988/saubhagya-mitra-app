@@ -6,8 +6,8 @@ import { PRIVACY } from "@/content/policies";
 export const Route = createFileRoute("/privacy")({
   head: () =>
     policyHead(
-      "Privacy Policy | Saubhagya Voter Slip",
-      "How Saubhagya Voter Slip collects, uses and protects order information, and the source of voter data.",
+      "Privacy Policy | Saubhagya",
+      "How Saubhagya collects, uses and protects order information.",
     ),
   component: PrivacyPage,
 });

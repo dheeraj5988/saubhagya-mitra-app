@@ -37,10 +37,11 @@ export const paymentConfigSchema = z.object({
   phonepe_merchant_id: z.string().trim().max(120).nullable().optional(),
   phonepe_client_id: z.string().trim().max(200).nullable().optional(),
   phonepe_redirect_url: z.string().trim().url().max(300).nullable().optional(),
-  phonepe_callback_url: z.string().trim().url().max(300).nullable().optional(),
+  phonepe_callback_url: z.string().trim().max(500).nullable().optional(),
   cashfree_enabled: z.boolean().default(false),
   cashfree_env: z.string().nullable().optional(),
   cashfree_app_id: z.string().nullable().optional(),
+  software_enabled: z.boolean().default(false).optional(),
 });
 
 /** Secrets are write-only: they go in and are never read back to a browser. */

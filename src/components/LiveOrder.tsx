@@ -52,15 +52,15 @@ export function LiveOrder() {
   return (
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
       <iframe
-        title={en ? "Order voter slips" : "वोटर स्लिप का ऑर्डर"}
-        src={`${ORDER_URL}${qs}`}
+        title={en ? "Order" : "ऑर्डर"}
+        src={`/live-order${qs}`}
         className="block h-[85dvh] min-h-[560px] w-full border-0"
         allow="clipboard-write"
       />
       <p className="border-t px-3 py-2 text-xs text-muted-foreground">
         {en ? "Easier on a phone: " : "फ़ोन पर आसान: "}
         <a
-          href={`${ORDER_URL}${qs}`}
+          href={`/live-order${qs}`}
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-primary underline underline-offset-4"

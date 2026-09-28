@@ -77,6 +77,7 @@ export function PaymentSettingsTab({
           phonepe_client_id: cfg.phonepe_client_id,
           phonepe_redirect_url: cfg.phonepe_redirect_url,
           phonepe_callback_url: cfg.phonepe_callback_url,
+          software_enabled: cfg.software_enabled,
         },
       });
       toast.success("Payment settings saved.");
@@ -187,6 +188,24 @@ export function PaymentSettingsTab({
         </div>
       </section>
 
+      <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-navy">सॉफ़्टवेयर सेक्शन (Software Section)</h3>
+            <p className="text-xs text-muted-foreground">
+              वेबसाइट पर सॉफ़्टवेयर सेक्शन, डाउनलोड पेज और ऑर्डर फ़ॉर्म में सॉफ़्टवेयर विकल्प दिखाएँ या छुपाएँ।
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch
+              id="software_enabled"
+              checked={cfg.software_enabled}
+              onCheckedChange={(v) => setCfg({ ...cfg, software_enabled: v })}
+            />
+            <Label htmlFor="software_enabled">{cfg.software_enabled ? "सक्रिय (Active)" : "निष्क्रिय (Inactive)"}</Label>
+          </div>
+        </div>
+      </section>
 
       <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
         <div className="flex items-center justify-between gap-4">

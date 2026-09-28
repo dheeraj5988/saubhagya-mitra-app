@@ -21,6 +21,7 @@ export type PaymentConfig = {
   cashfree_enabled: boolean;
   cashfree_env: string | null;
   cashfree_app_id: string | null;
+  software_enabled: boolean;
 };
 
 export async function loadPaymentConfig(): Promise<PaymentConfig> {
@@ -31,6 +32,18 @@ export async function loadPaymentConfig(): Promise<PaymentConfig> {
     .eq("singleton", true)
     .maybeSingle();
 
+  let software_enabled = false;
+  let rawCallback = data?.phonepe_callback_url ?? null;
+  if (rawCallback && rawCallback.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(rawCallback);
+      software_enabled = Boolean(parsed.software_enabled);
+      rawCallback = parsed.url ?? null;
+    } catch {
+      // ignore json parse error
+    }
+  }
+
   return {
     rate_per_voter: data?.rate_per_voter == null ? DEFAULT_RATE_PER_VOTER : Number(data.rate_per_voter),
     min_order_amount: data?.min_order_amount == null ? null : Number(data.min_order_amount),
@@ -40,11 +53,21 @@ export async function loadPaymentConfig(): Promise<PaymentConfig> {
     phonepe_merchant_id: data?.phonepe_merchant_id ?? null,
     phonepe_client_id: data?.phonepe_client_id ?? null,
     phonepe_redirect_url: data?.phonepe_redirect_url ?? null,
-    phonepe_callback_url: data?.phonepe_callback_url ?? null,
+    phonepe_callback_url: rawCallback,
     cashfree_enabled: Boolean(data?.cashfree_enabled),
     cashfree_env: data?.cashfree_env ?? null,
     cashfree_app_id: data?.cashfree_app_id ?? null,
+    software_enabled,
   };
+}
+
+export async function isSoftwareEnabled(): Promise<boolean> {
+  try {
+    const cfg = await loadPaymentConfig();
+    return Boolean(cfg.software_enabled);
+  } catch {
+    return false;
+  }
 }
 
 /** Presence flags only — the secret values themselves stay in this module. */

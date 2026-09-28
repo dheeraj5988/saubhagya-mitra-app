@@ -516,6 +516,24 @@ export const createCashfreePaymentSession = createServerFn({ method: "POST" })
 export const getPublicPaymentConfig = createServerFn({ method: "GET" })
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin.from("payment_config").select("cashfree_enabled, cashfree_env").eq("singleton", true).maybeSingle();
-    return { cashfree_enabled: Boolean(data?.cashfree_enabled), cashfree_env: data?.cashfree_env || "sandbox" };
+    const { data } = await supabaseAdmin
+      .from("payment_config")
+      .select("cashfree_enabled, cashfree_env, phonepe_callback_url")
+      .eq("singleton", true)
+      .maybeSingle();
+
+    let software_enabled = false;
+    if (data?.phonepe_callback_url?.startsWith("{")) {
+      try {
+        software_enabled = Boolean(JSON.parse(data.phonepe_callback_url).software_enabled);
+      } catch {
+        // ignore
+      }
+    }
+
+    return {
+      cashfree_enabled: Boolean(data?.cashfree_enabled),
+      cashfree_env: data?.cashfree_env || "sandbox",
+      software_enabled,
+    };
   });

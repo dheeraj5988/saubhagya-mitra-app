@@ -9,8 +9,8 @@
  */
 
 /** Trading name — the only brand name used anywhere on the site. */
-export const TRADE_NAME_HI = "सौभाग्य वोटर स्लिप";
-export const TRADE_NAME_EN = "Saubhagya Voter Slip";
+export const TRADE_NAME_HI = "सौभाग्य";
+export const TRADE_NAME_EN = "Saubhagya";
 export const TRADE_NAME = `${TRADE_NAME_HI} / ${TRADE_NAME_EN}`;
 
 /** Legal name exactly as on PAN / GST (e.g. "Dheeraj Sharma"). */

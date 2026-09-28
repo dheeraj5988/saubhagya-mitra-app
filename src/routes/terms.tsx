@@ -7,8 +7,8 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/terms")({
   head: () =>
     policyHead(
-      "Terms & Conditions | Saubhagya Voter Slip",
-      "Terms for print-ready digital voter slips (PDF), data processing and software licences for Rajasthan election candidates.",
+      "Terms & Conditions | Saubhagya",
+      "Terms for print-ready digital campaign slips (PDF), data processing and software licences for Rajasthan election candidates.",
     ),
   component: TermsPage,
 });

@@ -139,6 +139,12 @@ export const adminSavePaymentConfig = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { assertSession } = await import("./admin.server");
     const db = await assertSession(data.token);
+
+    const encodedCallback = JSON.stringify({
+      url: data.phonepe_callback_url ?? null,
+      software_enabled: Boolean(data.software_enabled),
+    });
+
     const { error } = await db
       .from("payment_config")
       .update({
@@ -150,7 +156,7 @@ export const adminSavePaymentConfig = createServerFn({ method: "POST" })
         phonepe_merchant_id: data.phonepe_merchant_id ?? null,
         phonepe_client_id: data.phonepe_client_id ?? null,
         phonepe_redirect_url: data.phonepe_redirect_url ?? null,
-        phonepe_callback_url: data.phonepe_callback_url ?? null,
+        phonepe_callback_url: encodedCallback,
         cashfree_enabled: data.cashfree_enabled,
         cashfree_env: data.cashfree_env ?? null,
         cashfree_app_id: data.cashfree_app_id ?? null,

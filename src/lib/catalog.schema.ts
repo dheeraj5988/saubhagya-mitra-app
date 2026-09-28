@@ -64,4 +64,5 @@ export type AdminPaymentConfig = {
   cashfree_env: string | null;
   cashfree_app_id: string | null;
   has_cashfree_secret: boolean;
+  software_enabled: boolean;
 };

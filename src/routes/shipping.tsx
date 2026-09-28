@@ -6,7 +6,7 @@ import { DELIVERY } from "@/content/policies";
 export const Route = createFileRoute("/shipping")({
   head: () =>
     policyHead(
-      "Delivery Policy (Digital) | Saubhagya Voter Slip",
+      "Delivery Policy (Digital) | Saubhagya",
       "All orders are delivered digitally on WhatsApp or by download link — no physical shipping.",
     ),
   component: ShippingPage,

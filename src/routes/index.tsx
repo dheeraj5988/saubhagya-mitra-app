@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Download, FileText, ListOrdered, MessageCircle, Send } from "lucide-react";
 
@@ -5,11 +7,12 @@ import { LiveOrder } from "@/components/LiveOrder";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { buildEnquiryWhatsAppUrl } from "@/lib/campaign";
 import { useI18n } from "@/lib/i18n";
+import { getPublicPaymentConfig } from "@/lib/orders.functions";
 import { SERIES_RATES } from "@/lib/pricing";
 
-const TITLE = "सौभाग्य वोटर स्लिप | Saubhagya Voter Slip — पंचायत चुनाव की डिजिटल वोटर स्लिप";
+const TITLE = "सौभाग्य | Saubhagya — पंचायत चुनाव की डिजिटल अभियान पर्ची";
 const DESCRIPTION =
-  "राजस्थान पंचायत चुनाव (पंच, सरपंच, पंचायत समिति व ज़िला परिषद सदस्य) के लिए छपाई-योग्य वोटर स्लिप PDF — P 15 पैसे, S / A 16 पैसे, Ph 20 पैसे प्रति पर्ची। डिजिटल डिलीवरी।";
+  "राजस्थान पंचायत चुनाव (पंच, सरपंच, पंचायत समिति व ज़िला परिषद सदस्य) के लिए छपाई-योग्य अभियान पर्ची PDF — P 15 पैसे, A 16 पैसे, Ph 20 पैसे प्रति पर्ची। डिजिटल डिलीवरी।";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,18 +33,25 @@ const p = (r: number) => Math.round(r * 100);
 function Index() {
   const { t, lang } = useI18n();
   const en = lang === "en";
+  const fetchConfig = useServerFn(getPublicPaymentConfig);
+  const { data: config } = useQuery({
+    queryKey: ["publicPaymentConfig"],
+    queryFn: () => fetchConfig(),
+    staleTime: 30_000,
+  });
+  const softwareActive = Boolean(config?.software_enabled);
 
   const deliver = [
     {
       icon: FileText,
-      title: en ? "PDF voter slips" : "PDF वोटर स्लिप",
+      title: en ? "PDF slips" : "PDF पर्चियाँ",
       body: en
         ? "Booth-wise, ready to print on A4 — plain, with symbol, or with your banner."
         : "बूथ-वार, A4 पर छपाई के लिए तैयार — सादी, चुनाव चिन्ह वाली या आपके बैनर के साथ।",
     },
     {
       icon: ListOrdered,
-      title: en ? "Voter lists" : "मतदाता सूचियाँ",
+      title: en ? "Different types of lists" : "विभिन्न प्रकार की सूचियाँ",
       body: en
         ? "Hindi alphabetical, English alphabetical and family-wise lists for booth work."
         : "बूथ पर काम के लिए हिंदी वर्णमाला, English Alphabetical और परिवार वार सूची।",
@@ -64,11 +74,11 @@ function Index() {
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[10px] border border-[oklch(0.892_0.053_262.7)] bg-brand-soft px-4 py-2.5 text-[13.5px] text-ink2">
           <span className="font-bold text-saffron-deep">{en ? "Rates:" : "रेट:"}</span>
           <span>
-            P {p(SERIES_RATES.P)} · S / A {p(SERIES_RATES.S)} · Ph {p(SERIES_RATES.Ph)}{" "}
+            P {p(SERIES_RATES.P)} · A {p(SERIES_RATES.A)} · Ph {p(SERIES_RATES.Ph)}{" "}
             {en ? "paise per slip" : "पैसे प्रति पर्ची"}
           </span>
           <span className="text-muted-foreground">
-            {en ? "Amount = voters × rate" : "राशि = मतदाता × रेट"}
+            {en ? "Amount = slips × rate" : "राशि = पर्ची × रेट"}
           </span>
           <Link to="/pricing" className="font-semibold text-primary underline underline-offset-4">
             {en ? "Full rate list" : "पूरी रेट सूची"}
@@ -92,7 +102,7 @@ function Index() {
           <h2 className="text-lg font-bold text-foreground">
             {en ? "What we deliver" : "हम क्या देते हैं"}
           </h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className={`mt-3 grid gap-3 sm:grid-cols-2 ${softwareActive ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
             {deliver.map((item) => (
               <div
                 key={item.title}
@@ -103,23 +113,25 @@ function Index() {
                 <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
               </div>
             ))}
-            <Link
-              to="/software"
-              className="rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-primary"
-            >
-              <Download className="size-5 text-primary" aria-hidden />
-              <p className="mt-2 font-bold text-foreground">
-                {en ? "Software licence" : "सॉफ़्टवेयर लाइसेंस"}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {en
-                  ? "For a whole panchayat samiti or district — make unlimited slips on your own computer."
-                  : "पूरी पंचायत समिति या ज़िले के लिए — अपने कंप्यूटर पर जितनी चाहें पर्चियाँ।"}
-              </p>
-              <p className="mt-2 text-sm font-semibold text-primary underline underline-offset-4">
-                {en ? "Download the free sample" : "मुफ़्त नमूना डाउनलोड कीजिए"}
-              </p>
-            </Link>
+            {softwareActive && (
+              <Link
+                to="/software"
+                className="rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-primary"
+              >
+                <Download className="size-5 text-primary" aria-hidden />
+                <p className="mt-2 font-bold text-foreground">
+                  {en ? "Software licence" : "सॉफ़्टवेयर लाइसेंस"}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {en
+                    ? "For a whole panchayat samiti or district — make unlimited slips on your own computer."
+                    : "पूरी पंचायत समिति या ज़िले के लिए — अपने कंप्यूटर पर जितनी चाहें पर्चियाँ।"}
+                </p>
+                <p className="mt-2 text-sm font-semibold text-primary underline underline-offset-4">
+                  {en ? "Download the free sample" : "मुफ़्त नमूना डाउनलोड कीजिए"}
+                </p>
+              </Link>
+            )}
           </div>
         </section>
       </main>

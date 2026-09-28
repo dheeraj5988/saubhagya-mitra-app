@@ -133,8 +133,8 @@ export const ABOUT: PolicyDoc = {
       title: p("हम कौन हैं", "Who we are"),
       paras: [
         p(
-          `${whoHi} लक्ष्मणगढ़ (सीकर, राजस्थान) का एक स्वामित्व फ़र्म है। हम चुनाव लड़ने वाले प्रत्याशियों और उनके कार्यालयों के लिए, राज्य निर्वाचन आयोग की सार्वजनिक मतदाता-सूची से, छपाई-योग्य डिजिटल वोटर स्लिप (मतदाता पर्ची), सूचियाँ और इनके लिए सॉफ़्टवेयर तैयार करते हैं। अभी हमारा मुख्य काम राजस्थान के पंचायत राज चुनाव — पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य — के लिए है।`,
-          `${whoEn} is a sole proprietorship based in Laxmangarh (Sikar, Rajasthan). For election candidates and their offices we prepare print-ready digital voter slips, voter lists and the software to make them, from the State Election Commission's public electoral rolls. Our main work today is Rajasthan's Panchayati Raj elections — Panch, Sarpanch, Panchayat Samiti member and Zila Parishad member.`,
+          `${whoHi} लक्ष्मणगढ़ (सीकर, राजस्थान) का एक स्वामित्व फ़र्म है। हम चुनाव लड़ने वाले प्रत्याशियों और उनके कार्यालयों के लिए, राज्य निर्वाचन आयोग की सार्वजनिक सूची से, छपाई-योग्य डिजिटल अभियान पर्चियाँ, सूचियाँ और इनके लिए सॉफ़्टवेयर तैयार करते हैं। अभी हमारा मुख्य काम राजस्थान के पंचायत राज चुनाव — पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य — के लिए है।`,
+          `${whoEn} is a sole proprietorship based in Laxmangarh (Sikar, Rajasthan). For election candidates and their offices we prepare print-ready digital campaign slips, candidate lists and the software to make them, from the State Election Commission's public electoral rolls. Our main work today is Rajasthan's Panchayati Raj elections — Panch, Sarpanch, Panchayat Samiti member and Zila Parishad member.`,
         ),
       ],
     },
@@ -142,18 +142,18 @@ export const ABOUT: PolicyDoc = {
       title: p("हम क्या करते हैं", "What we do"),
       paras: [
         p(
-          "राज्य निर्वाचन आयोग, राजस्थान द्वारा सार्वजनिक रूप से प्रकाशित मतदाता-सूची से, हमारी सभी सेवाएँ डिजिटल रूप में मिलती हैं:",
-          "Working from the electoral rolls publicly published by the State Election Commission, Rajasthan, all our services are delivered digitally:",
+          "राज्य निर्वाचन आयोग, राजस्थान द्वारा सार्वजनिक रूप से प्रकाशित सूची से, हमारी सभी सेवाएँ डिजिटल रूप में मिलती हैं:",
+          "Working from the rolls publicly published by the State Election Commission, Rajasthan, all our services are delivered digitally:",
         ),
       ],
       list: [
         p(
-          "वोटर स्लिप और सूचियाँ (PDF) — घर-घर बाँटने की पर्ची, हिंदी वर्णमाला क्रम सूची, English Alphabetical सूची और परिवार वार सूची, प्रत्याशी के चुने वार्ड / भाग के लिए।",
-          "Voter slips and lists (PDF) — slips for door-to-door distribution, Hindi alphabetical, English alphabetical and family-wise lists, for the ward / booths the candidate selects.",
+          "अभियान पर्चियाँ और सूचियाँ (PDF) — घर-घर बाँटने की पर्ची, हिंदी वर्णमाला क्रम सूची, English Alphabetical सूची और परिवार वार सूची, प्रत्याशी के चुने वार्ड / भाग के लिए।",
+          "Campaign slips and lists (PDF) — slips for door-to-door distribution, Hindi alphabetical, English alphabetical and family-wise lists, for the ward / booths the candidate selects.",
         ),
         p(
-          "डेटा प्रोसेसिंग — सार्वजनिक मतदाता-सूचियों (और आपकी दी फ़ोटो सहित सूची) को छाँटकर, क्रम देकर छपाई-योग्य और खोज-योग्य बनाना।",
-          "Data processing — sorting and arranging public electoral rolls (and a photo roll you provide) into printable, searchable form.",
+          "डेटा प्रोसेसिंग — सार्वजनिक सूचियों (और आपकी दी फ़ोटो सहित सूची) को छाँटकर, क्रम देकर छपाई-योग्य और खोज-योग्य बनाना।",
+          "Data processing — sorting and arranging public rolls (and a photo roll you provide) into printable, searchable form.",
         ),
         p(
           "सॉफ़्टवेयर लाइसेंस — बड़े क्षेत्र (पूरी पंचायत समिति / ज़िला) के लिए Windows सॉफ़्टवेयर, जिससे आप अपने कंप्यूटर पर, बिना इंटरनेट, जितनी चाहें पर्चियाँ बना सकें। मुफ़्त नमूना: saubhagya.net/software",
@@ -165,8 +165,8 @@ export const ABOUT: PolicyDoc = {
       title: p("डिज़ाइन", "Designs"),
       paras: [
         p(
-          "सादी पर्ची (P-16, P-12) में सिर्फ़ मतदाता की जानकारी होती है। चुनाव-चिन्ह (SR-10 / SL-10) और विज्ञापन (AT-9, AT-8, AL-8, AR-8) वाले डिज़ाइन में प्रत्याशी का नाम, चुनाव चिन्ह, EVM क्रम संख्या और आपका बैनर भी छपता है।",
-          "Plain slips (P-16, P-12) carry voter details only. Symbol designs (SR-10 / SL-10) and advertisement designs (AT-9, AT-8, AL-8, AR-8) also carry the candidate's name, election symbol, EVM serial number and your banner.",
+          "सादी पर्ची (P-16, P-12) में पूरी जानकारी होती है। चुनाव-चिन्ह (SR-10 / SL-10) और विज्ञापन (AT-9, AT-8, AL-8, AR-8) वाले डिज़ाइन में प्रत्याशी का नाम, चुनाव चिन्ह, EVM क्रम संख्या और आपका बैनर भी छपता है।",
+          "Plain slips (P-16, P-12) carry full details. Symbol designs (SR-10 / SL-10) and advertisement designs (AT-9, AT-8, AL-8, AR-8) also carry the candidate's name, election symbol, EVM serial number and your banner.",
         ),
       ],
     },
@@ -175,8 +175,8 @@ export const ABOUT: PolicyDoc = {
       paras: [],
       list: [
         p(
-          "हम मतदाता-सूची में कोई बदलाव नहीं करते, उसमें कोई निजी जानकारी नहीं जोड़ते, और मतदाताओं की सूची कच्चे डेटा (raw data) के रूप में अलग से नहीं बेचते।",
-          "We do not alter the electoral roll, do not add any personal data to it, and do not sell voter lists separately as raw data.",
+          "हम सूची में कोई बदलाव नहीं करते, उसमें कोई निजी जानकारी नहीं जोड़ते, और सूचियों को कच्चे डेटा (raw data) के रूप में अलग से नहीं बेचते।",
+          "We do not alter the electoral roll, do not add any personal data to it, and do not sell lists separately as raw data.",
         ),
         p(
           "हम कोई भौतिक छपाई या डिलीवरी नहीं करते — PDF आप अपने प्रिंटर या स्थानीय प्रेस से छपवाते हैं।",
@@ -216,18 +216,9 @@ export const PRICING_ROWS: {
 }[] = [
   {
     series: "P",
-    what: p("सादी पर्ची — मतदाता की पूरी जानकारी", "Plain slip — full voter details"),
+    what: p("सादी पर्ची — पूरी जानकारी", "Plain slip — full details"),
     designs: "P-16, P-12",
     rate: SERIES_RATES.P,
-  },
-  {
-    series: "S",
-    what: p(
-      "चुनाव-चिन्ह पट्टी — P + प्रत्याशी का नाम, चिन्ह, EVM क्रम",
-      "Symbol strip — P + candidate name, symbol, EVM serial",
-    ),
-    designs: "SR-10, SL-10",
-    rate: SERIES_RATES.S,
   },
   {
     series: "A",
@@ -238,8 +229,8 @@ export const PRICING_ROWS: {
   {
     series: "Ph",
     what: p(
-      "मतदाता की फ़ोटो सहित (जहाँ फ़ोटो-सूची उपलब्ध हो)",
-      "With voter photo (where the photo roll is available)",
+      "फ़ोटो सहित (जहाँ फ़ोटो-सूची उपलब्ध हो)",
+      "With photo (where the photo roll is available)",
     ),
     designs: "—",
     rate: SERIES_RATES.Ph,
@@ -267,12 +258,12 @@ export const LICENCE_ROWS: { code: string; what: Bi; rate: number }[] = [
 
 export const PRICING_NOTES: Bi[] = [
   p(
-    "राशि = चुने हुए वार्ड / भाग के मतदाता × प्रति-पर्ची रेट। मतदाता-गिनती ऑर्डर फ़ॉर्म पर चुनते ही दिखती है, और भुगतान से पहले पूरी राशि बताई जाती है।",
-    "Amount = voters in the selected ward / booths × per-slip rate. The voter count appears on the order form as you select, and the full amount is shown before payment.",
+    "राशि = चुने हुए वार्ड / भाग की संख्या × प्रति-पर्ची रेट। संख्या ऑर्डर फ़ॉर्म पर चुनते ही दिखती है, और भुगतान से पहले पूरी राशि बताई जाती है।",
+    "Amount = count in the selected ward / booths × per-slip rate. The count appears on the order form as you select, and the full amount is shown before payment.",
   ),
   p(
-    "सॉफ़्टवेयर लाइसेंस का शुल्क = लाइसेंस वाले क्षेत्र (ग्राम पंचायत / पंचायत समिति / ज़िला) के मतदाता × लाइसेंस रेट। लाइसेंस उस चुनाव की अंतिम मतदान तिथि तक चलता है।",
-    "Software licence fee = voters in the licensed area (gram panchayat / panchayat samiti / district) × licence rate. The licence runs until the final polling date of that election.",
+    "सॉफ़्टवेयर लाइसेंस का शुल्क = लाइसेंस वाले क्षेत्र (ग्राम पंचायत / पंचायत समिति / ज़िला) की संख्या × लाइसेंस रेट। लाइसेंस उस चुनाव की अंतिम मतदान तिथि तक चलता है।",
+    "Software licence fee = count in the licensed area (gram panchayat / panchayat samiti / district) × licence rate. The licence runs until the final polling date of that election.",
   ),
   p(taxHi, taxEn),
   p(
@@ -294,8 +285,8 @@ export const PRICING_EXAMPLE_VOTERS = 7500;
 export const TERMS: PolicyDoc = {
   title: p("नियम एवं शर्तें", "Terms & Conditions"),
   intro: p(
-    "saubhagya.net, इसका ऑर्डर-पेज, सौभाग्य वोटर स्लिप सॉफ़्टवेयर और WhatsApp पर दी जाने वाली सभी सेवाएँ इन शर्तों के अधीन हैं। ऑर्डर दर्ज करके, भुगतान करके या सॉफ़्टवेयर डाउनलोड / इस्तेमाल करके आप ये शर्तें स्वीकार करते हैं।",
-    "saubhagya.net, its order page, the Saubhagya Voter Slip software and every service we provide on WhatsApp are governed by these terms. By placing an order, making a payment or downloading / using the software you accept them.",
+    "saubhagya.net, इसका ऑर्डर-पेज, सौभाग्य सॉफ़्टवेयर और WhatsApp पर दी जाने वाली सभी सेवाएँ इन शर्तों के अधीन हैं। ऑर्डर दर्ज करके, भुगतान करके या सॉफ़्टवेयर डाउनलोड / इस्तेमाल करके आप ये शर्तें स्वीकार करते हैं।",
+    "saubhagya.net, its order page, the Saubhagya software and every service we provide on WhatsApp are governed by these terms. By placing an order, making a payment or downloading / using the software you accept them.",
   ),
   sections: [
     {
@@ -317,16 +308,16 @@ export const TERMS: PolicyDoc = {
       ],
       list: [
         p(
-          "(क) वोटर स्लिप और मतदाता-सूचियाँ (PDF): राज्य निर्वाचन आयोग, राजस्थान की सार्वजनिक मतदाता-सूची से, आपके चुने क्षेत्र और डिज़ाइन में छपाई-योग्य वोटर स्लिप और सूचियाँ (हिंदी वर्णमाला, English Alphabetical, परिवार वार)।",
-          "(a) Voter slips and voter lists (PDF): print-ready slips and lists (Hindi alphabetical, English alphabetical, family-wise) in the area and design you choose, from the State Election Commission, Rajasthan's public electoral rolls.",
+          "(क) अभियान पर्चियाँ और सूचियाँ (PDF): राज्य निर्वाचन आयोग, राजस्थान की सार्वजनिक सूची से, आपके चुने क्षेत्र और डिज़ाइन में छपाई-योग्य अभियान पर्चियाँ और सूचियाँ (हिंदी वर्णमाला, English Alphabetical, परिवार वार)।",
+          "(a) Campaign slips and lists (PDF): print-ready slips and lists (Hindi alphabetical, English alphabetical, family-wise) in the area and design you choose, from the State Election Commission, Rajasthan's public rolls.",
         ),
         p(
-          "(ख) डेटा प्रोसेसिंग सेवाएँ: सार्वजनिक मतदाता-सूचियों और आपकी दी हुई सूचियों (जैसे फ़ोटो सहित मतदाता-सूची) को पढ़ना, छाँटना, क्रम देना और खोज-योग्य / छपाई-योग्य रूप में बदलना, तथा इनसे जुड़ी अन्य डेटा-सेवाएँ।",
-          "(b) Data processing services: reading, sorting and arranging public electoral rolls and lists you provide (such as a photo electoral roll) into searchable / printable form, and related data services.",
+          "(ख) डेटा प्रोसेसिंग सेवाएँ: सार्वजनिक सूचियों और आपकी दी हुई सूचियों (जैसे फ़ोटो सहित सूची) को पढ़ना, छाँटना, क्रम देना और खोज-योग्य / छपाई-योग्य रूप में बदलना, तथा इनसे जुड़ी अन्य डेटा-सेवाएँ।",
+          "(b) Data processing services: reading, sorting and arranging public rolls and lists you provide (such as a photo roll) into searchable / printable form, and related data services.",
         ),
         p(
-          '(ग) सॉफ़्टवेयर लाइसेंस: आपके अपने कंप्यूटर पर चलने वाला "सौभाग्य वोटर स्लिप" सॉफ़्टवेयर, और आपके चुने क्षेत्र की कोड से बंद (encrypted) डेटा-फ़ाइल — जिससे आप ख़ुद पर्चियाँ बना सकते हैं।',
-          '(c) Software licences: the "Saubhagya Voter Slip" software that runs on your own computer, with an encrypted, code-locked data file for the area you choose, so you can make slips yourself.',
+          '(ग) सॉफ़्टवेयर लाइसेंस: आपके अपने कंप्यूटर पर चलने वाला "सौभाग्य" सॉफ़्टवेयर, और आपके चुने क्षेत्र की कोड से बंद (encrypted) डेटा-फ़ाइल — जिससे आप ख़ुद पर्चियाँ बना सकते हैं।',
+          '(c) Software licences: the "Saubhagya" software that runs on your own computer, with an encrypted, code-locked data file for the area you choose, so you can make slips yourself.',
         ),
         p(
           "(घ) अन्य डिजिटल सेवाएँ: नमूने, डिज़ाइन / टेम्पलेट, बैनर के नाप की जाँच, सहायता, और ऊपर की सेवाओं से जुड़ी अन्य डिजिटल सेवाएँ।",
@@ -335,10 +326,10 @@ export const TERMS: PolicyDoc = {
       ],
     },
     {
-      title: p("3. मतदाता-सूची का स्रोत", "3. Source of the electoral data"),
+      title: p("3. सूची का स्रोत", "3. Source of the electoral data"),
       paras: [
         p(
-          "पर्चियाँ और डेटा राज्य निर्वाचन आयोग की प्रकाशित, सार्वजनिक मतदाता-सूची से बनते हैं, जैसी वह ऑर्डर के समय उपलब्ध है। हम सूची में कोई नाम जोड़ते, हटाते या बदलते नहीं।",
+          "पर्चियाँ और डेटा राज्य निर्वाचन आयोग की प्रकाशित, सार्वजनिक सूची से बनते हैं, जैसी वह ऑर्डर के समय उपलब्ध है। हम सूची में कोई नाम जोड़ते, हटाते या बदलते नहीं।",
           "Slips and data are prepared from the State Election Commission's published, public electoral rolls as available at the time of the order. We do not add, remove or change any name in the roll.",
         ),
         p(
@@ -364,12 +355,12 @@ export const TERMS: PolicyDoc = {
       title: p("5. रेट", "5. Pricing"),
       paras: [
         p(
-          `वोटर स्लिप: राशि = चुने हुए क्षेत्र के मतदाता × प्रति-पर्ची रेट (P ${paise(SERIES_RATES.P)} पैसे, S / A ${paise(SERIES_RATES.S)} पैसे, Ph ${paise(SERIES_RATES.Ph)} पैसे)। सॉफ़्टवेयर लाइसेंस: शुल्क = लाइसेंस वाले क्षेत्र के मतदाता × लाइसेंस रेट (चारों पद ${paise(LICENCE_RATES.all)} पैसे, एक पद ${paise(LICENCE_RATES.one)} पैसे)। पूरी रेट सूची: saubhagya.net/pricing`,
-          `Voter slips: amount = voters in the selected area × per-slip rate (P ${paise(SERIES_RATES.P)} paise, S / A ${paise(SERIES_RATES.S)} paise, Ph ${paise(SERIES_RATES.Ph)} paise). Software licence: fee = voters in the licensed area × licence rate (all four posts ${paise(LICENCE_RATES.all)} paise, one post ${paise(LICENCE_RATES.one)} paise). Full rate list: saubhagya.net/pricing`,
+          `अभियान पर्चियाँ: राशि = चुने हुए क्षेत्र की संख्या × प्रति-पर्ची रेट (P ${paise(SERIES_RATES.P)} पैसे, A ${paise(SERIES_RATES.A)} पैसे, Ph ${paise(SERIES_RATES.Ph)} पैसे)। सॉफ़्टवेयर लाइसेंस: शुल्क = लाइसेंस वाले क्षेत्र की संख्या × लाइसेंस रेट (चारों पद ${paise(LICENCE_RATES.all)} पैसे, एक पद ${paise(LICENCE_RATES.one)} पैसे)। पूरी रेट सूची: saubhagya.net/pricing`,
+          `Campaign slips: amount = count in the selected area × per-slip rate (P ${paise(SERIES_RATES.P)} paise, A ${paise(SERIES_RATES.A)} paise, Ph ${paise(SERIES_RATES.Ph)} paise). Software licence: fee = count in the licensed area × licence rate (all four posts ${paise(LICENCE_RATES.all)} paise, one post ${paise(LICENCE_RATES.one)} paise). Full rate list: saubhagya.net/pricing`,
         ),
         p(
-          "मतदाता-गिनती और पूरी राशि भुगतान से पहले बताई जाती है। रेट बदल सकते हैं, पर जिस ऑर्डर का भुगतान हो चुका है उस पर पुराना रेट ही लागू रहेगा।",
-          "The voter count and full amount are shown before payment. Rates may change, but an order that has been paid keeps its original rate.",
+          "पूरी संख्या और राशि भुगतान से पहले बताई जाती है। रेट बदल सकते हैं, पर जिस ऑर्डर का भुगतान हो चुका है उस पर पुराना रेट ही लागू रहेगा।",
+          "The count and full amount are shown before payment. Rates may change, but an order that has been paid keeps its original rate.",
         ),
         p(taxHi, taxEn),
       ],
@@ -398,17 +389,17 @@ export const TERMS: PolicyDoc = {
     },
     {
       title: p(
-        "8. फ़ोटो सहित मतदाता-सूची (Ph) और आपकी सहमति",
-        "8. Photo electoral roll (Ph) and your consent",
+        "8. फ़ोटो सहित सूची (Ph) और आपकी सहमति",
+        "8. Photo roll (Ph) and your consent",
       ),
       paras: [
         p(
-          "फ़ोटो सहित पर्ची के लिए उस क्षेत्र की फ़ोटो वाली मतदाता-सूची (PDF) चाहिए। हमारे पास उपलब्ध हो तो सीधे बनती है; न हो तो आप वह PDF ऑर्डर के साथ भेजते हैं।",
-          "Photo slips need the photo electoral roll (PDF) of that area. If we already have it, we use it; otherwise you send the PDF with your order.",
+          "फ़ोटो सहित पर्ची के लिए उस क्षेत्र की फ़ोटो वाली सूची (PDF) चाहिए। हमारे पास उपलब्ध हो तो सीधे बनती है; न हो तो आप वह PDF ऑर्डर के साथ भेजते हैं।",
+          "Photo slips need the photo roll (PDF) of that area. If we already have it, we use it; otherwise you send the PDF with your order.",
         ),
         p(
-          "PDF भेजकर आप पुष्टि करते हैं कि आपने उसे वैध रूप से प्राप्त किया है, और सहमति देते हैं कि हम उस सूची को उसी क्षेत्र की दूसरी वोटर स्लिप / सूचियाँ बनाने में भी इस्तेमाल कर सकते हैं। फ़ोटो सिर्फ़ पर्ची / सूची बनाने में लगती है — हम फ़ोटो का कोई अलग डेटाबेस नहीं बेचते या साझा नहीं करते।",
-          "By sending the PDF you confirm that you obtained it lawfully, and you consent to our using that roll to prepare other voter slips / lists for the same area. Photos are used only to make slips / lists — we never sell or share a separate photo database.",
+          "PDF भेजकर आप पुष्टि करते हैं कि आपने उसे वैध रूप से प्राप्त किया है, और सहमति देते हैं कि हम उस सूची को उसी क्षेत्र की दूसरी अभियान पर्चियाँ / सूचियाँ बनाने में भी इस्तेमाल कर सकते हैं। फ़ोटो सिर्फ़ पर्ची / सूची बनाने में लगती है — हम फ़ोटो का कोई अलग डेटाबेस नहीं बेचते या साझा नहीं करते।",
+          "By sending the PDF you confirm that you obtained it lawfully, and you consent to our using that roll to prepare other campaign slips / lists for the same area. Photos are used only to make slips / lists — we never sell or share a separate photo database.",
         ),
       ],
     },
@@ -429,7 +420,7 @@ export const TERMS: PolicyDoc = {
           'Passing on: with the software\'s "share a part" feature you may lock a ward / area part with your own code and give it to your customer, and you may sell the PDFs you make.',
         ),
         p(
-          "मनाही: मतदाता-सूची का कच्चा डेटा निकालना या उसे अलग फ़ाइल / सूची के रूप में बेचना या बाँटना; सॉफ़्टवेयर को खोलना (reverse-engineering), बदलना या उसका कोड हटाना मना है।",
+          "मनाही: सूची का कच्चा डेटा निकालना या उसे अलग फ़ाइल / सूची के रूप में बेचना या बाँटना; सॉफ़्टवेयर को खोलना (reverse-engineering), बदलना या उसका कोड हटाना मना है।",
           "Not allowed: extracting the raw electoral data, or selling or distributing it as a separate file / list; reverse-engineering, modifying or removing the protection of the software.",
         ),
         p(
@@ -454,8 +445,8 @@ export const TERMS: PolicyDoc = {
       title: p("10. स्वीकार्य उपयोग", "10. Acceptable use"),
       paras: [
         p(
-          "पर्चियों, सूचियों और सॉफ़्टवेयर का उपयोग सिर्फ़ वैध चुनाव-कार्य के लिए, राज्य निर्वाचन आयोग के नियमों और आदर्श आचार संहिता के अनुसार करना आपकी ज़िम्मेदारी है। मतदाताओं की जानकारी का उपयोग spam, उत्पीड़न, धोखाधड़ी या किसी ग़ैर-क़ानूनी काम के लिए नहीं किया जा सकता।",
-          "You are responsible for using the slips, lists and software only for lawful election work, in line with the State Election Commission's rules and the model code of conduct. Voter information may not be used for spam, harassment, fraud or any unlawful purpose.",
+          "पर्चियों, सूचियों और सॉफ़्टवेयर का उपयोग सिर्फ़ वैध चुनाव-कार्य के लिए, राज्य निर्वाचन आयोग के नियमों और आदर्श आचार संहिता के अनुसार करना आपकी ज़िम्मेदारी है। विवरण का उपयोग spam, उत्पीड़न, धोखाधड़ी या किसी ग़ैर-क़ानूनी काम के लिए नहीं किया जा सकता।",
+          "You are responsible for using the slips, lists and software only for lawful election work, in line with the State Election Commission's rules and the model code of conduct. Information may not be used for spam, harassment, fraud or any unlawful purpose.",
         ),
         p(
           "अश्लील, अपमानजनक, सांप्रदायिक या चुनाव-क़ानून तोड़ने वाली सामग्री वाला ऑर्डर हम मना या रद्द कर सकते हैं। हम किसी दल या प्रत्याशी का पक्ष नहीं लेते — सेवा सबको एक ही शर्तों पर मिलती है।",
@@ -524,8 +515,8 @@ export const PRIVACY: PolicyDoc = {
       title: p("हम क्या जानकारी लेते हैं", "What we collect"),
       paras: [
         p(
-          "ऑर्डर के लिए: प्रत्याशी का नाम (हिंदी), मोबाइल नंबर, ज़िला / पंचायत समिति / ग्राम पंचायत / वार्ड / भाग, पद, डिज़ाइन, चुनाव चिन्ह, EVM क्रम संख्या, नारा, मतदान दिनांक, बैनर की तस्वीर, और फ़ोटो-पर्ची के लिए आपकी अपलोड की हुई मतदाता-सूची PDF।",
-          "For an order: candidate name (Hindi), mobile number, district / panchayat samiti / gram panchayat / ward / booths, post, design, election symbol, EVM serial number, slogan, polling date, banner image, and — for photo slips — the voter-list PDF you upload.",
+          "ऑर्डर के लिए: प्रत्याशी का नाम (हिंदी), मोबाइल नंबर, ज़िला / पंचायत समिति / ग्राम पंचायत / वार्ड / भाग, पद, डिज़ाइन, चुनाव चिन्ह, EVM क्रम संख्या, नारा, मतदान दिनांक, बैनर की तस्वीर, और फ़ोटो-पर्ची के लिए आपकी अपलोड की हुई सूची PDF।",
+          "For an order: candidate name (Hindi), mobile number, district / panchayat samiti / gram panchayat / ward / booths, post, design, election symbol, EVM serial number, slogan, polling date, banner image, and — for photo slips — the list PDF you upload.",
         ),
         p(
           "सॉफ़्टवेयर लाइसेंस के लिए: लाइसेंस का क्षेत्र और पद, आपको दिया गया कोड, और (अगर आप दें) GST नंबर।",
@@ -538,11 +529,11 @@ export const PRIVACY: PolicyDoc = {
       ],
     },
     {
-      title: p("मतदाता-सूची का डेटा", "Electoral roll data"),
+      title: p("सूची का डेटा", "Electoral roll data"),
       paras: [
         p(
-          "पर्चियों पर छपने वाला मतदाता-विवरण राज्य निर्वाचन आयोग, राजस्थान द्वारा सार्वजनिक रूप से प्रकाशित मतदाता-सूची से लिया जाता है। हम उसमें कोई बदलाव या जोड़ नहीं करते, और उसे सिर्फ़ छपाई-योग्य पर्ची, सूची और लाइसेंस वाली डेटा-फ़ाइल बनाने के लिए प्रोसेस करते हैं — विज्ञापन, प्रोफ़ाइलिंग या अलग से बेचने के लिए नहीं। लाइसेंस वाली डेटा-फ़ाइलें ग्राहक के कोड से बंद (encrypted) रहती हैं।",
-          "The voter details printed on the slips come from the electoral rolls publicly published by the State Election Commission, Rajasthan. We do not alter or add to them, and we process them only to make printable slips, lists and licensed data files — never for advertising, profiling or separate sale. Licensed data files are encrypted with the customer's code.",
+          "पर्चियों पर छपने वाला विवरण राज्य निर्वाचन आयोग, राजस्थान द्वारा सार्वजनिक रूप से प्रकाशित सूची से लिया जाता है। हम उसमें कोई बदलाव या जोड़ नहीं करते, और उसे सिर्फ़ छपाई-योग्य पर्ची, सूची और लाइसेंस वाली डेटा-फ़ाइल बनाने के लिए प्रोसेस करते हैं — विज्ञापन, प्रोफ़ाइलिंग या अलग से बेचने के लिए नहीं। लाइसेंस वाली डेटा-फ़ाइलें ग्राहक के कोड से बंद (encrypted) रहती हैं।",
+          "The details printed on the slips come from the electoral rolls publicly published by the State Election Commission, Rajasthan. We do not alter or add to them, and we process them only to make printable slips, lists and licensed data files — never for advertising, profiling or separate sale. Licensed data files are encrypted with the customer's code.",
         ),
       ],
     },
@@ -602,7 +593,7 @@ export const PRIVACY: PolicyDoc = {
       title: p("जानकारी कब तक रहती है / हटवाना", "Retention and deletion"),
       paras: [
         p(
-          "तैयार PDF हम 30 दिन तक रखते हैं; डाउनलोड-लिंक सीमित समय के लिए होते हैं और 30 दिन बाद फ़ाइल स्टोरेज से अपने आप हट जाती है। बैनर और फ़ोटो सहित मतदाता-सूची उस चुनाव की अंतिम मतदान तिथि के 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
+          "तैयार PDF हम 30 दिन तक रखते हैं; डाउनलोड-लिंक सीमित समय के लिए होते हैं और 30 दिन बाद फ़ाइल स्टोरेज से अपने आप हट जाती है। बैनर और फ़ोटो सहित सूची उस चुनाव की अंतिम मतदान तिथि के 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
           "We keep finished PDFs for 30 days; download links are time-limited and the file is removed from storage automatically after 30 days. Banners and photo rolls are deleted within 90 days of the final polling date of that election. Order and bill records are kept for accounting and legal needs.",
         ),
         p(
@@ -673,8 +664,8 @@ export const REFUND: PolicyDoc = {
       title: p("5. हमारी ग़लती", "5. Our error"),
       paras: [
         p(
-          "अगर फ़ाइल में हमारी ओर से त्रुटि है (ग़लत वार्ड, टूटी फ़ाइल, छूटे मतदाता, या आपके दिए नाम / चिन्ह से अलग छपाई), तो 48 घंटे में WhatsApp पर बताइए — हम बिना शुल्क दोबारा बना देंगे; दोबारा बनाना संभव न हो तो पूरा रिफंड।",
-          "If a file has an error on our side (wrong ward, broken file, missing voters, or a name / symbol different from what you gave), tell us on WhatsApp within 48 hours — we will remake it free of charge, or refund in full if remaking is not possible.",
+          "अगर फ़ाइल में हमारी ओर से त्रुटि है (ग़लत वार्ड, टूटी फ़ाइल, छूटे नाम, या आपके दिए नाम / चिन्ह से अलग छपाई), तो 48 घंटे में WhatsApp पर बताइए — हम बिना शुल्क दोबारा बना देंगे; दोबारा बनाना संभव न हो तो पूरा रिफंड।",
+          "If a file has an error on our side (wrong ward, broken file, missing names, or a name / symbol different from what you gave), tell us on WhatsApp within 48 hours — we will remake it free of charge, or refund in full if remaking is not possible.",
         ),
       ],
     },
@@ -742,8 +733,8 @@ export const DELIVERY: PolicyDoc = {
       paras: [],
       list: [
         p(
-          "वोटर स्लिप PDF: ऑर्डर मिलते ही फ़ाइलें बनना शुरू हो जाती हैं। तैयार होने पर भुगतान का अनुरोध (QR / लिंक) भेजा जाता है, और भुगतान की पुष्टि होते ही फ़ाइलें ऑर्डर में दिए WhatsApp नंबर पर भेज दी जाती हैं — फ़ाइल के रूप में या डाउनलोड लिंक के रूप में। लिंक 30 दिन तक चलता है।",
-          "Voter-slip PDFs: preparation starts as soon as the order is received. When the files are ready we send the payment request (QR / link), and once payment is confirmed the files are sent to the WhatsApp number in the order — as files or as a download link. The link stays valid for 30 days.",
+          "अभियान पर्ची PDF: ऑर्डर मिलते ही फ़ाइलें बनना शुरू हो जाती हैं। तैयार होने पर भुगतान का अनुरोध (QR / लिंक) भेजा जाता है, और भुगतान की पुष्टि होते ही फ़ाइलें ऑर्डर में दिए WhatsApp नंबर पर भेज दी जाती हैं — फ़ाइल के रूप में या डाउनलोड लिंक के रूप में। लिंक 30 दिन तक चलता है।",
+          "Campaign slip PDFs: preparation starts as soon as the order is received. When the files are ready we send the payment request (QR / link), and once payment is confirmed the files are sent to the WhatsApp number in the order — as files or as a download link. The link stays valid for 30 days.",
         ),
         p(
           'सॉफ़्टवेयर: इसी वेबसाइट के "सॉफ़्टवेयर" पेज (saubhagya.net/software) से डाउनलोड होता है।',
@@ -759,8 +750,8 @@ export const DELIVERY: PolicyDoc = {
       title: p("समय", "Timing"),
       paras: [
         p(
-          "वोटर स्लिप: सामान्यतः 15 मिनट + हर 10,000 मतदाता पर 10 मिनट। बड़े ऑर्डर / पूरी पंचायत समिति: 2–4 घंटे। बैनर वाले ऑर्डर में बैनर के नाप की जाँच के कारण थोड़ा अधिक समय लग सकता है।",
-          "Voter slips: usually 15 minutes + 10 minutes per 10,000 voters. Large orders / a whole panchayat samiti: 2–4 hours. Banner orders can take slightly longer while we check the banner size.",
+          "अभियान पर्चियाँ: सामान्यतः 15 मिनट + हर 10,000 पर्चियों पर 10 मिनट। बड़े ऑर्डर / पूरी पंचायत समिति: 2–4 घंटे। बैनर वाले ऑर्डर में बैनर के नाप की जाँच के कारण थोड़ा अधिक समय लग सकता है।",
+          "Campaign slips: usually 15 minutes + 10 minutes per 10,000 slips. Large orders / a whole panchayat samiti: 2–4 hours. Banner orders can take slightly longer while we check the banner size.",
         ),
         p(
           "सॉफ़्टवेयर लाइसेंस: भुगतान के बाद सामान्यतः उसी दिन; पूरे ज़िले का लाइसेंस होने पर 24 घंटे तक। कार्य-समय के बाहर हुए भुगतान की फ़ाइलें अगले कार्य-समय में भेजी जाती हैं।",
@@ -772,8 +763,8 @@ export const DELIVERY: PolicyDoc = {
       title: p("क्या मिलता है", "What you receive"),
       paras: [
         p(
-          "आपके चुने डिज़ाइन में वोटर स्लिप PDF और चुनी हुई सूचियाँ (हिंदी वर्णमाला, English Alphabetical, परिवार वार), साथ में भुगतान का बिल। लाइसेंस में डेटा-फ़ाइल, उसका कोड और बिल।",
-          "Voter-slip PDFs in your chosen design and the lists you selected (Hindi alphabetical, English alphabetical, family-wise), with the payment bill. A licence comes with the data file, its code and the bill.",
+          "आपके चुने डिज़ाइन में अभियान पर्ची PDF और चुनी हुई सूचियाँ (हिंदी वर्णमाला, English Alphabetical, परिवार वार), साथ में भुगतान का बिल। लाइसेंस में डेटा-फ़ाइल, उसका कोड और बिल।",
+          "Campaign slip PDFs in your chosen design and the lists you selected (Hindi alphabetical, English alphabetical, family-wise), with the payment bill. A licence comes with the data file, its code and the bill.",
         ),
       ],
     },
@@ -824,8 +815,8 @@ export const CONTACT: PolicyDoc = {
       title: p("सेवा-क्षेत्र", "Service area"),
       paras: [
         p(
-          "पूरा राजस्थान — अभी मुख्य रूप से पंचायत राज चुनाव (पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य) के प्रत्याशी; वोटर स्लिप PDF, डेटा प्रोसेसिंग और सॉफ़्टवेयर लाइसेंस — सब डिजिटल।",
-          "All of Rajasthan — mainly candidates in the Panchayati Raj elections (Panch, Sarpanch, Panchayat Samiti member and Zila Parishad member) for now; voter-slip PDFs, data processing and software licences — all digital.",
+          "पूरा राजस्थान — अभी मुख्य रूप से पंचायत राज चुनाव (पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य) के प्रत्याशी; अभियान पर्ची PDF, डेटा प्रोसेसिंग और सॉफ़्टवेयर लाइसेंस — सब डिजिटल।",
+          "All of Rajasthan — mainly candidates in the Panchayati Raj elections (Panch, Sarpanch, Panchayat Samiti member and Zila Parishad member) for now; campaign slip PDFs, data processing and software licences — all digital.",
         ),
       ],
     },
@@ -846,7 +837,7 @@ export const CONTACT: PolicyDoc = {
 /* ------------------------------------------------------------------ */
 
 export const SOFTWARE: PolicyDoc = {
-  title: p("सौभाग्य वोटर स्लिप सॉफ़्टवेयर", "Saubhagya Voter Slip software"),
+  title: p("सौभाग्य सॉफ़्टवेयर", "Saubhagya software"),
   intro: p(
     "मुफ़्त नमूना — पहले अपने कंप्यूटर पर चलाकर देखिए। पूरे क्षेत्र की पर्चियाँ ख़ुद बनानी हों तो उस क्षेत्र का लाइसेंस लीजिए।",
     "Free sample — try it on your own computer first. To make slips for a whole area yourself, take a licence for that area.",
@@ -856,8 +847,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("यह क्या है", "What it is"),
       paras: [
         p(
-          "Windows पर चलने वाला सॉफ़्टवेयर, जिससे आप अपने कंप्यूटर पर, बिना इंटरनेट, वोटर स्लिप PDF और सूचियाँ बना सकते हैं — हमारे सभी डिज़ाइन (P, S, A) के साथ। कुछ इंस्टॉल नहीं करना — फ़ाइल खोलिए और कोड डालिए।",
-          "Windows software that lets you make voter-slip PDFs and lists on your own computer, offline — with all our designs (P, S, A). Nothing to install — open the file and enter the code.",
+          "Windows पर चलने वाला सॉफ़्टवेयर, जिससे आप अपने कंप्यूटर पर, बिना इंटरनेट, अभियान पर्ची PDF और सूचियाँ बना सकते हैं — हमारे सभी डिज़ाइन (P, A) के साथ। कुछ इंस्टॉल नहीं करना — फ़ाइल खोलिए और कोड डालिए।",
+          "Windows software that lets you make campaign slip PDFs and lists on your own computer, offline — with all our designs (P, A). Nothing to install — open the file and enter the code.",
         ),
       ],
     },
@@ -865,8 +856,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("नमूने में क्या है", "What the sample contains"),
       paras: [
         p(
-          `नमूना डेटा इसी फ़ाइल के अंदर है — अलग से कुछ डाउनलोड नहीं करना। सॉफ़्टवेयर वही है जो लाइसेंस में मिलता है; नमूने में बस मतदाता कम हैं: राजस्थान के सभी 41 ज़िलों के हर वार्ड / क्षेत्र के पहले 15 मतदाता (नमूना-मात्र; ऐप में ज़िला चुनिए), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
-          `The sample data is inside the same file — nothing else to download. It is the same software you get with a licence; the sample just has fewer voters: the first 15 voters of every ward / constituency in all 41 districts of Rajasthan (sample only; pick a district in the app), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
+          `नमूना डेटा इसी फ़ाइल के अंदर है — अलग से कुछ डाउनलोड नहीं करना। सॉफ़्टवेयर वही है जो लाइसेंस में मिलता है; नमूने में राजस्थान के सभी 41 ज़िलों के हर वार्ड / क्षेत्र के पहले 15 रिकॉर्ड (नमूना-मात्र; ऐप में ज़िला चुनिए), चारों पद — पंच, सरपंच, पंचायत समिति सदस्य, ज़िला परिषद सदस्य। खोलने का कोड: ${SAMPLE_CODE}`,
+          `The sample data is inside the same file — nothing else to download. It is the same software you get with a licence; the sample just has limited data: the first 15 records of every ward / constituency in all 41 districts of Rajasthan (sample only; pick a district in the app), all four posts — Panch, Sarpanch, Panchayat Samiti member, Zila Parishad member. Code to open: ${SAMPLE_CODE}`,
         ),
       ],
     },
@@ -893,8 +884,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("पूरे क्षेत्र का लाइसेंस", "Licence for a full area"),
       paras: [
         p(
-          `WhatsApp ${CONTACT_DISPLAY} पर अपना ज़िला / पंचायत समिति और पद बताइए — इसी सॉफ़्टवेयर में खुलने वाली डेटा-फ़ाइल और उसका कोड भेजे जाएँगे। रेट: चारों पद ${paise(LICENCE_RATES.all)} पैसे / मतदाता, एक पद ${paise(LICENCE_RATES.one)} पैसे / मतदाता। लाइसेंस अंतिम मतदान तिथि तक; शर्तें: saubhagya.net/terms (धारा 9)।`,
-          `Tell us your district / panchayat samiti and post(s) on WhatsApp ${CONTACT_DISPLAY} — we send a data file that opens in this same software, with its code. Rates: all four posts ${paise(LICENCE_RATES.all)} paise / voter, one post ${paise(LICENCE_RATES.one)} paise / voter. The licence runs until the final polling date; terms: saubhagya.net/terms (clause 9).`,
+          `WhatsApp ${CONTACT_DISPLAY} पर अपना ज़िला / पंचायत समिति और पद बताइए — इसी सॉफ़्टवेयर में खुलने वाली डेटा-फ़ाइल और उसका कोड भेजे जाएँगे। रेट: चारों पद ${paise(LICENCE_RATES.all)} पैसे / रिकॉर्ड, एक पद ${paise(LICENCE_RATES.one)} पैसे / रिकॉर्ड। लाइसेंस अंतिम मतदान तिथि तक; शर्तें: saubhagya.net/terms (धारा 9)।`,
+          `Tell us your district / panchayat samiti and post(s) on WhatsApp ${CONTACT_DISPLAY} — we send a data file that opens in this same software, with its code. Rates: all four posts ${paise(LICENCE_RATES.all)} paise / record, one post ${paise(LICENCE_RATES.one)} paise / record. The licence runs until the final polling date; terms: saubhagya.net/terms (clause 9).`,
         ),
       ],
     },

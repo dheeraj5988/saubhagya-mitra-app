@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, FileText, MessageCircle } from "lucide-react";
 
@@ -6,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { SAMPLE_CODE, SAMPLE_DOWNLOADS, SOFTWARE } from "@/content/policies";
 import { whatsappLink } from "@/lib/business";
 import { useI18n } from "@/lib/i18n";
+import { getPublicPaymentConfig } from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/software")({
   head: () =>
     policyHead(
-      "Software | Saubhagya Voter Slip",
-      "Free sample of the Saubhagya Voter Slip software for Windows, with the sample data inside. Software licences for a full panchayat samiti or district.",
+      "Software | Saubhagya",
+      "Free sample of the Saubhagya software for Windows, with sample data inside. Software licences for a full panchayat samiti or district.",
     ),
   component: SoftwarePage,
 });
@@ -19,14 +22,40 @@ export const Route = createFileRoute("/software")({
 function SoftwarePage() {
   const { lang } = useI18n();
   const en = lang === "en";
+  const fetchConfig = useServerFn(getPublicPaymentConfig);
+  const { data: config } = useQuery({
+    queryKey: ["publicPaymentConfig"],
+    queryFn: () => fetchConfig(),
+    staleTime: 30_000,
+  });
+  const softwareActive = Boolean(config?.software_enabled);
+
+  if (!softwareActive) {
+    return (
+      <LegalPage
+        title={en ? "Software" : "सॉफ़्टवेयर"}
+        intro={en ? "This section is currently unavailable." : "यह सेवा अभी उपलब्ध नहीं है।"}
+        showDate={false}
+      >
+        <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-card">
+          <p className="text-base text-muted-foreground">
+            {en
+              ? "Software downloads and details are temporarily offline. Please check back later."
+              : "सॉफ़्टवेयर डाउनलोड और विवरण अभी उपलब्ध नहीं हैं। कृपया बाद में प्रयास करें।"}
+          </p>
+        </div>
+      </LegalPage>
+    );
+  }
+
   const files = SAMPLE_DOWNLOADS.filter((f) => f.href);
   const exeReady = files.some((f) => f.key.startsWith("exe"));
   const askText = en
-    ? "Hello, please send me the free sample of the Saubhagya Voter Slip software."
-    : "नमस्ते, मुझे सौभाग्य वोटर स्लिप सॉफ़्टवेयर का मुफ़्त नमूना चाहिए।";
+    ? "Hello, please send me the free sample of the Saubhagya software."
+    : "नमस्ते, मुझे सौभाग्य सॉफ़्टवेयर का मुफ़्त नमूना चाहिए।";
   const helpText = en
-    ? "Hello, the Saubhagya Voter Slip sample software is not downloading."
-    : "नमस्ते, सौभाग्य वोटर स्लिप का नमूना सॉफ़्टवेयर डाउनलोड नहीं हो रहा।";
+    ? "Hello, the Saubhagya sample software is not downloading."
+    : "नमस्ते, सौभाग्य का नमूना सॉफ़्टवेयर डाउनलोड नहीं हो रहा।";
 
   return (
     <LegalPage title={SOFTWARE.title[lang]} intro={SOFTWARE.intro?.[lang]} showDate={false}>

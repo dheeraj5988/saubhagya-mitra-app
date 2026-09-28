@@ -6,8 +6,8 @@ import { ABOUT } from "@/content/policies";
 export const Route = createFileRoute("/about")({
   head: () =>
     policyHead(
-      "About Us | Saubhagya Voter Slip",
-      "Saubhagya Voter Slip prepares print-ready PDF voter slips from the State Election Commission's public electoral rolls for Rajasthan panchayat candidates.",
+      "About Us | Saubhagya",
+      "Saubhagya prepares print-ready PDF campaign slips from the State Election Commission's public rolls for Rajasthan panchayat candidates.",
     ),
   component: AboutPage,
 });

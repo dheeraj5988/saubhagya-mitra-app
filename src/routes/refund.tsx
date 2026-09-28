@@ -6,8 +6,8 @@ import { REFUND } from "@/content/policies";
 export const Route = createFileRoute("/refund")({
   head: () =>
     policyHead(
-      "Refund & Cancellation Policy | Saubhagya Voter Slip",
-      "Cancellation and refund rules for digital voter slip orders.",
+      "Refund & Cancellation Policy | Saubhagya",
+      "Cancellation and refund rules for digital campaign slip orders.",
     ),
   component: RefundPage,
 });

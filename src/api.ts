@@ -1,9 +1,115 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateUploadUrl } from "@/lib/r2.server";
+import { isSoftwareEnabled } from "@/lib/payment-config.server";
 
 export async function handleApiRoutes(request: Request, url: URL): Promise<Response | null> {
   const path = url.pathname;
-  
+
+  // 0. Live Order Proxy & Forwarder (for gateway compliance and dynamic software visibility)
+  if (path === "/live-order") {
+    try {
+      const targetUrl = `https://order.saubhagya.net/order${url.search}`;
+      const upstreamRes = await fetch(targetUrl);
+      if (!upstreamRes.ok) {
+        return new Response(`Order service returned ${upstreamRes.status}`, { status: upstreamRes.status });
+      }
+      let html = await upstreamRes.text();
+
+      const softwareActive = await isSoftwareEnabled().catch(() => false);
+
+      // Inject base href so images, symbols and stylesheets load cleanly
+      html = html.replace("<head>", '<head>\n<base href="https://order.saubhagya.net/">');
+
+      // Hide software option cards if software section is deactivated
+      if (!softwareActive) {
+        const hideCss = `
+<style>
+.kcard[data-kind="exe"], .kcard[data-kind="data"], #dlbox { display: none !important; }
+.cards.k4 { grid-template-columns: 1fr 1fr !important; }
+</style>
+`;
+        html = html.replace("</head>", `${hideCss}</head>`);
+      }
+
+      // Wordings for PhonePe compliance:
+      // Replace 'voter parchi / voter slip' with 'campaign slip / अभियान पर्ची'
+      // Replace 'नमूना — मुफ़्त' with 'नमूना — मुफ़्त(Sample-Free)'
+      html = html
+        .replaceAll("वोटर पर्ची — PDF", "अभियान पर्ची — PDF")
+        .replaceAll("वोटर पर्ची", "अभियान पर्ची")
+        .replaceAll("वोटर स्लिप", "अभियान पर्ची")
+        .replaceAll("मतदाता पर्ची", "अभियान पर्ची")
+        .replaceAll("नमूना — मुफ़्त", "नमूना — मुफ़्त(Sample-Free)");
+
+      // Forward relative client fetch calls in the embedded page script through /order-api
+      html = html.replace(
+        "const r=await fetch(u,o);",
+        "const targetU = (typeof u === 'string' && u.startsWith('/')) ? '/order-api' + u : u; const r = await fetch(targetU, o);"
+      );
+
+      return new Response(html, {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+        },
+      });
+    } catch (err: any) {
+      console.error("[LiveOrder Proxy Error]:", err);
+      return new Response("Failed to load order form: " + (err?.message || err), { status: 502 });
+    }
+  }
+
+  // Preflight for order API proxy
+  if (path.startsWith("/order-api/") && request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, OPTIONS, PUT, DELETE",
+        "access-control-allow-headers": "*",
+      },
+    });
+  }
+
+  // Order API proxy to order.saubhagya.net
+  if (path.startsWith("/order-api/")) {
+    try {
+      const upstreamPath = path.replace(/^\/order-api/, "");
+      const targetUrl = new URL(upstreamPath + url.search, "https://order.saubhagya.net");
+
+      const reqHeaders = new Headers(request.headers);
+      reqHeaders.delete("host");
+      reqHeaders.delete("referer");
+
+      const init: RequestInit = {
+        method: request.method,
+        headers: reqHeaders,
+      };
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        init.body = await request.blob();
+      }
+
+      const upstreamRes = await fetch(targetUrl.toString(), init);
+
+      const resHeaders = new Headers(upstreamRes.headers);
+      resHeaders.set("access-control-allow-origin", "*");
+      resHeaders.set("access-control-allow-methods", "GET, POST, OPTIONS, PUT, DELETE");
+      resHeaders.set("access-control-allow-headers", "*");
+
+      return new Response(upstreamRes.body, {
+        status: upstreamRes.status,
+        statusText: upstreamRes.statusText,
+        headers: resHeaders,
+      });
+    } catch (err: any) {
+      console.error("[OrderApi Proxy Error]:", err);
+      return new Response(JSON.stringify({ error: err?.message || "Order API Proxy Error" }), {
+        status: 502,
+        headers: { "content-type": "application/json" },
+      });
+    }
+  }
+
   // 1. Cashfree Webhook
   if (request.method === "POST" && path === "/api/cashfree/webhook") {
     try {

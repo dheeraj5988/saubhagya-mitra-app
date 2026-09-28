@@ -11,8 +11,8 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/contact")({
   head: () =>
     policyHead(
-      "Contact Us | Saubhagya Voter Slip",
-      "Contact Saubhagya Voter Slip on WhatsApp, phone or email — orders, payments and support for Rajasthan panchayat voter slips.",
+      "Contact Us | Saubhagya",
+      "Contact Saubhagya on WhatsApp, phone or email — orders, payments and support for Rajasthan panchayat campaign slips.",
     ),
   component: ContactPage,
 });

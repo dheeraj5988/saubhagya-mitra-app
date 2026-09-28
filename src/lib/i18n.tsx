@@ -22,8 +22,8 @@ type Entry = { hi: string; en: string };
 export const DICTIONARY = {
   "brand.name": { hi: "सौभाग्य", en: "Saubhagya" },
   "brand.tagline": {
-    hi: "पंचायत चुनाव · डिजिटल वोटर स्लिप (PDF)",
-    en: "Panchayat elections · digital voter slips (PDF)",
+    hi: "पंचायत चुनाव · डिजिटल अभियान पर्ची (PDF)",
+    en: "Panchayat elections · digital campaign slips (PDF)",
   },
   "brand.full": { hi: "सौभाग्य", en: "Saubhagya" },
 
@@ -51,7 +51,7 @@ export const DICTIONARY = {
     en: "These details are optional — you can also share them later on WhatsApp.",
   },
   "form.area.summary": { hi: "चयनित क्षेत्र", en: "Selected area" },
-  "form.voters.total": { hi: "कुल मतदाता", en: "Total voters" },
+  "form.voters.total": { hi: "कुल संख्या", en: "Total records" },
   "form.body_name": {
     hi: "निकाय / ग्राम पंचायत का नाम (पर्ची पर)",
     en: "Body / Gram Panchayat name (on slip)",
@@ -66,10 +66,10 @@ export const DICTIONARY = {
     en: "Choose the lists you need.",
   },
   "list.slip": {
-    hi: "वोटर स्लिप (चुने हुए टेम्पलेट में)",
-    en: "Voter slip (in the chosen template)",
+    hi: "अभियान पर्ची (चुने हुए टेम्पलेट में)",
+    en: "Campaign slip (in the chosen template)",
   },
-  "list.slip.short": { hi: "वोटर स्लिप", en: "Voter slip" },
+  "list.slip.short": { hi: "अभियान पर्ची", en: "Campaign slip" },
   "list.hindi_alpha": { hi: "हिंदी वर्णमाला क्रम सूची", en: "Hindi alphabetical list" },
   "list.hindi_alpha.short": { hi: "हिंदी वर्णमाला", en: "Hindi alpha" },
   "list.english_alpha": { hi: "English Alphabetical सूची", en: "English alphabetical list" },
@@ -77,19 +77,19 @@ export const DICTIONARY = {
   "list.family": { hi: "परिवार वार (Family wise) सूची", en: "Family wise list" },
   "list.family.short": { hi: "परिवार वार", en: "Family wise" },
 
-  "photo_slip.title": { hi: "फोटो वाली वोटर स्लिप", en: "Photo Voter Slip" },
-  "photo_slip.desc": { hi: "सभी मतदाताओं की फोटो सहित स्लिप", en: "Slip with photo of all voters" },
+  "photo_slip.title": { hi: "फोटो वाली अभियान पर्ची", en: "Photo Campaign Slip" },
+  "photo_slip.desc": { hi: "सभी की फोटो सहित स्लिप", en: "Slip with photo" },
   "photo_slip.badge": { hi: "डेटा उपलब्ध", en: "Data available" },
-  "photo_slip.consent.title": { hi: "वोटर लिस्ट PDF आवश्यक है", en: "Voter list PDF is required" },
+  "photo_slip.consent.title": { hi: "सूची PDF आवश्यक है", en: "List PDF is required" },
   "photo_slip.consent.desc": {
-    hi: "फोटो वाली स्लिप के लिए आपको निर्वाचन विभाग द्वारा जारी मतदाता सूची (PDF) अपलोड करनी होगी।",
-    en: "For photo slips, you must upload the official voter list PDF issued by the election department.",
+    hi: "फोटो वाली स्लिप के लिए आपको अधिकृत सूची (PDF) अपलोड करनी होगी।",
+    en: "For photo slips, you must upload the official list PDF.",
   },
   "photo_slip.pdf": { hi: "केवल PDF अपलोड करें", en: "Upload PDF only" },
   "photo_slip.agree": { hi: "मैं सहमत हूँ", en: "I agree" },
   "photo_slip.consent.checkbox": {
-    hi: "मैं घोषणा करता हूँ कि मैं चुनाव उद्देश्यों के लिए इन मतदाता रिकॉर्ड का उपयोग करने के लिए अधिकृत हूँ।",
-    en: "I declare that I am authorized to use these voter records for election purposes.",
+    hi: "मैं घोषणा करता हूँ कि मैं चुनाव उद्देश्यों के लिए इन रिकॉर्ड का उपयोग करने के लिए अधिकृत हूँ।",
+    en: "I declare that I am authorized to use these records for election purposes.",
   },
 
   "design.D1.title": { hi: "क्लासिक", en: "Classic" },
@@ -103,7 +103,7 @@ export const DICTIONARY = {
   "design.D5.title": { hi: "बड़ा चिन्ह", en: "Large symbol" },
   "design.D5.desc": { hi: "चुनाव चिन्ह प्रमुखता से", en: "Election symbol highlighted" },
   "design.D6.title": { hi: "कॉम्पैक्ट", en: "Compact" },
-  "design.D6.desc": { hi: "अधिक मतदाता विवरण", en: "More voter details" },
+  "design.D6.desc": { hi: "अधिक विवरण", en: "More details" },
   "design.D7.title": { hi: "नारा हाइलाइट", en: "Slogan highlight" },
   "design.D7.desc": { hi: "नीचे नारे की पट्टी", en: "Slogan strip at the bottom" },
   "design.D8.title": { hi: "मिनिमल", en: "Minimal" },
@@ -213,16 +213,16 @@ export const DICTIONARY = {
 
   "form.design": { hi: "पर्ची डिज़ाइन", en: "Slip design" },
   "form.design.hint": { hi: "SOP के 8 डिज़ाइन में से चुनें", en: "Choose one of the 8 designs" },
-  "form.voters": { hi: "वार्ड में मतदाता", en: "Voters in ward" },
+  "form.voters": { hi: "वार्ड में संख्या", en: "Count in ward" },
   "form.amount": { hi: "अनुमानित राशि", en: "Estimated amount" },
-  "form.rate": { hi: "प्रति मतदाता दर", en: "Rate per voter" },
+  "form.rate": { hi: "प्रति दर", en: "Rate" },
   "form.amount.pending": {
-    hi: "मतदाता संख्या उपलब्ध होने पर राशि WhatsApp पर बताई जाएगी।",
-    en: "We will confirm the amount on WhatsApp once the voter count is available.",
+    hi: "संख्या उपलब्ध होने पर राशि WhatsApp पर बताई जाएगी।",
+    en: "We will confirm the amount on WhatsApp once the count is available.",
   },
   "err.required.design": { hi: "डिज़ाइन चुनना आवश्यक है।", en: "Please choose a design." },
 
-  "sample.heading": { hi: "24 मतदाताओं का निःशुल्क सैंपल", en: "Free 24-voter sample" },
+  "sample.heading": { hi: "नमूना — मुफ़्त(Sample-Free)", en: "Sample-Free" },
   "sample.body": {
     hi: "ऑर्डर से पहले अपनी पर्ची का नमूना देखें — पूरी तरह निःशुल्क।",
     en: "See a sample of your slip before ordering — completely free.",
@@ -233,7 +233,7 @@ export const DICTIONARY = {
   "sample.success": { hi: "सैंपल रिक्वेस्ट दर्ज हुई", en: "Sample request recorded" },
   "sample.error": { hi: "रिक्वेस्ट दर्ज नहीं हो सकी।", en: "Could not record the request." },
 
-  "form.rate.formula": { hi: "मतदाता ×", en: "voters ×" },
+  "form.rate.formula": { hi: "संख्या ×", en: "count ×" },
   "form.rate.banner_note": { hi: "विज्ञापन सहित", en: "with ad banner" },
   "form.rate.photo_note": { hi: "फोटो सहित", en: "with photo" },
 
@@ -249,8 +249,8 @@ export const DICTIONARY = {
   "pay.call": { hi: "कॉल करें", en: "Call us" },
 
   "footer.tagline": {
-    hi: "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल वोटर स्लिप",
-    en: "Print-ready digital voter slips for Rajasthan panchayat election candidates",
+    hi: "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल अभियान पर्ची",
+    en: "Print-ready digital campaign slips for Rajasthan panchayat election candidates",
   },
   "footer.contact": { hi: "संपर्क", en: "Contact" },
   "footer.legal": { hi: "नीतियाँ", en: "Policies" },
@@ -282,8 +282,8 @@ export const DICTIONARY = {
   "legal.terms.page_title": { hi: "Terms & Conditions", en: "Terms & Conditions" },
   "legal.terms.sec1.title": { hi: "1. About the service", en: "1. About the service" },
   "legal.terms.sec1.p1": {
-    hi: 'Saubhagya Matdata Parchi ("we", "us") prepares and supplies printed voter slips (matdata parchi) for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
-    en: 'Saubhagya Matdata Parchi ("we", "us") prepares and supplies printed voter slips (matdata parchi) for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
+    hi: 'Saubhagya ("we", "us") prepares and supplies digital campaign slips for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
+    en: 'Saubhagya ("we", "us") prepares and supplies digital campaign slips for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
   },
   "legal.terms.sec2.title": {
     hi: "2. Orders and information you provide",
@@ -299,12 +299,12 @@ export const DICTIONARY = {
   },
   "legal.terms.sec3.title": { hi: "3. Pricing", en: "3. Pricing" },
   "legal.terms.sec3.p1": {
-    hi: "The order amount is calculated as the voter count of the selected ward multiplied by the current per-voter rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
-    en: "The order amount is calculated as the voter count of the selected ward multiplied by the current per-voter rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
+    hi: "The order amount is calculated as the record count of the selected ward multiplied by the current per-record rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
+    en: "The order amount is calculated as the record count of the selected ward multiplied by the current per-record rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
   },
   "legal.terms.sec3.p2": {
-    hi: "A free sample of up to 24 voter slips is available on request so you can verify quality and layout before paying.",
-    en: "A free sample of up to 24 voter slips is available on request so you can verify quality and layout before paying.",
+    hi: "A free sample of up to 24 campaign slips is available on request so you can verify quality and layout before paying.",
+    en: "A free sample of up to 24 campaign slips is available on request so you can verify quality and layout before paying.",
   },
   "legal.terms.sec4.title": {
     hi: "4. Draft approval and production",
@@ -339,8 +339,8 @@ export const DICTIONARY = {
   "legal.privacy.page_title": { hi: "Privacy Policy", en: "Privacy Policy" },
   "legal.privacy.sec1.title": { hi: "What we collect", en: "What we collect" },
   "legal.privacy.sec1.p1": {
-    hi: "To prepare your voter slips we collect the candidate name (Hindi and English), mobile number, district, panchayat samiti, gram panchayat, ward number, election symbol, an optional slogan and the candidate photograph you upload.",
-    en: "To prepare your voter slips we collect the candidate name (Hindi and English), mobile number, district, panchayat samiti, gram panchayat, ward number, election symbol, an optional slogan and the candidate photograph you upload.",
+    hi: "To prepare your campaign slips we collect the candidate name (Hindi and English), mobile number, district, panchayat samiti, gram panchayat, ward number, election symbol, an optional slogan and the candidate photograph you upload.",
+    en: "To prepare your campaign slips we collect the candidate name (Hindi and English), mobile number, district, panchayat samiti, gram panchayat, ward number, election symbol, an optional slogan and the candidate photograph you upload.",
   },
   "legal.privacy.sec1.p2": {
     hi: "For security and analytics we also record the IP address and browser details of visits to this site, and the mobile number you enter on the order form even if the order is not completed, so our team can help you finish it.",
@@ -399,8 +399,8 @@ export const DICTIONARY = {
   },
   "legal.refund.sec2.title": { hi: "After draft approval", en: "After draft approval" },
   "legal.refund.sec2.p1": {
-    hi: "Voter slips are printed to order and carry your name, photograph and ward, so they cannot be resold. Once you approve the draft and production begins, the order cannot be cancelled and the amount is non-refundable.",
-    en: "Voter slips are printed to order and carry your name, photograph and ward, so they cannot be resold. Once you approve the draft and production begins, the order cannot be cancelled and the amount is non-refundable.",
+    hi: "Campaign slips are prepared to order and carry your name, photograph and ward, so they cannot be resold. Once you approve the draft and production begins, the order cannot be cancelled and the amount is non-refundable.",
+    en: "Campaign slips are prepared to order and carry your name, photograph and ward, so they cannot be resold. Once you approve the draft and production begins, the order cannot be cancelled and the amount is non-refundable.",
   },
   "legal.refund.sec3.title": {
     hi: "Defective or incorrect work",
@@ -431,8 +431,8 @@ export const DICTIONARY = {
   },
   "legal.refund.sec6.title": { hi: "Free sample", en: "Free sample" },
   "legal.refund.sec6.p1": {
-    hi: "The free 24-voter sample carries no charge, so no refund arises for it.",
-    en: "The free 24-voter sample carries no charge, so no refund arises for it.",
+    hi: "The free sample carries no charge, so no refund arises for it.",
+    en: "The free sample carries no charge, so no refund arises for it.",
   },
   "legal.shipping.page_title": {
     hi: "Shipping & Delivery Policy",
@@ -448,10 +448,10 @@ export const DICTIONARY = {
     hi: "Print-ready files are shared on the WhatsApp number submitted with the order. Digital files are normally shared within 1-2 working days of draft approval.",
     en: "Print-ready files are shared on the WhatsApp number submitted with the order. Digital files are normally shared within 1-2 working days of draft approval.",
   },
-  "legal.shipping.sec3.title": { hi: "Printed delivery", en: "Printed delivery" },
+  "legal.shipping.sec3.title": { hi: "Delivery timeline", en: "Delivery timeline" },
   "legal.shipping.sec3.p1": {
-    hi: "Printed voter slips are dispatched to the address confirmed with our team over WhatsApp. Delivery within Rajasthan typically takes 2-5 working days after printing, depending on the quantity and your location.",
-    en: "Printed voter slips are dispatched to the address confirmed with our team over WhatsApp. Delivery within Rajasthan typically takes 2-5 working days after printing, depending on the quantity and your location.",
+    hi: "Digital campaign slips are dispatched to the WhatsApp number confirmed with our team. Delivery typically takes 1-2 working days after draft approval.",
+    en: "Digital campaign slips are dispatched to the WhatsApp number confirmed with our team. Delivery typically takes 1-2 working days after draft approval.",
   },
   "legal.shipping.sec3.p2": {
     hi: "During peak election periods timelines can extend. If your polling date is close, tell us before ordering so we can confirm whether we can meet it.",
@@ -459,8 +459,8 @@ export const DICTIONARY = {
   },
   "legal.shipping.sec4.title": { hi: "Delivery charges", en: "Delivery charges" },
   "legal.shipping.sec4.p1": {
-    hi: "Standard delivery within Rajasthan is included in the order amount. Any express or out-of-state courier requirement is quoted separately and confirmed with you before dispatch.",
-    en: "Standard delivery within Rajasthan is included in the order amount. Any express or out-of-state courier requirement is quoted separately and confirmed with you before dispatch.",
+    hi: "Standard digital delivery within Rajasthan is included in the order amount. Any express or out-of-state courier requirement is quoted separately and confirmed with you before dispatch.",
+    en: "Standard digital delivery within Rajasthan is included in the order amount. Any express or out-of-state courier requirement is quoted separately and confirmed with you before dispatch.",
   },
   "legal.shipping.sec5.title": { hi: "Tracking and support", en: "Tracking and support" },
   "legal.shipping.sec5.p1": {
@@ -492,8 +492,8 @@ export const DICTIONARY = {
     en: "This service is intended for election candidates and is not directed at children.",
   },
   "legal.dom.3": {
-    hi: 'Saubhagya Matdata Parchi ("we", "us") prepares and supplies printed voter slips (matdata parchi) for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
-    en: 'Saubhagya Matdata Parchi ("we", "us") prepares and supplies printed voter slips (matdata parchi) for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
+    hi: 'Saubhagya ("we", "us") prepares and supplies digital campaign slips for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
+    en: 'Saubhagya ("we", "us") prepares and supplies digital campaign slips for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
   },
   "legal.dom.4": {
     hi: "You are responsible for the accuracy of every detail you submit: candidate names, ward, gram panchayat, panchayat samiti, district, election symbol, slogan, photograph and mobile number. We print exactly what is approved in the draft you confirm on WhatsApp.",
@@ -504,12 +504,12 @@ export const DICTIONARY = {
     en: "You confirm that you have the right to use every photograph, name, symbol and slogan you upload, and that the content does not violate any law or the directions of the State Election Commission.",
   },
   "legal.dom.6": {
-    hi: "The order amount is calculated as the voter count of the selected ward multiplied by the current per-voter rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
-    en: "The order amount is calculated as the voter count of the selected ward multiplied by the current per-voter rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
+    hi: "The order amount is calculated as the record count of the selected ward multiplied by the current per-record rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
+    en: "The order amount is calculated as the record count of the selected ward multiplied by the current per-record rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
   },
   "legal.dom.7": {
-    hi: "A free sample of up to 24 voter slips is available on request so you can verify quality and layout before paying.",
-    en: "A free sample of up to 24 voter slips is available on request so you can verify quality and layout before paying.",
+    hi: "A free sample of up to 24 campaign slips is available on request so you can verify quality and layout before paying.",
+    en: "A free sample of up to 24 campaign slips is available on request so you can verify quality and layout before paying.",
   },
   "legal.dom.8": {
     hi: "After an order is placed we share a draft on WhatsApp. Production begins only after you approve the draft. Once printing has begun, changes to names, symbol, photograph or layout may not be possible.",

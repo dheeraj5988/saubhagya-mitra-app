@@ -51,7 +51,7 @@ export function buildWhatsAppUrl(payload: WhatsAppOrderPayload) {
     ? `🖼️ *बैनर:* ${payload.banner_attached ? "वेबसाइट पर लगा दिया है" : "अभी नहीं लगाया — यहीं भेजूँगा"}`
     : null;
   const message = [
-    `नमस्ते सौभाग्य वोटर स्लिप टीम, मैंने वोटर स्लिप का ऑर्डर दिया है।`,
+    `नमस्ते सौभाग्य टीम, मैंने अभियान पर्ची का ऑर्डर दिया है।`,
     `📋 *ऑर्डर आईडी:* ${payload.order_id}`,
     `👤 *प्रत्याशी:* ${payload.candidate_name_hindi || "—"}`,
     `🎖️ *पद:* ${payload.pad_label || "—"}`,
@@ -64,7 +64,7 @@ export function buildWhatsAppUrl(payload: WhatsAppOrderPayload) {
     `🔣 *चुनाव चिन्ह:* ${payload.election_symbol || "—"}`,
     `🔢 *EVM क्रम संख्या:* ${payload.evm_serial || "—"}`,
     bannerLine,
-    `👥 *मतदाता:* ${payload.voter_count ?? "—"}`,
+    `👥 *संख्या:* ${payload.voter_count ?? "—"}`,
     `💰 *राशि:* ${payload.amount == null ? "—" : `₹${payload.amount}`}`,
     `💳 *भुगतान:* ${PAYMENT_TEXT[payload.payment_status ?? "PENDING"] ?? PAYMENT_TEXT["PENDING"]}`,
     `📢 *नारा:* ${payload.slogan?.trim() || "—"}`,
@@ -89,7 +89,7 @@ export function buildSampleWhatsAppUrl(
   } = {},
 ) {
   const message = [
-    `नमस्ते सौभाग्य वोटर स्लिप टीम, मुझे वोटर स्लिप का नमूना चाहिए।`,
+    `नमस्ते सौभाग्य टीम, मुझे अभियान पर्ची का नमूना चाहिए।`,
     payload.request_id ? `📋 *रिक्वेस्ट आईडी:* ${payload.request_id}` : null,
     `👤 *नाम:* ${payload.candidate_name || ""}`,
     `📍 *ज़िला:* ${payload.district || ""}`,
@@ -105,8 +105,8 @@ export function buildSampleWhatsAppUrl(
 export function buildEnquiryWhatsAppUrl(lang: Lang = "hi") {
   const text =
     lang === "en"
-      ? "Hello! I would like information about Saubhagya Voter Slip."
-      : "नमस्ते! मुझे सौभाग्य वोटर स्लिप के बारे में जानकारी चाहिए।";
+      ? "Hello! I would like information about Saubhagya."
+      : "नमस्ते! मुझे सौभाग्य के बारे में जानकारी चाहिए।";
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
 
@@ -117,7 +117,7 @@ export function buildEnquiryWhatsAppUrl(lang: Lang = "hi") {
 export function buildPartnerInviteMessage(payload: { full_name: string; link: string }) {
   return [
     `नमस्ते ${payload.full_name} जी,`,
-    `आपका सौभाग्य वोटर स्लिप रेफ़रल लिंक तैयार है:`,
+    `आपका सौभाग्य रेफ़रल लिंक तैयार है:`,
     payload.link,
     ``,
     `इस लिंक से आने वाले हर ऑर्डर पर आपका कमीशन अपने आप जुड़ जाएगा।`,
