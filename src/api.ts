@@ -17,9 +17,6 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
 
       const softwareActive = await isSoftwareEnabled().catch(() => false);
 
-      // Inject base href so images, symbols and stylesheets load cleanly
-      html = html.replace("<head>", '<head>\n<base href="https://order.saubhagya.net/">');
-
       // Hide software option cards if software section is deactivated
       if (!softwareActive) {
         const hideCss = `
@@ -48,10 +45,30 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
         .replaceAll("नमूना — मुफ़्त", "नमूना — मुफ़्त(Sample-Free)")
         .replaceAll("वोटर", "");
 
-      // Inject live client-side DOM scrubber to intercept any runtime JS DOM mutations
-      const scrubberScript = `
+      // Ensure Step 1 'क्या चाहिए' is open by default on boot and on '↺ शुरू से'
+      html = html
+        .replace(/if\(k===[^\)]+\)\{pickKind\(k\);open\([^)]+\);/g, "open('kind');")
+        .replace("})().catch(e=>{$('#ferr').textContent=e.message});", "})().catch(e=>{console.error(e);if(typeof open==='function')open('kind');});")
+        .replace('href="/order" id="hrestart"', 'href="javascript:void(0)" id="hrestart"');
+
+      // Inject client-side fetch proxy, restart handler, default opener, and DOM scrubber
+      const injectedScript = `
 <script>
 (function() {
+  // 1. Route all relative /api/* requests through /order-api to stay on same origin
+  var origFetch = window.fetch;
+  window.fetch = function(url, options) {
+    if (typeof url === 'string') {
+      if (url.startsWith('/api/')) {
+        url = '/order-api' + url;
+      } else if (url.indexOf('order.saubhagya.net/api/') !== -1) {
+        url = url.replace(/https?:\\/\\/order\\.saubhagya\\.net\\/api\\//, '/order-api/api/');
+      }
+    }
+    return origFetch.call(this, url, options);
+  };
+
+  // 2. Text scrubber for dynamic DOM updates
   function scrubText(str) {
     if (!str || typeof str !== 'string') return str;
     return str
@@ -83,9 +100,52 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
       document.title = scrubText(document.title);
     }
   }
-  document.addEventListener('DOMContentLoaded', function() {
+
+  // 3. Restart button handler & ensure 'क्या चाहिए' is open by default
+  function setupRestartAndKind() {
     scrubNode(document.body);
     scrubTitle();
+
+    var r = document.getElementById('hrestart');
+    if (r) {
+      r.href = 'javascript:void(0)';
+      r.onclick = function(e) {
+        if (e) e.preventDefault();
+        try {
+          if (typeof S !== 'undefined') {
+            S.kind = '';
+            S.cart = [];
+            S.q = null;
+            S.dq = null;
+            S.open = 'kind';
+          }
+          document.querySelectorAll('.kcard').forEach(function(x) { x.classList.remove('on'); });
+          if (typeof open === 'function') {
+            open('kind');
+          } else {
+            window.location.reload();
+          }
+        } catch (err) {
+          window.location.reload();
+        }
+      };
+    }
+
+    if (typeof open === 'function') {
+      open('kind');
+    }
+    var kindSec = document.querySelector('.sec[data-id="kind"]');
+    if (kindSec && !kindSec.classList.contains('open')) {
+      kindSec.classList.add('open');
+      kindSec.classList.remove('off');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    setupRestartAndKind();
+    setTimeout(setupRestartAndKind, 50);
+    setTimeout(setupRestartAndKind, 250);
+
     var obs = new MutationObserver(function(mutations) {
       for (var i = 0; i < mutations.length; i++) {
         var m = mutations[i];
@@ -104,7 +164,7 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
 })();
 </script>
 `;
-      html = html.replace("</head>", `${scrubberScript}</head>`);
+      html = html.replace("<head>", `<head>\n${injectedScript}`);
 
       // Forward relative client fetch calls in the embedded page script through /order-api
       html = html.replace(
@@ -127,8 +187,21 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
     }
   }
 
+  const isOrderApiPath =
+    path.startsWith("/order-api/") ||
+    path.startsWith("/api/order/") ||
+    path.startsWith("/api/p/") ||
+    path === "/api/districts" ||
+    path === "/api/bodies" ||
+    path === "/api/design" ||
+    path === "/api/preview" ||
+    path === "/api/symbols" ||
+    path.startsWith("/symbols/") ||
+    path.startsWith("/downloads/") ||
+    path.startsWith("/qr/");
+
   // Preflight for order API proxy
-  if (path.startsWith("/order-api/") && request.method === "OPTIONS") {
+  if (isOrderApiPath && request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
       headers: {
@@ -140,7 +213,7 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
   }
 
   // Order API proxy to order.saubhagya.net
-  if (path.startsWith("/order-api/")) {
+  if (isOrderApiPath) {
     try {
       const upstreamPath = path.replace(/^\/order-api/, "");
       const targetUrl = new URL(upstreamPath + url.search, "https://order.saubhagya.net");
@@ -155,6 +228,7 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
       };
       if (request.method !== "GET" && request.method !== "HEAD") {
         init.body = await request.blob();
+        (init as any).duplex = "half";
       }
 
       const upstreamRes = await fetch(targetUrl.toString(), init);
