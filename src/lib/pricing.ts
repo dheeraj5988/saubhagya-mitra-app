@@ -7,7 +7,7 @@
  *   P  — सादी पर्ची             15 पैसे / पर्ची
  *   S  — चुनाव-चिन्ह पट्टी       16 पैसे / पर्ची
  *   A  — विज्ञापन / बैनर          16 पैसे / पर्ची
- *   Ph — मतदाता की फ़ोटो सहित     20 पैसे / पर्ची
+ *   Ph — फ़ोटो सहित               20 पैसे / पर्ची
  *
  * Amount = voters × rate. The server always recomputes it; the browser's
  * numbers are never trusted.
@@ -26,7 +26,7 @@ export const SERIES_LABEL: Record<Series, { hi: string; en: string }> = {
   P: { hi: "P — सादी पर्ची", en: "P — plain slip" },
   S: { hi: "S — चुनाव-चिन्ह पट्टी", en: "S — symbol strip" },
   A: { hi: "A — विज्ञापन / बैनर", en: "A — advertisement / banner" },
-  Ph: { hi: "Ph — मतदाता की फ़ोटो सहित", en: "Ph — with voter photo" },
+  Ph: { hi: "Ph — फ़ोटो सहित", en: "Ph — with photo" },
 };
 
 /** Kept for payment-config fallbacks; equals the P-series rate. */
@@ -66,8 +66,8 @@ export const DESIGN_META: Record<DesignCode, DesignMeta> = {
     label: "P-16",
     series: "P",
     slipsPerPage: 16,
-    desc: "16 स्लिप — सिर्फ़ मतदाता की जानकारी (सबसे किफ़ायती)",
-    descEn: "16 slips — voter details only (most economical)",
+    desc: "16 स्लिप — पूरी जानकारी (सबसे किफ़ायती)",
+    descEn: "16 slips — full details (most economical)",
     rows: 4,
     cols: 4,
   },
@@ -75,8 +75,8 @@ export const DESIGN_META: Record<DesignCode, DesignMeta> = {
     label: "P-12",
     series: "P",
     slipsPerPage: 12,
-    desc: "12 स्लिप — सिर्फ़ मतदाता की जानकारी (सबसे ज़्यादा चलने वाला)",
-    descEn: "12 slips — voter details only (most popular)",
+    desc: "12 स्लिप — पूरी जानकारी (सबसे ज़्यादा चलने वाला)",
+    descEn: "12 slips — full details (most popular)",
     rows: 6,
     cols: 2,
   },

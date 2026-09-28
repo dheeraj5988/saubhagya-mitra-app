@@ -6,7 +6,7 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
   const path = url.pathname;
 
   // 0. Live Order Proxy & Forwarder (for gateway compliance and dynamic software visibility)
-  if (path === "/live-order") {
+  if (path === "/live-order" || path === "/order") {
     try {
       const targetUrl = `https://order.saubhagya.net/order${url.search}`;
       const upstreamRes = await fetch(targetUrl);
@@ -32,14 +32,79 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
       }
 
       // Wordings for PhonePe compliance:
-      // Replace 'voter parchi / voter slip' with 'campaign slip / अभियान पर्ची'
+      // Replace 'voter parchi / voter slip' with 'parchi / campaign slip'
       // Replace 'नमूना — मुफ़्त' with 'नमूना — मुफ़्त(Sample-Free)'
       html = html
-        .replaceAll("वोटर पर्ची — PDF", "अभियान पर्ची — PDF")
-        .replaceAll("वोटर पर्ची", "अभियान पर्ची")
-        .replaceAll("वोटर स्लिप", "अभियान पर्ची")
-        .replaceAll("मतदाता पर्ची", "अभियान पर्ची")
-        .replaceAll("नमूना — मुफ़्त", "नमूना — मुफ़्त(Sample-Free)");
+        .replaceAll("वोटर पर्ची — PDF", "पर्ची — PDF")
+        .replaceAll("अभियान पर्ची — PDF", "पर्ची — PDF")
+        .replaceAll("वोटर पर्ची PDF", "पर्ची PDF")
+        .replaceAll("वोटर पर्ची", "पर्ची")
+        .replaceAll("— वोटर स्लिप ऑर्डर", "— पर्ची ऑर्डर")
+        .replaceAll("वोटर स्लिप — ऑर्डर", "पर्ची — ऑर्डर")
+        .replaceAll("वोटर स्लिप ऑर्डर", "पर्ची ऑर्डर")
+        .replaceAll("वोटर स्लिप", "पर्ची")
+        .replaceAll("मतदाता पर्ची", "पर्ची")
+        .replaceAll("मतदाता की फ़ोटो सहित", "फ़ोटो सहित")
+        .replaceAll("नमूना — मुफ़्त", "नमूना — मुफ़्त(Sample-Free)")
+        .replaceAll("वोटर", "");
+
+      // Inject live client-side DOM scrubber to intercept any runtime JS DOM mutations
+      const scrubberScript = `
+<script>
+(function() {
+  function scrubText(str) {
+    if (!str || typeof str !== 'string') return str;
+    return str
+      .replace(/वोटर\\s*पर्ची\\s*—\\s*PDF/g, 'पर्ची — PDF')
+      .replace(/अभियान\\s*पर्ची\\s*—\\s*PDF/g, 'पर्ची — PDF')
+      .replace(/वोटर\\s*पर्ची\\s*PDF/g, 'पर्ची PDF')
+      .replace(/वोटर\\s*पर्ची/g, 'पर्ची')
+      .replace(/—\\s*वोटर\\s*स्लिप\\s*ऑर्डर/g, '— पर्ची ऑर्डर')
+      .replace(/वोटर\\s*स्लिप\\s*—\\s*ऑर्डर/g, 'पर्ची — ऑर्डर')
+      .replace(/वोटर\\s*स्लिप\\s*ऑर्डर/g, 'पर्ची ऑर्डर')
+      .replace(/वोटर\\s*स्लिप/g, 'पर्ची')
+      .replace(/मतदाता\\s*पर्ची/g, 'पर्ची')
+      .replace(/मतदाता\\s*की\\s*फ़ोटो\\s*सहित/g, 'फ़ोटो सहित')
+      .replace(/वोटर/g, '');
+  }
+  function scrubNode(n) {
+    if (n.nodeType === 3) {
+      if (n.nodeValue && /वोटर|मतदाता पर्ची/i.test(n.nodeValue)) {
+        n.nodeValue = scrubText(n.nodeValue);
+      }
+    } else if (n.childNodes) {
+      for (var i = 0; i < n.childNodes.length; i++) {
+        scrubNode(n.childNodes[i]);
+      }
+    }
+  }
+  function scrubTitle() {
+    if (document.title && /वोटर/i.test(document.title)) {
+      document.title = scrubText(document.title);
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    scrubNode(document.body);
+    scrubTitle();
+    var obs = new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var m = mutations[i];
+        if (m.type === 'childList') {
+          for (var j = 0; j < m.addedNodes.length; j++) {
+            scrubNode(m.addedNodes[j]);
+          }
+        } else if (m.type === 'characterData') {
+          scrubNode(m.target);
+        }
+      }
+      scrubTitle();
+    });
+    obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
+})();
+</script>
+`;
+      html = html.replace("</head>", `${scrubberScript}</head>`);
 
       // Forward relative client fetch calls in the embedded page script through /order-api
       html = html.replace(
@@ -51,6 +116,9 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
         status: 200,
         headers: {
           "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store, no-cache, must-revalidate, max-age=0",
+          "pragma": "no-cache",
+          "expires": "0",
         },
       });
     } catch (err: any) {
