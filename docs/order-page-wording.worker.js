@@ -76,7 +76,10 @@ const SCRUB_SCRIPT = `
 
 // Software cards are hidden by default. Set env.SHOW_SOFTWARE = "1" in the
 // Worker settings to show them again.
-const HIDE_SOFTWARE_CSS = `<style>.kcard[data-kind="exe"],.kcard[data-kind="data"],#dlbox{display:none!important}.cards.k4{grid-template-columns:1fr 1fr!important}</style>`;
+// Verified on the live page: #dlbox is the software (EXE) download box that the
+// "नमूना — मुफ़्त" card opens, so the sample card is hidden with it. The bar
+// "पहले किया हुआ ऑर्डर डाउनलोड करना है?" is #oldbtn and must stay visible.
+const HIDE_SOFTWARE_CSS = `<style>.kcard[data-kind="exe"],.kcard[data-kind="data"],.kcard[data-kind="sample"],#dlbox{display:none!important}.cards.k4{grid-template-columns:1fr!important}#oldbtn{display:revert!important}</style>`;
 
 export default {
   async fetch(request, env, ctx) {
