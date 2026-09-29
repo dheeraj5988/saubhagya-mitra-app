@@ -1,8 +1,29 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateUploadUrl } from "@/lib/r2.server";
+import { isSoftwareEnabled } from "@/lib/payment-config.server";
 
 export async function handleApiRoutes(request: Request, url: URL): Promise<Response | null> {
   const path = url.pathname;
+
+  // 0. Site flags (read-only) -- lets the Cloudflare Worker in front of
+  // order.saubhagya.net hide/show the software cards from the SAME admin
+  // toggle (admin -> Payment Settings -> "Software Section") that /software
+  // already uses. Returns only this one boolean; never any other config.
+  if (request.method === "GET" && path === "/api/site-flags") {
+    let software_enabled = false;
+    try {
+      software_enabled = await isSoftwareEnabled();
+    } catch {
+      software_enabled = false;
+    }
+    return new Response(JSON.stringify({ software_enabled }), {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=30, s-maxage=60",
+      },
+    });
+  }
 
   // 1. Cashfree Webhook
   if (request.method === "POST" && path === "/api/cashfree/webhook") {
