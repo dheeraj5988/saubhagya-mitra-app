@@ -10,9 +10,9 @@ import { useI18n } from "@/lib/i18n";
 import { getPublicPaymentConfig } from "@/lib/orders.functions";
 import { SERIES_RATES } from "@/lib/pricing";
 
-const TITLE = "सौभाग्य | Saubhagya — पंचायत चुनाव की डिजिटल अभियान पर्ची";
+const TITLE = "सौभाग्य | Saubhagya — कस्टमाइज्ड प्रिंट-रेडी टेम्पलेट्स और डिजिटल पर्ची";
 const DESCRIPTION =
-  "राजस्थान पंचायत चुनाव (पंच, सरपंच, पंचायत समिति व ज़िला परिषद सदस्य) के लिए छपाई-योग्य अभियान पर्ची PDF — P 15 पैसे, A 16 पैसे, Ph 20 पैसे प्रति पर्ची। डिजिटल डिलीवरी।";
+  "छपाई-योग्य कस्टमाइज्ड टेम्पलेट्स और अभियान पर्ची PDF — P 15 पैसे, A 16 पैसे, Ph 20 पैसे प्रति पर्ची। डिजिटल डिलीवरी।";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,7 +47,7 @@ function Index() {
       title: en ? "PDF slips" : "PDF पर्चियाँ",
       body: en
         ? "Booth-wise, ready to print on A4 — plain, with symbol, or with your banner."
-        : "बूथ-वार, A4 पर छपाई के लिए तैयार — सादी, चुनाव चिन्ह वाली या आपके बैनर के साथ।",
+        : "बूथ-वार, A4 पर छपाई के लिए तैयार — सादी, प्रतीक चिन्ह वाली या आपके बैनर के साथ।",
     },
     {
       icon: ListOrdered,
@@ -90,8 +90,8 @@ function Index() {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {en
-            ? "Rajasthan panchayat elections — Panch, Sarpanch, Panchayat Samiti and Zila Parishad members."
-            : "राजस्थान पंचायत चुनाव — पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य।"}
+            ? "Print-ready customized templates — Panch, Sarpanch, Panchayat Samiti and Zila Parishad areas."
+            : "छपाई-योग्य कस्टमाइज्ड टेम्पलेट्स — पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य।"}
         </p>
 
         <div className="mt-5">

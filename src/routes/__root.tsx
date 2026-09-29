@@ -97,7 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल अभियान पर्चियाँ और अभियान पर्ची सॉफ़्टवेयर — पंच, सरपंच, पंचायत समिति व ज़िला परिषद सदस्य।",
+          "छपाई-योग्य कस्टमाइज्ड डिजिटल टेम्पलेट्स और अभियान पर्चियाँ — पंच, सरपंच, पंचायत समिति व ज़िला परिषद क्षेत्र।",
       },
       { name: "author", content: "Saubhagya" },
       { name: "theme-color", content: "#10214a" },

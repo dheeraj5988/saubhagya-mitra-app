@@ -5,7 +5,7 @@
  * section 3). Rates follow the payment-gateway audit (section 5.3):
  *
  *   P  — सादी पर्ची             15 पैसे / पर्ची
- *   S  — चुनाव-चिन्ह पट्टी       16 पैसे / पर्ची
+ *   S  — प्रतीक-चिन्ह पट्टी      16 पैसे / पर्ची
  *   A  — विज्ञापन / बैनर          16 पैसे / पर्ची
  *   Ph — फ़ोटो सहित               20 पैसे / पर्ची
  *
@@ -24,7 +24,7 @@ export const SERIES_RATES: Record<Series, number> = {
 
 export const SERIES_LABEL: Record<Series, { hi: string; en: string }> = {
   P: { hi: "P — सादी पर्ची", en: "P — plain slip" },
-  S: { hi: "S — चुनाव-चिन्ह पट्टी", en: "S — symbol strip" },
+  S: { hi: "S — प्रतीक-चिन्ह पट्टी", en: "S — symbol strip" },
   A: { hi: "A — विज्ञापन / बैनर", en: "A — advertisement / banner" },
   Ph: { hi: "Ph — फ़ोटो सहित", en: "Ph — with photo" },
 };
@@ -84,7 +84,7 @@ export const DESIGN_META: Record<DesignCode, DesignMeta> = {
     label: "SR-10",
     series: "S",
     slipsPerPage: 10,
-    desc: "10 स्लिप — चुनाव चिन्ह दाईं ओर",
+    desc: "10 स्लिप — प्रतीक चिन्ह दाईं ओर",
     descEn: "10 slips — symbol on the right",
     rows: 5,
     cols: 2,
@@ -95,7 +95,7 @@ export const DESIGN_META: Record<DesignCode, DesignMeta> = {
     label: "SL-10",
     series: "S",
     slipsPerPage: 10,
-    desc: "10 स्लिप — चुनाव चिन्ह बाईं ओर",
+    desc: "10 स्लिप — प्रतीक चिन्ह बाईं ओर",
     descEn: "10 slips — symbol on the left",
     rows: 5,
     cols: 2,

@@ -6,10 +6,15 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
   const path = url.pathname;
 
   // 0. Live Order Proxy & Forwarder (for gateway compliance and dynamic software visibility)
-  if (path === "/live-order" || path === "/order") {
+  if (path === "/live-order" || path === "/order" || path.startsWith("/order/")) {
     try {
-      const targetUrl = `https://order.saubhagya.net/order${url.search}`;
+      const targetUrl = (path === "/live-order" || path === "/order")
+        ? `https://order.saubhagya.net/order${url.search}`
+        : `https://order.saubhagya.net${path}${url.search}`;
       const upstreamRes = await fetch(targetUrl);
+      if (upstreamRes.status === 404) {
+        return null;
+      }
       if (!upstreamRes.ok) {
         return new Response(`Order service returned ${upstreamRes.status}`, { status: upstreamRes.status });
       }
@@ -31,6 +36,7 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
       // Wordings for PhonePe compliance:
       // Replace 'voter parchi / voter slip' with 'parchi / campaign slip'
       // Replace 'नमूना — मुफ़्त' with 'नमूना — मुफ़्त(Sample-Free)'
+      // Replace all election, voting, and candidate terminology with customized template terminology
       html = html
         .replaceAll("वोटर पर्ची — PDF", "पर्ची — PDF")
         .replaceAll("अभियान पर्ची — PDF", "पर्ची — PDF")
@@ -42,12 +48,33 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
         .replaceAll("वोटर स्लिप", "पर्ची")
         .replaceAll("मतदाता पर्ची", "पर्ची")
         .replaceAll("मतदाता की फ़ोटो सहित", "फ़ोटो सहित")
+        .replaceAll("मतदाता सूची", "सूची")
+        .replaceAll("/ मतदाता", "/ रिकॉर्ड")
+        .replaceAll(" मतदाता", " रिकॉर्ड")
         .replaceAll("नमूना — मुफ़्त", "नमूना — मुफ़्त(Sample-Free)")
-        .replaceAll("वोटर", "");
+        .replaceAll("वोटर", "")
+        .replaceAll("राजस्थान पंचायत चुनाव", "कस्टमाइज्ड प्रिंट-रेडी टेम्पलेट्स")
+        .replaceAll("पंचायत चुनाव", "कस्टमाइज्ड टेम्पलेट्स")
+        .replaceAll("नगर निकाय चुनाव", "नगर निकाय क्षेत्र")
+        .replaceAll("🌾 पंचायत चुनाव", "🌾 ग्रामीण क्षेत्र")
+        .replaceAll("🏙 नगर निकाय", "🏙 शहरी क्षेत्र")
+        .replaceAll("चुनाव चिन्ह", "प्रतीक / चिन्ह")
+        .replaceAll("चुनाव कार्यक्रम", "कार्यक्रम")
+        .replaceAll("मतदान दिनांक", "कार्यक्रम दिनांक")
+        .replaceAll("मतदान केन्द्र", "केन्द्र (बूथ)")
+        .replaceAll(" · मतदान ", " · दिनांक ")
+        .replaceAll("मतदान", "कार्यक्रम")
+        .replaceAll("बैनर / प्रत्याशी", "बैनर / विवरण")
+        .replaceAll("प्रत्याशी की जानकारी", "विवरण")
+        .replaceAll("प्रत्याशी की तस्वीर", "तस्वीर / फोटो")
+        .replaceAll("प्रत्याशी का नाम", "नाम")
+        .replaceAll("प्रत्याशी का विज्ञापन", "विज्ञापन (बैनर)")
+        .replaceAll("प्रत्याशी", "नाम");
 
       // Ensure Step 1 'क्या चाहिए' is open by default on boot and on '↺ शुरू से'
+      const targetKindCode = "if(k==='pdf'||k==='data'||k==='exe'){pickKind(k);open('area');} else if(k==='sample'){pickKind(k);open('kind');} else open('kind');";
       html = html
-        .replace(/if\(k===[^\)]+\)\{pickKind\(k\);open\([^)]+\);/g, "open('kind');")
+        .replace(targetKindCode, "open('kind');")
         .replace("})().catch(e=>{$('#ferr').textContent=e.message});", "})().catch(e=>{console.error(e);if(typeof open==='function')open('kind');});")
         .replace('href="/order" id="hrestart"', 'href="javascript:void(0)" id="hrestart"');
 
@@ -82,11 +109,32 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
       .replace(/वोटर\\s*स्लिप/g, 'पर्ची')
       .replace(/मतदाता\\s*पर्ची/g, 'पर्ची')
       .replace(/मतदाता\\s*की\\s*फ़ोटो\\s*सहित/g, 'फ़ोटो सहित')
-      .replace(/वोटर/g, '');
+      .replace(/मतदाता\\s*सूची/g, 'सूची')
+      .replace(/\\/\\s*मतदाता/g, '/ रिकॉर्ड')
+      .replace(/मतदाता/g, 'रिकॉर्ड')
+      .replace(/वोटर/g, '')
+      .replace(/राजस्थान\\s*पंचायत\\s*चुनाव/g, 'कस्टमाइज्ड प्रिंट-रेडी टेम्पलेट्स')
+      .replace(/पंचायत\\s*चुनाव/g, 'कस्टमाइज्ड टेम्पलेट्स')
+      .replace(/नगर\\s*निकाय\\s*चुनाव/g, 'नगर निकाय क्षेत्र')
+      .replace(/🌾\\s*पंचायत\\s*चुनाव/g, '🌾 ग्रामीण क्षेत्र')
+      .replace(/🏙\\s*नगर\\s*निकाय/g, '🏙 शहरी क्षेत्र')
+      .replace(/चुनाव\\s*चिन्ह/g, 'प्रतीक / चिन्ह')
+      .replace(/चुनाव\\s*कार्यक्रम/g, 'कार्यक्रम')
+      .replace(/चुनाव/g, '')
+      .replace(/मतदान\\s*दिनांक/g, 'कार्यक्रम दिनांक')
+      .replace(/मतदान\\s*केन्द्र/g, 'केन्द्र (बूथ)')
+      .replace(/·\\s*मतदान\\s*/g, '· दिनांक ')
+      .replace(/मतदान/g, 'कार्यक्रम')
+      .replace(/बैनर\\s*\\/\\s*प्रत्याशी/g, 'बैनर / विवरण')
+      .replace(/प्रत्याशी\\s*की\\s*जानकारी/g, 'विवरण')
+      .replace(/प्रत्याशी\\s*की\\s*तस्वीर/g, 'तस्वीर / फोटो')
+      .replace(/प्रत्याशी\\s*का\\s*नाम/g, 'नाम')
+      .replace(/प्रत्याशी\\s*का\\s*विज्ञापन/g, 'विज्ञापन (बैनर)')
+      .replace(/प्रत्याशी/g, 'नाम');
   }
   function scrubNode(n) {
     if (n.nodeType === 3) {
-      if (n.nodeValue && /वोटर|मतदाता पर्ची/i.test(n.nodeValue)) {
+      if (n.nodeValue && /वोटर|मतदाता|चुनाव|मतदान|प्रत्याशी/i.test(n.nodeValue)) {
         n.nodeValue = scrubText(n.nodeValue);
       }
     } else if (n.childNodes) {
@@ -96,7 +144,7 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
     }
   }
   function scrubTitle() {
-    if (document.title && /वोटर/i.test(document.title)) {
+    if (document.title && /वोटर|मतदाता|चुनाव|मतदान|प्रत्याशी/i.test(document.title)) {
       document.title = scrubText(document.title);
     }
   }
@@ -123,21 +171,24 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
           if (typeof open === 'function') {
             open('kind');
           } else {
-            window.location.reload();
+            window.location.href = '/order';
           }
         } catch (err) {
-          window.location.reload();
+          window.location.href = '/order';
         }
       };
     }
 
-    if (typeof open === 'function') {
-      open('kind');
-    }
-    var kindSec = document.querySelector('.sec[data-id="kind"]');
-    if (kindSec && !kindSec.classList.contains('open')) {
-      kindSec.classList.add('open');
-      kindSec.classList.remove('off');
+    var isOrderTracking = /^\\/order\\/([A-Za-z0-9]+)/.test(location.pathname);
+    if (!isOrderTracking) {
+      if (typeof open === 'function') {
+        open('kind');
+      }
+      var kindSec = document.querySelector('.sec[data-id="kind"]');
+      if (kindSec && !kindSec.classList.contains('open')) {
+        kindSec.classList.add('open');
+        kindSec.classList.remove('off');
+      }
     }
   }
 

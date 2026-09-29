@@ -8,7 +8,7 @@ export const Route = createFileRoute("/terms")({
   head: () =>
     policyHead(
       "Terms & Conditions | Saubhagya",
-      "Terms for print-ready digital campaign slips (PDF), data processing and software licences for Rajasthan election candidates.",
+      "Terms for print-ready customized digital templates (PDF), data processing and digital licences.",
     ),
   component: TermsPage,
 });

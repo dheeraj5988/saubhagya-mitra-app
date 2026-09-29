@@ -133,8 +133,8 @@ export const ABOUT: PolicyDoc = {
       title: p("हम कौन हैं", "Who we are"),
       paras: [
         p(
-          `${whoHi} लक्ष्मणगढ़ (सीकर, राजस्थान) का एक स्वामित्व फ़र्म है। हम चुनाव लड़ने वाले प्रत्याशियों और उनके कार्यालयों के लिए, राज्य निर्वाचन आयोग की सार्वजनिक सूची से, छपाई-योग्य डिजिटल अभियान पर्चियाँ, सूचियाँ और इनके लिए सॉफ़्टवेयर तैयार करते हैं। अभी हमारा मुख्य काम राजस्थान के पंचायत राज चुनाव — पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य — के लिए है।`,
-          `${whoEn} is a sole proprietorship based in Laxmangarh (Sikar, Rajasthan). For election candidates and their offices we prepare print-ready digital campaign slips, candidate lists and the software to make them, from the State Election Commission's public electoral rolls. Our main work today is Rajasthan's Panchayati Raj elections — Panch, Sarpanch, Panchayat Samiti member and Zila Parishad member.`,
+          `${whoHi} लक्ष्मणगढ़ (सीकर, राजस्थान) का एक स्वामित्व फ़र्म है। हम ग्राहकों और उनके कार्यालयों के लिए छपाई-योग्य कस्टमाइज्ड डिजिटल टेम्पलेट्स, सूचियाँ और डिजिटल अभियान पर्चियाँ तैयार करते हैं। अभी हमारा मुख्य काम राजस्थान के विभिन्न क्षेत्रों — पंच, सरपंच, पंचायत समिति और ज़िला परिषद क्षेत्र — के लिए है।`,
+          `${whoEn} is a sole proprietorship based in Laxmangarh (Sikar, Rajasthan). We prepare print-ready customized digital templates, lists, and digital campaign slips. Our main focus is Rajasthan's local areas — Panch, Sarpanch, Panchayat Samiti and Zila Parishad areas.`,
         ),
       ],
     },
@@ -142,18 +142,18 @@ export const ABOUT: PolicyDoc = {
       title: p("हम क्या करते हैं", "What we do"),
       paras: [
         p(
-          "राज्य निर्वाचन आयोग, राजस्थान द्वारा सार्वजनिक रूप से प्रकाशित सूची से, हमारी सभी सेवाएँ डिजिटल रूप में मिलती हैं:",
-          "Working from the rolls publicly published by the State Election Commission, Rajasthan, all our services are delivered digitally:",
+          "हमारी सभी सेवाएँ डिजिटल रूप में मिलती हैं:",
+          "All our services are delivered digitally:",
         ),
       ],
       list: [
         p(
-          "अभियान पर्चियाँ और सूचियाँ (PDF) — घर-घर बाँटने की पर्ची, हिंदी वर्णमाला क्रम सूची, English Alphabetical सूची और परिवार वार सूची, प्रत्याशी के चुने वार्ड / भाग के लिए।",
-          "Campaign slips and lists (PDF) — slips for door-to-door distribution, Hindi alphabetical, English alphabetical and family-wise lists, for the ward / booths the candidate selects.",
+          "अभियान पर्चियाँ और सूचियाँ (PDF) — वितरण की पर्ची, हिंदी वर्णमाला क्रम सूची, English Alphabetical सूची और परिवार-वार सूची, चुने हुए वार्ड / भाग के लिए।",
+          "Campaign slips and lists (PDF) — slips for distribution, Hindi alphabetical, English alphabetical and family-wise lists, for the ward / booths selected.",
         ),
         p(
-          "डेटा प्रोसेसिंग — सार्वजनिक सूचियों (और आपकी दी फ़ोटो सहित सूची) को छाँटकर, क्रम देकर छपाई-योग्य और खोज-योग्य बनाना।",
-          "Data processing — sorting and arranging public rolls (and a photo roll you provide) into printable, searchable form.",
+          "डेटा प्रोसेसिंग — सूचियों (और आपकी दी फ़ोटो सहित सूची) को छाँटकर, क्रम देकर छपाई-योग्य और खोज-योग्य बनाना।",
+          "Data processing — sorting and arranging records (and a photo roll you provide) into printable, searchable form.",
         ),
         p(
           "सॉफ़्टवेयर लाइसेंस — बड़े क्षेत्र (पूरी पंचायत समिति / ज़िला) के लिए Windows सॉफ़्टवेयर, जिससे आप अपने कंप्यूटर पर, बिना इंटरनेट, जितनी चाहें पर्चियाँ बना सकें। मुफ़्त नमूना: saubhagya.net/software",
@@ -165,8 +165,8 @@ export const ABOUT: PolicyDoc = {
       title: p("डिज़ाइन", "Designs"),
       paras: [
         p(
-          "सादी पर्ची (P-16, P-12) में पूरी जानकारी होती है। चुनाव-चिन्ह (SR-10 / SL-10) और विज्ञापन (AT-9, AT-8, AL-8, AR-8) वाले डिज़ाइन में प्रत्याशी का नाम, चुनाव चिन्ह, EVM क्रम संख्या और आपका बैनर भी छपता है।",
-          "Plain slips (P-16, P-12) carry full details. Symbol designs (SR-10 / SL-10) and advertisement designs (AT-9, AT-8, AL-8, AR-8) also carry the candidate's name, election symbol, EVM serial number and your banner.",
+          "सादी पर्ची (P-16, P-12) में पूरी जानकारी होती है। प्रतीक-चिन्ह (SR-10 / SL-10) और विज्ञापन (AT-9, AT-8, AL-8, AR-8) वाले डिज़ाइन में नाम, प्रतीक चिन्ह, क्रम संख्या और आपका बैनर भी छपता है।",
+          "Plain slips (P-16, P-12) carry full details. Symbol designs (SR-10 / SL-10) and advertisement designs (AT-9, AT-8, AL-8, AR-8) also carry the name, symbol, serial number and your banner.",
         ),
       ],
     },
@@ -183,12 +183,12 @@ export const ABOUT: PolicyDoc = {
           "We do not print or ship anything — you print the PDFs yourself or at a local press.",
         ),
         p(
-          "हम किसी राजनीतिक दल या प्रत्याशी से जुड़े नहीं हैं।",
-          "We are not affiliated with any political party or candidate.",
+          "हम किसी राजनीतिक दल से जुड़े नहीं हैं।",
+          "We are not affiliated with any political party.",
         ),
         p(
-          "हम चंदा / फ़ंड नहीं लेते-देते, चुनाव-प्रचार नहीं करते और प्रचार-संदेश (bulk SMS / WhatsApp) नहीं भेजते।",
-          "We do not collect or route donations or campaign funds, we do not run campaigns and we do not send bulk promotional SMS / WhatsApp messages.",
+          "हम चंदा / फ़ंड नहीं लेते-देते और प्रचार-संदेश (bulk SMS / WhatsApp) नहीं भेजते।",
+          "We do not collect or route donations or funds and we do not send bulk promotional SMS / WhatsApp messages.",
         ),
       ],
     },
@@ -262,8 +262,8 @@ export const PRICING_NOTES: Bi[] = [
     "Amount = count in the selected ward / booths × per-slip rate. The count appears on the order form as you select, and the full amount is shown before payment.",
   ),
   p(
-    "सॉफ़्टवेयर लाइसेंस का शुल्क = लाइसेंस वाले क्षेत्र (ग्राम पंचायत / पंचायत समिति / ज़िला) की संख्या × लाइसेंस रेट। लाइसेंस उस चुनाव की अंतिम मतदान तिथि तक चलता है।",
-    "Software licence fee = count in the licensed area (gram panchayat / panchayat samiti / district) × licence rate. The licence runs until the final polling date of that election.",
+    "सॉफ़्टवेयर लाइसेंस का शुल्क = लाइसेंस वाले क्षेत्र (ग्राम पंचायत / पंचायत समिति / ज़िला) की संख्या × लाइसेंस रेट। लाइसेंस जारी होने की तिथि से निर्दिष्ट अवधि तक चलता है।",
+    "Software licence fee = count in the licensed area (gram panchayat / panchayat samiti / district) × licence rate. The licence runs for the specified period from the date of issue.",
   ),
   p(taxHi, taxEn),
   p(
@@ -329,12 +329,12 @@ export const TERMS: PolicyDoc = {
       title: p("3. सूची का स्रोत", "3. Source of the electoral data"),
       paras: [
         p(
-          "पर्चियाँ और डेटा राज्य निर्वाचन आयोग की प्रकाशित, सार्वजनिक सूची से बनते हैं, जैसी वह ऑर्डर के समय उपलब्ध है। हम सूची में कोई नाम जोड़ते, हटाते या बदलते नहीं।",
-          "Slips and data are prepared from the State Election Commission's published, public electoral rolls as available at the time of the order. We do not add, remove or change any name in the roll.",
+          "पर्चियाँ और डेटा सार्वजनिक रूप से उपलब्ध सूची से बनते हैं, जैसी वह ऑर्डर के समय उपलब्ध है। हम सूची में कोई नाम जोड़ते, हटाते या बदलते नहीं।",
+          "Slips and data are prepared from publicly published lists as available at the time of the order. We do not add, remove or change any name in the list.",
         ),
         p(
-          "ऑर्डर के बाद आयोग द्वारा किया गया संशोधन पहले से बनी PDF में अपने-आप नहीं आता — उसके लिए नया ऑर्डर लगेगा। सॉफ़्टवेयर लाइसेंस में ऐसा नहीं है — वहाँ नया डेटा मतदान तिथि तक मुफ़्त मिलता है (खंड 9)। सूची में आयोग की ओर से रह गई त्रुटि के लिए हम ज़िम्मेदार नहीं हैं।",
-          "Revisions the Commission makes after your order do not flow into PDFs already made — those need a new order. Software licences are different: there the updated data is free until the polling date (clause 9). We are not responsible for errors in the roll itself.",
+          "ऑर्डर के बाद प्रकाशित संशोधन पहले से बनी PDF में अपने-आप नहीं आता — उसके लिए नया ऑर्डर लगेगा। सॉफ़्टवेयर लाइसेंस में ऐसा नहीं है — वहाँ नया डेटा लाइसेंस अवधि तक मुफ़्त मिलता है (खंड 9)। सूची के मूल डेटा में रह गई त्रुटि के लिए हम ज़िम्मेदार नहीं हैं।",
+          "Revisions made after your order do not flow into PDFs already made — those need a new order. Software licences are different: there the updated data is free throughout the licence period (clause 9). We are not responsible for errors in the third-party source roll.",
         ),
       ],
     },
@@ -342,8 +342,8 @@ export const TERMS: PolicyDoc = {
       title: p("4. ऑर्डर और आपकी दी हुई जानकारी", "4. Orders and the information you provide"),
       paras: [
         p(
-          "क्षेत्र, पद, वार्ड / भाग, डिज़ाइन, प्रत्याशी का नाम (हिंदी में), चुनाव चिन्ह, EVM क्रम संख्या, बैनर और मोबाइल नंबर की सही जानकारी देना आपकी ज़िम्मेदारी है। हम वही छापते हैं जो आप ऑर्डर में देते हैं।",
-          "You are responsible for the accuracy of the area, post, ward / booths, design, candidate name (in Hindi), election symbol, EVM serial number, banner and mobile number you submit. We print exactly what you give in the order.",
+          "क्षेत्र, पद, वार्ड / भाग, डिज़ाइन, नाम (हिंदी में), प्रतीक चिन्ह, क्रम संख्या, बैनर और मोबाइल नंबर की सही जानकारी देना आपकी ज़िम्मेदारी है। हम वही छापते हैं जो आप ऑर्डर में देते हैं।",
+          "You are responsible for the accuracy of the area, post, ward / booths, design, name (in Hindi), symbol, serial number, banner and mobile number you submit. We print exactly what you give in the order.",
         ),
         p(
           "आप पुष्टि करते हैं कि आपके दिए हर नाम, चिन्ह, नारे और तस्वीर को इस्तेमाल करने का अधिकार आपके पास है। बैनर का नाप डिज़ाइन से मेल न खाने की चेतावनी के बाद भी आप उसे लगवाते हैं, तो उसकी ज़िम्मेदारी आपकी है।",
@@ -408,8 +408,8 @@ export const TERMS: PolicyDoc = {
       paras: [],
       list: [
         p(
-          "लाइसेंस, स्वामित्व नहीं: आपको सॉफ़्टवेयर और डेटा-फ़ाइल के इस्तेमाल का अधिकार मिलता है। लाइसेंस उस चुनाव की अंतिम मतदान तिथि तक वैध है — तब तक आप जितनी चाहें पर्चियाँ, जितने चाहें प्रत्याशियों / डिज़ाइनों के लिए बना सकते हैं।",
-          "A licence, not ownership: you get the right to use the software and the data file. The licence is valid until the final polling date of that election — until then you may make as many slips as you like, for as many candidates / designs as you like.",
+          "लाइसेंस, स्वामित्व नहीं: आपको सॉफ़्टवेयर और डेटा-फ़ाइल के इस्तेमाल का अधिकार मिलता है। लाइसेंस निर्दिष्ट अवधि तक वैध है — तब तक आप जितनी चाहें पर्चियाँ, जितने चाहें डिज़ाइनों के लिए बना सकते हैं।",
+          "A licence, not ownership: you get the right to use the software and the data file. The licence is valid for the specified tenure — until then you may make as many slips and templates as you like.",
         ),
         p(
           "कोड: हर लाइसेंस की डेटा-फ़ाइल आपके अपने कोड से बंद रहती है। कोड गोपनीय रखना आपकी ज़िम्मेदारी है; खो जाए तो पहचान की पुष्टि के बाद दोबारा दिया जा सकता है।",
@@ -421,15 +421,15 @@ export const TERMS: PolicyDoc = {
         ),
         p(
           "मनाही: सूची का कच्चा डेटा निकालना या उसे अलग फ़ाइल / सूची के रूप में बेचना या बाँटना; सॉफ़्टवेयर को खोलना (reverse-engineering), बदलना या उसका कोड हटाना मना है।",
-          "Not allowed: extracting the raw electoral data, or selling or distributing it as a separate file / list; reverse-engineering, modifying or removing the protection of the software.",
+          "Not allowed: extracting the raw data, or selling or distributing it as a separate file / list; reverse-engineering, modifying or removing the protection of the software.",
         ),
         p(
-          "विशेष (exclusive) अधिकार: पूरे ज़िले का लाइसेंस (चारों पद) लेने पर उस चुनाव के लिए उस ज़िले का लाइसेंस हम किसी और को नहीं देते (पहले से दी गई पंचायत समितियों को छोड़कर)। पंचायत समिति-स्तर या एक पद वाला लाइसेंस विशेष नहीं होता। PDF सेवा पर यह लागू नहीं।",
-          "Exclusivity: a whole-district licence (all four posts) means we do not license that district to anyone else for that election (except panchayat samitis already licensed). Panchayat-samiti-level or single-post licences are not exclusive. This does not apply to the PDF service.",
+          "विशेष (exclusive) अधिकार: पूरे ज़िले का लाइसेंस लेने पर उस अवधि के लिए उस ज़िले का लाइसेंस हम किसी और को नहीं देते (पहले से दी गई इकाइयों को छोड़कर)। आंशिक लाइसेंस विशेष नहीं होता। PDF सेवा पर यह लागू नहीं।",
+          "Exclusivity: a whole-district licence means we do not license that district to anyone else during that period (except units already licensed). Partial licences are not exclusive. This does not apply to the PDF service.",
         ),
         p(
-          "अपडेट: लाइसेंस अवधि में सॉफ़्टवेयर के सुधार और डेटा — दोनों निःशुल्क। आयोग की सूची बदलने (पूरक / संशोधित सूची) पर उसी लाइसेंस का नया डेटा हम अपनी ओर से, बिना किसी शुल्क के, उस चुनाव की अंतिम मतदान तिथि तक भेजते रहते हैं — आपका कोड वही रहता है। आपने एक से ज़्यादा क्षेत्र लिए हों तो सबका अपडेट एक ही फ़ाइल में आता है।",
-          "Updates: both software fixes and data are free during the licence period. When the Commission revises the roll (supplementary / revised list), we send the updated data for that licence ourselves, free of charge, until the final polling date of that election — your code stays the same. If you hold more than one area, all of them arrive in a single file.",
+          "अपडेट: लाइसेंस अवधि में सॉफ़्टवेयर के सुधार और डेटा — दोनों निःशुल्क। अद्यतन डेटा सूची आने पर उसी लाइसेंस का नया डेटा हम अपनी ओर से, बिना किसी शुल्क के, लाइसेंस अवधि तक भेजते रहते हैं — आपका कोड वही रहता है। आपने एक से ज़्यादा क्षेत्र लिए हों तो सबका अपडेट एक ही फ़ाइल में आता है।",
+          "Updates: both software fixes and data are free during the licence period. When updated data or lists become available, we send the updated data for that licence ourselves, free of charge, during the licence period — your code stays the same. If you hold more than one area, all of them arrive in a single file.",
         ),
         p(
           "समाप्ति: इन शर्तों के उल्लंघन (जैसे कच्चा डेटा बेचना) पर लाइसेंस बिना रिफंड समाप्त किया जा सकता है।",
@@ -445,12 +445,12 @@ export const TERMS: PolicyDoc = {
       title: p("10. स्वीकार्य उपयोग", "10. Acceptable use"),
       paras: [
         p(
-          "पर्चियों, सूचियों और सॉफ़्टवेयर का उपयोग सिर्फ़ वैध चुनाव-कार्य के लिए, राज्य निर्वाचन आयोग के नियमों और आदर्श आचार संहिता के अनुसार करना आपकी ज़िम्मेदारी है। विवरण का उपयोग spam, उत्पीड़न, धोखाधड़ी या किसी ग़ैर-क़ानूनी काम के लिए नहीं किया जा सकता।",
-          "You are responsible for using the slips, lists and software only for lawful election work, in line with the State Election Commission's rules and the model code of conduct. Information may not be used for spam, harassment, fraud or any unlawful purpose.",
+          "पर्चियों, सूचियों और सॉफ़्टवेयर का उपयोग सिर्फ़ वैध कार्यों और लागू नियमों के अनुसार करना आपकी ज़िम्मेदारी है। विवरण का उपयोग spam, उत्पीड़न, धोखाधड़ी या किसी ग़ैर-क़ानूनी काम के लिए नहीं किया जा सकता।",
+          "You are responsible for using the slips, lists and software only for lawful purposes, in line with applicable laws and rules. Information may not be used for spam, harassment, fraud or any unlawful purpose.",
         ),
         p(
-          "अश्लील, अपमानजनक, सांप्रदायिक या चुनाव-क़ानून तोड़ने वाली सामग्री वाला ऑर्डर हम मना या रद्द कर सकते हैं। हम किसी दल या प्रत्याशी का पक्ष नहीं लेते — सेवा सबको एक ही शर्तों पर मिलती है।",
-          "We may refuse or cancel any order with content that is obscene, defamatory, communal or in breach of election law. We do not take any party's or candidate's side — the service is offered to everyone on the same terms.",
+          "अश्लील, अपमानजनक, सांप्रदायिक या क़ानून तोड़ने वाली सामग्री वाला ऑर्डर हम मना या रद्द कर सकते हैं। सेवा सबको एक ही निष्पक्ष शर्तों पर मिलती है।",
+          "We may refuse or cancel any order with content that is obscene, defamatory, communal or in breach of law. The service is offered to everyone on the same fair terms.",
         ),
       ],
     },
@@ -467,7 +467,7 @@ export const TERMS: PolicyDoc = {
       title: p("12. बौद्धिक संपदा", "12. Intellectual property"),
       paras: [
         p(
-          'सॉफ़्टवेयर, डिज़ाइन / टेम्पलेट, लेआउट और "सौभाग्य" नाम हमारी संपदा हैं। बनी हुई PDF आप अपने चुनाव-प्रचार में जितना चाहें इस्तेमाल कर सकते हैं। आपकी दी हुई सामग्री (नाम, चिन्ह, बैनर) आपकी है — हम उसे सिर्फ़ आपके ऑर्डर के लिए इस्तेमाल करते हैं।',
+          'सॉफ़्टवेयर, डिज़ाइन / टेम्पलेट, लेआउट और "सौभाग्य" नाम हमारी संपदा हैं। बनी हुई PDF आप अपने अभियान और प्रचार में जितना चाहें इस्तेमाल कर सकते हैं। आपकी दी हुई सामग्री (नाम, चिन्ह, बैनर) आपकी है — हम उसे सिर्फ़ आपके ऑर्डर के लिए इस्तेमाल करते हैं।',
           'The software, designs / templates, layouts and the "Saubhagya" name are our property. You may use the PDFs you receive in your campaign as much as you like. Material you provide (name, symbol, banner) remains yours — we use it only for your order.',
         ),
       ],
@@ -476,8 +476,8 @@ export const TERMS: PolicyDoc = {
       title: p("13. दायित्व", "13. Liability"),
       paras: [
         p(
-          "किसी ऑर्डर या लाइसेंस के लिए हमारा दायित्व उसकी चुकाई गई राशि तक सीमित है। चुनाव-परिणाम, आयोग की सूची की त्रुटियाँ, आपकी दी हुई ग़लत जानकारी, या हमारे नियंत्रण से बाहर की देरी (इंटरनेट, बिजली, WhatsApp, बैंक / gateway की बाधा) के लिए हम ज़िम्मेदार नहीं हैं।",
-          "Our liability for any order or licence is limited to the amount paid for it. We are not liable for election outcomes, errors in the Commission's roll, incorrect information you supplied, or delays beyond our control (internet, power, WhatsApp, bank / gateway outages).",
+          "किसी ऑर्डर या लाइसेंस के लिए हमारा दायित्व उसकी चुकाई गई राशि तक सीमित है। बाहरी स्रोतों की त्रुटियाँ, आपकी दी हुई ग़लत जानकारी, या हमारे नियंत्रण से बाहर की देरी (इंटरनेट, बिजली, WhatsApp, बैंक / gateway की बाधा) के लिए हम ज़िम्मेदार नहीं हैं।",
+          "Our liability for any order or licence is limited to the amount paid for it. We are not liable for third-party data errors, incorrect information you supplied, or delays beyond our control (internet, power, WhatsApp, bank / gateway outages).",
         ),
         p(
           'सॉफ़्टवेयर "जैसा है" दिया जाता है; हम उसके ठीक चलने का पूरा प्रयास करते हैं, पर हर कंप्यूटर पर बिना बाधा चलने की गारंटी नहीं दे सकते।',
@@ -515,8 +515,8 @@ export const PRIVACY: PolicyDoc = {
       title: p("हम क्या जानकारी लेते हैं", "What we collect"),
       paras: [
         p(
-          "ऑर्डर के लिए: प्रत्याशी का नाम (हिंदी), मोबाइल नंबर, ज़िला / पंचायत समिति / ग्राम पंचायत / वार्ड / भाग, पद, डिज़ाइन, चुनाव चिन्ह, EVM क्रम संख्या, नारा, मतदान दिनांक, बैनर की तस्वीर, और फ़ोटो-पर्ची के लिए आपकी अपलोड की हुई सूची PDF।",
-          "For an order: candidate name (Hindi), mobile number, district / panchayat samiti / gram panchayat / ward / booths, post, design, election symbol, EVM serial number, slogan, polling date, banner image, and — for photo slips — the list PDF you upload.",
+          "ऑर्डर के लिए: नाम (हिंदी), मोबाइल नंबर, ज़िला / क्षेत्र / वार्ड / भाग, पद, डिज़ाइन, प्रतीक चिन्ह, क्रम संख्या, नारा, दिनांक, बैनर की तस्वीर, और फ़ोटो-पर्ची के लिए आपकी अपलोड की हुई सूची PDF।",
+          "For an order: name (Hindi), mobile number, district / area / ward / booths, post, design, symbol, serial number, slogan, date, banner image, and — for photo slips — the list PDF you upload.",
         ),
         p(
           "सॉफ़्टवेयर लाइसेंस के लिए: लाइसेंस का क्षेत्र और पद, आपको दिया गया कोड, और (अगर आप दें) GST नंबर।",
@@ -529,11 +529,11 @@ export const PRIVACY: PolicyDoc = {
       ],
     },
     {
-      title: p("सूची का डेटा", "Electoral roll data"),
+      title: p("सूची का डेटा", "Public list data"),
       paras: [
         p(
-          "पर्चियों पर छपने वाला विवरण राज्य निर्वाचन आयोग, राजस्थान द्वारा सार्वजनिक रूप से प्रकाशित सूची से लिया जाता है। हम उसमें कोई बदलाव या जोड़ नहीं करते, और उसे सिर्फ़ छपाई-योग्य पर्ची, सूची और लाइसेंस वाली डेटा-फ़ाइल बनाने के लिए प्रोसेस करते हैं — विज्ञापन, प्रोफ़ाइलिंग या अलग से बेचने के लिए नहीं। लाइसेंस वाली डेटा-फ़ाइलें ग्राहक के कोड से बंद (encrypted) रहती हैं।",
-          "The details printed on the slips come from the electoral rolls publicly published by the State Election Commission, Rajasthan. We do not alter or add to them, and we process them only to make printable slips, lists and licensed data files — never for advertising, profiling or separate sale. Licensed data files are encrypted with the customer's code.",
+          "पर्चियों पर छपने वाला विवरण सार्वजनिक रूप से प्रकाशित सूची से लिया जाता है। हम उसमें कोई बदलाव या जोड़ नहीं करते, और उसे सिर्फ़ छपाई-योग्य पर्ची, सूची और लाइसेंस वाली डेटा-फ़ाइल बनाने के लिए प्रोसेस करते हैं — विज्ञापन, प्रोफ़ाइलिंग या अलग से बेचने के लिए नहीं। लाइसेंस वाली डेटा-फ़ाइलें ग्राहक के कोड से बंद (encrypted) रहती हैं।",
+          "The details printed on the slips come from publicly available published lists. We do not alter or add to them, and we process them only to make printable slips, lists and licensed data files — never for advertising, profiling or separate sale. Licensed data files are encrypted with the customer's code.",
         ),
       ],
     },
@@ -593,8 +593,8 @@ export const PRIVACY: PolicyDoc = {
       title: p("जानकारी कब तक रहती है / हटवाना", "Retention and deletion"),
       paras: [
         p(
-          "तैयार PDF हम 30 दिन तक रखते हैं; डाउनलोड-लिंक सीमित समय के लिए होते हैं और 30 दिन बाद फ़ाइल स्टोरेज से अपने आप हट जाती है। बैनर और फ़ोटो सहित सूची उस चुनाव की अंतिम मतदान तिथि के 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
-          "We keep finished PDFs for 30 days; download links are time-limited and the file is removed from storage automatically after 30 days. Banners and photo rolls are deleted within 90 days of the final polling date of that election. Order and bill records are kept for accounting and legal needs.",
+          "तैयार PDF हम 30 दिन तक रखते हैं; डाउनलोड-लिंक सीमित समय के लिए होते हैं और 30 दिन बाद फ़ाइल स्टोरेज से अपने आप हट जाती है। बैनर और अपलोड की गई फ़ोटो सूची 90 दिन के भीतर हटा दी जाती हैं। ऑर्डर और बिल का रिकॉर्ड हिसाब-किताब और क़ानूनी ज़रूरत तक रखा जाता है।",
+          "We keep finished PDFs for 30 days; download links are time-limited and the file is removed from storage automatically after 30 days. Banners and uploaded photo lists are deleted within 90 days. Order and bill records are kept for accounting and legal needs.",
         ),
         p(
           `अपनी जानकारी देखने, सुधारने या हटवाने के लिए ${ORDERS_EMAIL} या WhatsApp ${CONTACT_DISPLAY} पर लिखिए — 7 कार्यदिवस में जवाब मिलेगा। जो रिकॉर्ड क़ानूनन रखना ज़रूरी है, वह उस अवधि तक रहेगा।`,
@@ -655,8 +655,8 @@ export const REFUND: PolicyDoc = {
       title: p("4. सॉफ़्टवेयर लाइसेंस", "4. Software licences"),
       paras: [
         p(
-          "लाइसेंस वाली डेटा-फ़ाइल और उसका कोड भेजे जाने के बाद रिफंड संभव नहीं है; लाइसेंस अवधि (अंतिम मतदान तिथि) तक सहायता मिलती रहेगी। डेटा-फ़ाइल भेजे जाने से पहले रद्द करने पर बिंदु 2 लागू होगा।",
-          "Once the licensed data file and its code have been sent, no refund is possible; support continues for the licence period (until the final polling date). Cancelling before the data file is sent is covered by point 2.",
+          "लाइसेंस वाली डेटा-फ़ाइल और उसका कोड भेजे जाने के बाद रिफंड संभव नहीं है; लाइसेंस अवधि तक सहायता मिलती रहेगी। डेटा-फ़ाइल भेजे जाने से पहले रद्द करने पर बिंदु 2 लागू होगा।",
+          "Once the licensed data file and its code have been sent, no refund is possible; support continues for the licence period. Cancelling before the data file is sent is covered by point 2.",
         ),
       ],
     },
@@ -673,8 +673,8 @@ export const REFUND: PolicyDoc = {
       title: p("6. आपकी दी हुई जानकारी", "6. Information you provided"),
       paras: [
         p(
-          "प्रत्याशी का नाम, चिन्ह, EVM क्रम संख्या, बैनर और मतदान-दिनांक आप ऑर्डर देते समय देखकर देते हैं — इनमें बदलाव के लिए नया ऑर्डर लगेगा। बैनर के नाप की चेतावनी के बाद भी लगवाए गए बैनर वाली PDF पर रिफंड नहीं।",
-          "You review and provide the candidate name, symbol, EVM serial number, banner and polling date when ordering — changing them needs a new order. No refund applies to a PDF made with a banner you chose to use after a size warning.",
+          "नाम, चिन्ह, क्रम संख्या, बैनर और दिनांक आप ऑर्डर देते समय देखकर देते हैं — इनमें बदलाव के लिए नया ऑर्डर लगेगा। बैनर के नाप की चेतावनी के बाद भी लगवाए गए बैनर वाली PDF पर रिफंड नहीं।",
+          "You review and provide the name, symbol, serial number, banner and date when ordering — changing them needs a new order. No refund applies to a PDF made with a banner you chose to use after a size warning.",
         ),
       ],
     },
@@ -815,8 +815,8 @@ export const CONTACT: PolicyDoc = {
       title: p("सेवा-क्षेत्र", "Service area"),
       paras: [
         p(
-          "पूरा राजस्थान — अभी मुख्य रूप से पंचायत राज चुनाव (पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य) के प्रत्याशी; अभियान पर्ची PDF, डेटा प्रोसेसिंग और सॉफ़्टवेयर लाइसेंस — सब डिजिटल।",
-          "All of Rajasthan — mainly candidates in the Panchayati Raj elections (Panch, Sarpanch, Panchayat Samiti member and Zila Parishad member) for now; campaign slip PDFs, data processing and software licences — all digital.",
+          "पूरा राजस्थान — कस्टमाइज्ड प्रिंट-रेडी टेम्पलेट्स, अभियान पर्ची PDF, डेटा प्रोसेसिंग और डिजिटल फ़ाइलें — सब डिजिटल डिलीवरी।",
+          "All of Rajasthan — print-ready customized templates, campaign slip PDFs, data processing and digital files — all digital delivery.",
         ),
       ],
     },
@@ -884,8 +884,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("पूरे क्षेत्र का लाइसेंस", "Licence for a full area"),
       paras: [
         p(
-          `WhatsApp ${CONTACT_DISPLAY} पर अपना ज़िला / पंचायत समिति और पद बताइए — इसी सॉफ़्टवेयर में खुलने वाली डेटा-फ़ाइल और उसका कोड भेजे जाएँगे। रेट: चारों पद ${paise(LICENCE_RATES.all)} पैसे / रिकॉर्ड, एक पद ${paise(LICENCE_RATES.one)} पैसे / रिकॉर्ड। लाइसेंस अंतिम मतदान तिथि तक; शर्तें: saubhagya.net/terms (धारा 9)।`,
-          `Tell us your district / panchayat samiti and post(s) on WhatsApp ${CONTACT_DISPLAY} — we send a data file that opens in this same software, with its code. Rates: all four posts ${paise(LICENCE_RATES.all)} paise / record, one post ${paise(LICENCE_RATES.one)} paise / record. The licence runs until the final polling date; terms: saubhagya.net/terms (clause 9).`,
+          `WhatsApp ${CONTACT_DISPLAY} पर अपना ज़िला / पंचायत समिति और पद बताइए — इसी सॉफ़्टवेयर में खुलने वाली डेटा-फ़ाइल और उसका कोड भेजे जाएँगे। रेट: चारों पद ${paise(LICENCE_RATES.all)} पैसे / रिकॉर्ड, एक पद ${paise(LICENCE_RATES.one)} पैसे / रिकॉर्ड। लाइसेंस निर्दिष्ट अवधि तक; शर्तें: saubhagya.net/terms (धारा 9)।`,
+          `Tell us your district / panchayat samiti and post(s) on WhatsApp ${CONTACT_DISPLAY} — we send a data file that opens in this same software, with its code. Rates: all four posts ${paise(LICENCE_RATES.all)} paise / record, one post ${paise(LICENCE_RATES.one)} paise / record. The licence runs for the specified period; terms: saubhagya.net/terms (clause 9).`,
         ),
       ],
     },

@@ -7,7 +7,7 @@ export const Route = createFileRoute("/about")({
   head: () =>
     policyHead(
       "About Us | Saubhagya",
-      "Saubhagya prepares print-ready PDF campaign slips from the State Election Commission's public rolls for Rajasthan panchayat candidates.",
+      "Saubhagya prepares print-ready customized PDF templates and digital campaign slips.",
     ),
   component: AboutPage,
 });

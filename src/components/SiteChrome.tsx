@@ -52,7 +52,7 @@ export function SiteHeader() {
           <span className="truncate text-[17px] font-bold">{t("brand.name")}</span>
         </Link>
         <span className="hidden rounded-full bg-white/15 px-2.5 py-0.5 text-[11.5px] text-blue-100 ring-1 ring-white/15 md:inline">
-          {lang === "en" ? "Rajasthan panchayat elections" : "राजस्थान पंचायत चुनाव"}
+          {lang === "en" ? "Print-ready customized templates" : "प्रिंट-रेडी कस्टमाइज्ड टेम्पलेट्स"}
         </span>
         <nav className="order-last flex w-full gap-1 overflow-x-auto text-[13px] sm:order-none sm:ml-2 sm:w-auto">
           {navItems.map((item) => (
@@ -139,8 +139,8 @@ export function SiteFooter() {
           </div>
           <p className="mt-1 text-sm text-white/70">
             {en
-              ? "Print-ready digital campaign slips and campaign slip software for Rajasthan panchayat election candidates. Digital delivery only — we do not print or ship."
-              : "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल अभियान पर्चियाँ और सॉफ़्टवेयर। सिर्फ़ डिजिटल डिलीवरी — हम छपाई या कूरियर नहीं करते।"}
+              ? "Print-ready customized digital templates and campaign slip files. Digital delivery only — we do not print or ship."
+              : "छपाई-योग्य कस्टमाइज्ड डिजिटल टेम्पलेट्स और अभियान पर्ची फ़ाइलें। सिर्फ़ डिजिटल डिलीवरी — हम छपाई या कूरियर नहीं करते।"}
           </p>
           {/* Expanded on policy pages; a tidy dropdown on the homepage and elsewhere. */}
           <details key={pathname} open={legalExpanded} className="group mt-4">

@@ -115,11 +115,11 @@ const LIST_LABELS: Record<ListOption, TKey> = {
 /* Local Hindi / English copy for this form. */
 const TX = {
   c1: { hi: "क्षेत्र, पद और वार्ड", en: "Area, post and ward" },
-  c1sub: { hi: "सिर्फ़ पंचायत चुनाव", en: "Panchayat elections only" },
+  c1sub: { hi: "कस्टमाइज्ड प्रिंट टेम्पलेट्स", en: "Customized print templates" },
   pad: { hi: "पद", en: "Post" },
   padHint: {
-    hi: "किस पद के प्रत्याशी हैं?",
-    en: "Which post is the candidate contesting?",
+    hi: "किस पद / श्रेणी के लिए चाहिए?",
+    en: "Which post or category?",
   },
   sarpanchAll: {
     hi: "सरपंच के लिए पूरी ग्राम पंचायत — सभी वार्ड अपने-आप चुन लिए गए हैं।",
@@ -129,7 +129,7 @@ const TX = {
     hi: "आपके क्षेत्र में इस ग्राम पंचायत के जो वार्ड आते हैं वे चुनिए। दूसरी ग्राम पंचायतें ऑर्डर के बाद WhatsApp पर बता दीजिए।",
     en: "Pick the wards of this gram panchayat that fall in your constituency. Tell us other gram panchayats on WhatsApp after ordering.",
   },
-  booth: { hi: "भाग (मतदान केन्द्र)", en: "Booths (polling stations)" },
+  booth: { hi: "भाग (बूथ / केन्द्र)", en: "Booths / centers" },
   boothAll: { hi: "सभी भाग", en: "All booths" },
   boothQ: { hi: "कौन-कौन से भाग?", en: "Which booths?" },
   boothSelAll: { hi: "सब चुनें", en: "Select all" },
@@ -151,10 +151,10 @@ const TX = {
     hi: "जहाँ फ़ोटो वाली सूची उपलब्ध हो — 20 पैसे / पर्ची",
     en: "Where the photo roll is available — 20 paise / slip",
   },
-  c3: { hi: "प्रत्याशी", en: "Candidate" },
+  c3: { hi: "नाम व विवरण", en: "Name & details" },
   c3subPlain: {
-    hi: "सादे डिज़ाइन (P-16 / P-12) में प्रत्याशी की जानकारी नहीं छपती — खाली छोड़ सकते हैं",
-    en: "Plain designs (P-16 / P-12) print no candidate details — you can leave this empty",
+    hi: "सादे डिज़ाइन (P-16 / P-12) में नाम व विवरण नहीं छपता — खाली छोड़ सकते हैं",
+    en: "Plain designs (P-16 / P-12) print no details — you can leave this empty",
   },
   c3sub: { hi: "नाम केवल हिंदी में", en: "Name in Hindi only" },
   nameErr: {
@@ -184,9 +184,9 @@ const TX = {
   },
   c5: { hi: "कौन-कौन सी PDF बनानी हैं", en: "Which PDFs do you need" },
   c5sub: { hi: "जो नहीं चाहिए उस पर से ✔ हटा दीजिए", en: "Untick what you don't need" },
-  c6: { hi: "संपर्क और मतदान", en: "Contact and polling" },
+  c6: { hi: "संपर्क और दिनांक", en: "Contact and date" },
   phone: { hi: "मोबाइल नंबर (WhatsApp)", en: "Mobile number (WhatsApp)" },
-  poll: { hi: "मतदान दिनांक", en: "Polling date" },
+  poll: { hi: "कार्यक्रम दिनांक", en: "Event date" },
   summary: { hi: "सार", en: "Summary" },
   voters: { hi: "रिकॉर्ड", en: "Records" },
   pages: { hi: "लगभग पेज", en: "Approx. pages" },

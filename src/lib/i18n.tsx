@@ -22,8 +22,8 @@ type Entry = { hi: string; en: string };
 export const DICTIONARY = {
   "brand.name": { hi: "सौभाग्य", en: "Saubhagya" },
   "brand.tagline": {
-    hi: "पंचायत चुनाव · डिजिटल अभियान पर्ची (PDF)",
-    en: "Panchayat elections · digital campaign slips (PDF)",
+    hi: "कस्टमाइज्ड प्रिंट-रेडी टेम्पलेट्स · डिजिटल अभियान पर्ची (PDF)",
+    en: "Print-ready customized templates · digital campaign slips (PDF)",
   },
   "brand.full": { hi: "सौभाग्य", en: "Saubhagya" },
 
@@ -60,7 +60,7 @@ export const DICTIONARY = {
   "form.ward.auto": { hi: "वार्ड नं. (क्षेत्र से)", en: "Ward no. (from area)" },
   "form.evm": { hi: "EVM पर क्रम संख्या", en: "Serial number on EVM" },
   "form.evm.ph": { hi: "जैसे: 3", en: "e.g. 3" },
-  "form.polldate": { hi: "मतदान दिनांक / दिन", en: "Polling date / day" },
+  "form.polldate": { hi: "अभियान / कार्यक्रम दिनांक", en: "Campaign / event date" },
   "form.lists.hint": {
     hi: "जो सूचियाँ चाहिए उन्हें चुनें।",
     en: "Choose the lists you need.",
@@ -88,12 +88,12 @@ export const DICTIONARY = {
   "photo_slip.pdf": { hi: "केवल PDF अपलोड करें", en: "Upload PDF only" },
   "photo_slip.agree": { hi: "मैं सहमत हूँ", en: "I agree" },
   "photo_slip.consent.checkbox": {
-    hi: "मैं घोषणा करता हूँ कि मैं चुनाव उद्देश्यों के लिए इन रिकॉर्ड का उपयोग करने के लिए अधिकृत हूँ।",
-    en: "I declare that I am authorized to use these records for election purposes.",
+    hi: "मैं घोषणा करता हूँ कि मैं इन रिकॉर्ड का उपयोग करने के लिए अधिकृत हूँ।",
+    en: "I declare that I am authorized to use these records.",
   },
 
   "design.D1.title": { hi: "क्लासिक", en: "Classic" },
-  "design.D1.desc": { hi: "फोटो बाएँ, चुनाव चिन्ह दाएँ", en: "Photo left, symbol right" },
+  "design.D1.desc": { hi: "फोटो बाएँ, प्रतीक चिन्ह दाएँ", en: "Photo left, symbol right" },
   "design.D2.title": { hi: "सेंटर फोटो", en: "Centre photo" },
   "design.D2.desc": { hi: "बीच में फोटो, नीचे नाम", en: "Photo centred, name below" },
   "design.D3.title": { hi: "नाम पट्टी", en: "Name band" },
@@ -101,7 +101,7 @@ export const DICTIONARY = {
   "design.D4.title": { hi: "दो रंग", en: "Two tone" },
   "design.D4.desc": { hi: "दो रंग की बैनर पट्टी", en: "Two-colour banner strip" },
   "design.D5.title": { hi: "बड़ा चिन्ह", en: "Large symbol" },
-  "design.D5.desc": { hi: "चुनाव चिन्ह प्रमुखता से", en: "Election symbol highlighted" },
+  "design.D5.desc": { hi: "प्रतीक चिन्ह प्रमुखता से", en: "Symbol highlighted" },
   "design.D6.title": { hi: "कॉम्पैक्ट", en: "Compact" },
   "design.D6.desc": { hi: "अधिक विवरण", en: "More details" },
   "design.D7.title": { hi: "नारा हाइलाइट", en: "Slogan highlight" },
@@ -109,19 +109,19 @@ export const DICTIONARY = {
   "design.D8.title": { hi: "मिनिमल", en: "Minimal" },
   "design.D8.desc": { hi: "सादा एवं स्पष्ट लेआउट", en: "Plain, clear layout" },
 
-  "form.name_hi": { hi: "प्रत्याशी का नाम", en: "Candidate name (Hindi)" },
+  "form.name_hi": { hi: "नाम (हिंदी में)", en: "Name (Hindi)" },
   "form.name_hi.ph": {
     hi: "केवल हिंदी में टाइप करें — जैसे: रामलाल मीणा",
     en: "Type in Hindi only — e.g. रामलाल मीणा",
   },
-  "form.name_en": { hi: "Candidate Name (English)", en: "Candidate name (English)" },
+  "form.name_en": { hi: "Name (English)", en: "Name (English)" },
   "form.name_en.ph": { hi: "e.g. Ramlal Meena", en: "e.g. Ramlal Meena" },
   "form.phone": { hi: "मोबाइल नंबर", en: "Mobile number" },
   "form.phone.hint": { hi: "10 अंक", en: "10 digits" },
-  "form.symbol": { hi: "पार्टी एवं चुनाव चिन्ह", en: "Party & election symbol" },
+  "form.symbol": { hi: "प्रतीक / चिन्ह", en: "Symbol / icon" },
   "form.symbol.hint": { hi: "सूची से चुनें", en: "Select from list" },
-  "form.symbol.placeholder": { hi: "चुनाव चिन्ह चुनें", en: "Choose an election symbol" },
-  "form.symbol.search": { hi: "पार्टी या चिन्ह खोजें…", en: "Search party or symbol…" },
+  "form.symbol.placeholder": { hi: "प्रतीक / चिन्ह चुनें", en: "Choose a symbol" },
+  "form.symbol.search": { hi: "प्रतीक या चिन्ह खोजें…", en: "Search symbol…" },
   "form.symbol.empty": { hi: "कोई चिन्ह नहीं मिला", en: "No symbol found" },
   "form.symbol.loading": { hi: "चिन्ह सूची लोड हो रही है…", en: "Loading symbols…" },
   "form.district": { hi: "ज़िला", en: "District" },
@@ -147,7 +147,7 @@ export const DICTIONARY = {
     hi: "केवल हिंदी — जैसे: आपका विश्वास, हमारी पहचान",
     en: "Hindi only — e.g. आपका विश्वास, हमारी पहचान",
   },
-  "form.photo": { hi: "प्रत्याशी की फोटो", en: "Candidate photo" },
+  "form.photo": { hi: "फोटो / तस्वीर", en: "Photo / image" },
   "form.photo.hint": { hi: "JPG / PNG, अधिकतम 5MB", en: "JPG / PNG, max 5MB" },
   "form.photo.pick": { hi: "फोटो चुनें / अपलोड करें", en: "Choose / upload photo" },
   "form.photo.change": { hi: "फोटो बदलें", en: "Change photo" },
@@ -160,8 +160,8 @@ export const DICTIONARY = {
   },
 
   "err.required.name_hi": {
-    hi: "प्रत्याशी का नाम (हिंदी) आवश्यक है।",
-    en: "Candidate name (Hindi) is required.",
+    hi: "नाम (हिंदी में) आवश्यक है।",
+    en: "Name (Hindi) is required.",
   },
   "err.required.name_en": {
     hi: "अंग्रेज़ी में नाम आवश्यक है।",
@@ -176,12 +176,12 @@ export const DICTIONARY = {
   "err.required.gp": { hi: "ग्राम पंचायत आवश्यक है।", en: "Gram Panchayat is required." },
   "err.required.ward": { hi: "वार्ड चुनना आवश्यक है।", en: "Please choose a ward." },
   "err.required.symbol": {
-    hi: "चुनाव चिन्ह चुनना आवश्यक है।",
-    en: "Please select an election symbol.",
+    hi: "प्रतीक / चिन्ह चुनना आवश्यक है।",
+    en: "Please select a symbol.",
   },
   "err.required.photo": {
-    hi: "प्रत्याशी की फोटो (JPG/PNG) आवश्यक है।",
-    en: "Candidate photo (JPG/PNG) is required.",
+    hi: "फोटो (JPG/PNG) आवश्यक है।",
+    en: "Photo (JPG/PNG) is required.",
   },
   "err.photo.type": {
     hi: "केवल JPG या PNG फोटो अपलोड करें।",
@@ -249,8 +249,8 @@ export const DICTIONARY = {
   "pay.call": { hi: "कॉल करें", en: "Call us" },
 
   "footer.tagline": {
-    hi: "राजस्थान पंचायत चुनाव के प्रत्याशियों के लिए छपाई-योग्य डिजिटल अभियान पर्ची",
-    en: "Print-ready digital campaign slips for Rajasthan panchayat election candidates",
+    hi: "छपाई-योग्य कस्टमाइज्ड डिजिटल टेम्पलेट्स और अभियान पर्ची",
+    en: "Print-ready customized digital templates and campaign slips",
   },
   "footer.contact": { hi: "संपर्क", en: "Contact" },
   "footer.legal": { hi: "नीतियाँ", en: "Policies" },
@@ -321,13 +321,13 @@ export const DICTIONARY = {
   },
   "legal.terms.sec6.title": { hi: "6. Acceptable use", en: "6. Acceptable use" },
   "legal.terms.sec6.p1": {
-    hi: "You may not use this service for content that is obscene, defamatory, communal, or that breaches the model code of conduct or any election law. We may refuse or cancel any order that, in our judgement, breaches these rules.",
-    en: "You may not use this service for content that is obscene, defamatory, communal, or that breaches the model code of conduct or any election law. We may refuse or cancel any order that, in our judgement, breaches these rules.",
+    hi: "You may not use this service for content that is obscene, defamatory, communal, or unlawful. We may refuse or cancel any order that, in our judgement, breaches these rules.",
+    en: "You may not use this service for content that is obscene, defamatory, communal, or unlawful. We may refuse or cancel any order that, in our judgement, breaches these rules.",
   },
   "legal.terms.sec7.title": { hi: "7. Liability", en: "7. Liability" },
   "legal.terms.sec7.p1": {
-    hi: "Our liability for any order is limited to the amount you paid for that order. We are not liable for election outcomes, printing errors present in an approved draft, or delays caused by events beyond our control.",
-    en: "Our liability for any order is limited to the amount you paid for that order. We are not liable for election outcomes, printing errors present in an approved draft, or delays caused by events beyond our control.",
+    hi: "Our liability for any order is limited to the amount you paid for that order. We are not liable for printing errors present in an approved draft, or delays caused by events beyond our control.",
+    en: "Our liability for any order is limited to the amount you paid for that order. We are not liable for printing errors present in an approved draft, or delays caused by events beyond our control.",
   },
   "legal.terms.sec8.title": { hi: "8. Governing law", en: "8. Governing law" },
   "legal.terms.sec8.p1": {
@@ -339,8 +339,8 @@ export const DICTIONARY = {
   "legal.privacy.page_title": { hi: "Privacy Policy", en: "Privacy Policy" },
   "legal.privacy.sec1.title": { hi: "What we collect", en: "What we collect" },
   "legal.privacy.sec1.p1": {
-    hi: "To prepare your campaign slips we collect the candidate name (Hindi and English), mobile number, district, panchayat samiti, gram panchayat, ward number, election symbol, an optional slogan and the candidate photograph you upload.",
-    en: "To prepare your campaign slips we collect the candidate name (Hindi and English), mobile number, district, panchayat samiti, gram panchayat, ward number, election symbol, an optional slogan and the candidate photograph you upload.",
+    hi: "To prepare your customized print templates we collect the customer name (Hindi and English), mobile number, district, area details, preferred symbol/icon, an optional slogan and the photograph/banner you upload.",
+    en: "To prepare your customized print templates we collect the customer name (Hindi and English), mobile number, district, area details, preferred symbol/icon, an optional slogan and the photograph/banner you upload.",
   },
   "legal.privacy.sec1.p2": {
     hi: "For security and analytics we also record the IP address and browser details of visits to this site, and the mobile number you enter on the order form even if the order is not completed, so our team can help you finish it.",
@@ -357,7 +357,7 @@ export const DICTIONARY = {
   },
   "legal.privacy.sec3.title": { hi: "Storage and security", en: "Storage and security" },
   "legal.privacy.sec3.p1": {
-    hi: "Candidate photographs are stored in private storage and are never publicly accessible. Access is limited to our operations team through an authenticated internal console, using short-lived links. Payment credentials are handled by our payment gateway partner and are never stored on our servers.",
+    hi: "Customer photographs and uploads are stored in private storage and are never publicly accessible. Access is limited to our operations team through an authenticated internal console, using short-lived links. Payment credentials are handled by our payment gateway partner and are never stored on our servers.",
     en: "Candidate photographs are stored in private storage and are never publicly accessible. Access is limited to our operations team through an authenticated internal console, using short-lived links. Payment credentials are handled by our payment gateway partner and are never stored on our servers.",
   },
   "legal.privacy.sec4.title": { hi: "Sharing", en: "Sharing" },
@@ -380,8 +380,8 @@ export const DICTIONARY = {
   },
   "legal.privacy.sec6.title": { hi: "Children", en: "Children" },
   "legal.privacy.sec6.p1": {
-    hi: "This service is intended for election candidates and is not directed at children.",
-    en: "This service is intended for election candidates and is not directed at children.",
+    hi: "This service is intended for organizers and print customers and is not directed at children.",
+    en: "This service is intended for organizers and print customers and is not directed at children.",
   },
   "legal.privacy.sec7.title": { hi: "Changes", en: "Changes" },
   "legal.privacy.sec7.p1": {
@@ -407,8 +407,8 @@ export const DICTIONARY = {
     en: "Defective or incorrect work",
   },
   "legal.refund.sec3.p1": {
-    hi: "If the delivered slips differ from the approved draft, or arrive damaged, report it within 48 hours of delivery with photographs. We will reprint the affected quantity free of charge, or refund it if a reprint is no longer useful before your election date.",
-    en: "If the delivered slips differ from the approved draft, or arrive damaged, report it within 48 hours of delivery with photographs. We will reprint the affected quantity free of charge, or refund it if a reprint is no longer useful before your election date.",
+    hi: "If the delivered slips differ from the approved draft, or arrive damaged, report it within 48 hours of delivery with photographs. We will reprint the affected quantity free of charge, or refund it if a reprint is no longer useful before your campaign date.",
+    en: "If the delivered slips differ from the approved draft, or arrive damaged, report it within 48 hours of delivery with photographs. We will reprint the affected quantity free of charge, or refund it if a reprint is no longer useful before your campaign date.",
   },
   "legal.refund.sec3.p2": {
     hi: "Errors already present in the draft you approved are not covered, because printing follows the approved draft exactly.",
@@ -454,8 +454,8 @@ export const DICTIONARY = {
     en: "Digital campaign slips are dispatched to the WhatsApp number confirmed with our team. Delivery typically takes 1-2 working days after draft approval.",
   },
   "legal.shipping.sec3.p2": {
-    hi: "During peak election periods timelines can extend. If your polling date is close, tell us before ordering so we can confirm whether we can meet it.",
-    en: "During peak election periods timelines can extend. If your polling date is close, tell us before ordering so we can confirm whether we can meet it.",
+    hi: "During peak rush periods timelines can extend. If your required date is close, tell us before ordering so we can confirm whether we can meet it.",
+    en: "During peak rush periods timelines can extend. If your required date is close, tell us before ordering so we can confirm whether we can meet it.",
   },
   "legal.shipping.sec4.title": { hi: "Delivery charges", en: "Delivery charges" },
   "legal.shipping.sec4.p1": {
@@ -475,8 +475,8 @@ export const DICTIONARY = {
   "legal.contact.sec2.title": { hi: "Business address", en: "Business address" },
   "legal.contact.sec3.title": { hi: "Service area", en: "Service area" },
   "legal.contact.sec3.p1": {
-    hi: "We serve Sarpanch and Ward Panch candidates across Rajasthan — district, panchayat samiti, gram panchayat and ward wise.",
-    en: "We serve Sarpanch and Ward Panch candidates across Rajasthan — district, panchayat samiti, gram panchayat and ward wise.",
+    hi: "We serve customers across Rajasthan — district, panchayat samiti, gram panchayat and ward wise.",
+    en: "We serve customers across Rajasthan — district, panchayat samiti, gram panchayat and ward wise.",
   },
   "legal.contact.sec4.title": { hi: "Order support", en: "Order support" },
   "legal.contact.sec4.p1": {
@@ -488,20 +488,20 @@ export const DICTIONARY = {
     en: "We do not sell your data and we do not use it for unrelated marketing.",
   },
   "legal.dom.2": {
-    hi: "This service is intended for election candidates and is not directed at children.",
-    en: "This service is intended for election candidates and is not directed at children.",
+    hi: "This service is intended for organizers and print customers and is not directed at children.",
+    en: "This service is intended for organizers and print customers and is not directed at children.",
   },
   "legal.dom.3": {
-    hi: 'Saubhagya ("we", "us") prepares and supplies digital campaign slips for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
-    en: 'Saubhagya ("we", "us") prepares and supplies digital campaign slips for Sarpanch and Ward Panch candidates contesting panchayat elections in Rajasthan. By placing an order on this website you accept these terms.',
+    hi: 'Saubhagya ("we", "us") prepares and supplies print-ready customized templates and digital campaign slips across Rajasthan. By placing an order on this website you accept these terms.',
+    en: 'Saubhagya ("we", "us") prepares and supplies print-ready customized templates and digital campaign slips across Rajasthan. By placing an order on this website you accept these terms.',
   },
   "legal.dom.4": {
-    hi: "You are responsible for the accuracy of every detail you submit: candidate names, ward, gram panchayat, panchayat samiti, district, election symbol, slogan, photograph and mobile number. We print exactly what is approved in the draft you confirm on WhatsApp.",
-    en: "You are responsible for the accuracy of every detail you submit: candidate names, ward, gram panchayat, panchayat samiti, district, election symbol, slogan, photograph and mobile number. We print exactly what is approved in the draft you confirm on WhatsApp.",
+    hi: "You are responsible for the accuracy of every detail you submit: names, area details, design symbol, slogan, photograph and mobile number. We print exactly what is approved in the draft you confirm on WhatsApp.",
+    en: "You are responsible for the accuracy of every detail you submit: names, area details, design symbol, slogan, photograph and mobile number. We print exactly what is approved in the draft you confirm on WhatsApp.",
   },
   "legal.dom.5": {
-    hi: "You confirm that you have the right to use every photograph, name, symbol and slogan you upload, and that the content does not violate any law or the directions of the State Election Commission.",
-    en: "You confirm that you have the right to use every photograph, name, symbol and slogan you upload, and that the content does not violate any law or the directions of the State Election Commission.",
+    hi: "You confirm that you have the right to use every photograph, name, symbol and slogan you upload, and that the content does not violate any applicable law.",
+    en: "You confirm that you have the right to use every photograph, name, symbol and slogan you upload, and that the content does not violate any applicable law.",
   },
   "legal.dom.6": {
     hi: "The order amount is calculated as the record count of the selected ward multiplied by the current per-record rate shown on the order form. The amount displayed before payment is the amount payable. Taxes, where applicable, are included in the displayed amount.",
@@ -520,12 +520,12 @@ export const DICTIONARY = {
     en: "Online payments are processed by our payment gateway partner. We do not store your card, UPI or banking credentials on our servers.",
   },
   "legal.dom.10": {
-    hi: "You may not use this service for content that is obscene, defamatory, communal, or that breaches the model code of conduct or any election law. We may refuse or cancel any order that, in our judgement, breaches these rules.",
-    en: "You may not use this service for content that is obscene, defamatory, communal, or that breaches the model code of conduct or any election law. We may refuse or cancel any order that, in our judgement, breaches these rules.",
+    hi: "You may not use this service for content that is obscene, defamatory, communal, or unlawful. We may refuse or cancel any order that, in our judgement, breaches these rules.",
+    en: "You may not use this service for content that is obscene, defamatory, communal, or unlawful. We may refuse or cancel any order that, in our judgement, breaches these rules.",
   },
   "legal.dom.11": {
-    hi: "Our liability for any order is limited to the amount you paid for that order. We are not liable for election outcomes, printing errors present in an approved draft, or delays caused by events beyond our control.",
-    en: "Our liability for any order is limited to the amount you paid for that order. We are not liable for election outcomes, printing errors present in an approved draft, or delays caused by events beyond our control.",
+    hi: "Our liability for any order is limited to the amount you paid for that order. We are not liable for printing errors present in an approved draft, or delays caused by events beyond our control.",
+    en: "Our liability for any order is limited to the amount you paid for that order. We are not liable for printing errors present in an approved draft, or delays caused by events beyond our control.",
   },
   "legal.dom.12": {
     hi: "These terms are governed by the laws of India, and the courts of Rajasthan have exclusive jurisdiction over any dispute.",
