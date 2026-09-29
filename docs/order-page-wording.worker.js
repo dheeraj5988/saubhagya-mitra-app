@@ -48,14 +48,20 @@ const SCRUB_SCRIPT = `
     [/\\bEXE\\b/g, '']
   ];
   var TRIGGER = /वोटर|मतदाता|चुनाव|मतदान|प्रत्याशी|नमूना\\s*—\\s*मुफ़्त|सॉफ़्टवेयर|voter|election|polling|candidate|software|EXE/i;
-  function scrub(s) { for (var i = 0; i < RULES.length; i++) s = s.replace(RULES[i][0], RULES[i][1]); return s; }
+  // Devanagari nukta letters (फ़ ज़ ड़) can be stored two ways: one code point or
+  // letter + nukta. Normalise both the page text and every rule to the same form
+  // so a rule never silently misses.
+  function nf(x) { return x.normalize ? x.normalize('NFD') : x; }
+  for (var k = 0; k < RULES.length; k++) RULES[k][0] = new RegExp(nf(RULES[k][0].source), RULES[k][0].flags);
+  TRIGGER = new RegExp(nf(TRIGGER.source), TRIGGER.flags);
+  function scrub(s) { s = nf(s); for (var i = 0; i < RULES.length; i++) s = s.replace(RULES[i][0], RULES[i][1]); return s; }
   // Text nodes only. Never scripts, styles, form values, attributes or JS data,
   // so what the page sends to the PC is never changed.
   function walk(n) {
     if (n.nodeType === 3) {
       var p = n.parentNode && n.parentNode.nodeName;
       if (p === 'SCRIPT' || p === 'STYLE' || p === 'TEXTAREA') return;
-      if (n.nodeValue && TRIGGER.test(n.nodeValue)) {
+      if (n.nodeValue && TRIGGER.test(nf(n.nodeValue))) {
         var v = scrub(n.nodeValue);
         if (v !== n.nodeValue) n.nodeValue = v;
       }
@@ -63,7 +69,7 @@ const SCRUB_SCRIPT = `
       for (var i = 0; i < n.childNodes.length; i++) walk(n.childNodes[i]);
     }
   }
-  function title() { if (TRIGGER.test(document.title)) document.title = scrub(document.title); }
+  function title() { if (TRIGGER.test(nf(document.title))) document.title = scrub(document.title); }
   function start() {
     walk(document.body); title();
     new MutationObserver(function (ms) {
@@ -84,7 +90,7 @@ const SCRUB_SCRIPT = `
 // Verified on the live page: #dlbox is the software (EXE) download box that the
 // "नमूना — मुफ़्त" card opens, so the sample card is hidden with it. The bar
 // "पहले किया हुआ ऑर्डर डाउनलोड करना है?" is #oldbtn and must stay visible.
-const HIDE_SOFTWARE_CSS = `<style>.kcard[data-kind="exe"],.kcard[data-kind="data"],.kcard[data-kind="sample"],#dlbox{display:none!important}.cards.k4{grid-template-columns:1fr!important}#oldbtn{display:revert!important}</style>`;
+const HIDE_SOFTWARE_CSS = `<style>.kcard[data-kind="exe"],.kcard[data-kind="data"],.kcard[data-kind="sample"],#dlbox{display:none!important}.cards.k4{grid-template-columns:1fr!important}</style>`;
 
 export default {
   async fetch(request, env, ctx) {
