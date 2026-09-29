@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
  * through Cloudflare Tunnel at order.saubhagya.net. When it answers, it is shown
  * here; when that computer is off, the older order form below is used instead.
  */
+const ORDER_URL = "https://order.saubhagya.net/order";
 const PROBE_URL = "https://order.saubhagya.net/symbols/p01.png";
 
 export function LiveOrder() {
@@ -52,14 +53,14 @@ export function LiveOrder() {
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
       <iframe
         title={en ? "Order" : "ऑर्डर"}
-        src={`/live-order${qs}`}
+        src={`${ORDER_URL}${qs}`}
         className="block h-[85dvh] min-h-[560px] w-full border-0"
         allow="clipboard-write"
       />
       <p className="border-t px-3 py-2 text-xs text-muted-foreground">
         {en ? "Easier on a phone: " : "फ़ोन पर आसान: "}
         <a
-          href={`/live-order${qs}`}
+          href={`${ORDER_URL}${qs}`}
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-primary underline underline-offset-4"
