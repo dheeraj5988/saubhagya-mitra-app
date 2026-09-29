@@ -29,9 +29,20 @@ const SCRUB_SCRIPT = `
     [/मतदान\\s*केन्द्र/g, 'केन्द्र (बूथ)'],
     [/मतदान/g, 'कार्यक्रम'],
     [/प्रत्याशी/g, 'नाम'],
-    [/नमूना\\s*—\\s*मुफ़्त(?!\\s*\\(Sample-Free\\))/g, 'नमूना — मुफ़्त(Sample-Free)']
+    [/नमूना\\s*—\\s*मुफ़्त(?!\\s*\\(Sample-Free\\))/g, 'नमूना — मुफ़्त(Sample-Free)'],
+    // English
+    [/voter\\s*(parchi|slip)s?/gi, 'slip'],
+    [/voter\\s*list(s?)/gi, 'list$1'],
+    [/rajasthan\\s*panchayat\\s*elections?/gi, 'Print-ready customized templates'],
+    [/panchayat\\s*elections?/gi, 'customized templates'],
+    [/election\\s*symbol/gi, 'symbol'],
+    [/polling\\s*(date|station|booth)/gi, 'event $1'],
+    [/\\bvoters\\b/gi, 'records'],
+    [/\\bvoter\\b/gi, 'record'],
+    [/\\belections?\\b/gi, ''],
+    [/\\bcandidates?\\b/gi, 'name']
   ];
-  var TRIGGER = /वोटर|मतदाता|चुनाव|मतदान|प्रत्याशी|नमूना\\s*—\\s*मुफ़्त/;
+  var TRIGGER = /वोटर|मतदाता|चुनाव|मतदान|प्रत्याशी|नमूना\\s*—\\s*मुफ़्त|voter|election|polling|candidate/i;
   function scrub(s) { for (var i = 0; i < RULES.length; i++) s = s.replace(RULES[i][0], RULES[i][1]); return s; }
   // Text nodes only. Never scripts, styles, form values, attributes or JS data,
   // so what the page sends to the PC is never changed.
