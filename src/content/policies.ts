@@ -67,7 +67,7 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
   {
     key: "exe",
     label: p("सॉफ़्टवेयर — Windows 10 / 11", "Software — Windows 10 / 11"),
-    href: "https://drive.google.com/uc?export=download&id=1Ztn6mg2UBoBKx7GbJPakt_QLYtIq19zG",
+    href: "https://order.saubhagya.net/downloads/saubhagya-voter-slip-sample.exe",
     size: "73 MB",
   },
   {
@@ -76,13 +76,13 @@ export const SAMPLE_DOWNLOADS: { key: string; label: Bi; href: string; size: str
       "सॉफ़्टवेयर — Windows 7 / 8 (10 / 11 पर भी चलता है)",
       "Software — Windows 7 / 8 (also runs on 10 / 11)",
     ),
-    href: "https://drive.google.com/uc?export=download&id=1b1h3Pft24fEFLOwzQbOuYwMbheh6AyuE",
+    href: "https://order.saubhagya.net/downloads/saubhagya-voter-slip-sample-win7.exe",
     size: "57 MB",
   },
   {
     key: "sop",
     label: p("कैसे चलाएँ — SOP (PDF)", "How to use — SOP (PDF)"),
-    href: "",
+    href: "https://order.saubhagya.net/downloads/sop/sop_software_install.pdf",
     size: "0.2 MB",
   },
 ];
