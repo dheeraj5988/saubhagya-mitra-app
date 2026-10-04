@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Download, FileText, ListOrdered, MessageCircle, Send } from "lucide-react";
 
+import { HowToUse, OrderHowTo } from "@/components/HowToUse";
 import { LiveOrder } from "@/components/LiveOrder";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { buildEnquiryWhatsAppUrl } from "@/lib/campaign";
@@ -94,9 +95,13 @@ function Index() {
             : "छपाई-योग्य कस्टमाइज्ड टेम्पलेट्स — पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य।"}
         </p>
 
+        <OrderHowTo />
+
         <div className="mt-5">
           <LiveOrder />
         </div>
+
+        <HowToUse showSoftware={softwareActive} />
 
         <section className="mt-10">
           <h2 className="text-lg font-bold text-foreground">
