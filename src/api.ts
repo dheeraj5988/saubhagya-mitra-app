@@ -25,6 +25,21 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
     });
   }
 
+  // 0a. Checkout hand-off page on the approved website (see src/lib/pay-page.ts).
+  if (request.method === "GET" && path === "/pay") {
+    const { renderPayPage } = await import("@/lib/pay-page");
+    const page = renderPayPage(url.searchParams);
+    return new Response(page.html, {
+      status: page.status,
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "no-store",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-frame-options": "DENY",
+      },
+    });
+  }
+
   // 0b. PhonePe webhook. PhonePe calls this when a payment finishes. The body
   // is only a hint: the real status is fetched from PhonePe before anything
   // is marked paid, so a forged call cannot mark an order PAID.
