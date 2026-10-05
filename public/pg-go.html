@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex,nofollow">
+<title>भुगतान — सौभाग्य</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f6f7fb;color:#1f2937}
+.b{padding:24px;text-align:center;max-width:420px}
+.s{width:34px;height:34px;margin:0 auto 14px;border:4px solid #d9dcef;border-top-color:#5f259f;border-radius:50%;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+p{font-size:17px;line-height:1.5;margin:0}
+</style>
+</head>
+<body>
+<div class="b"><div class="s" id="s"></div><p id="m">PhonePe भुगतान पेज खुल रहा है…</p></div>
+<script>
+/* 05.10.2026 — PhonePe PG सिर्फ़ उसी वेबसाइट से भुगतान खोलने देता है जो onboarding में दर्ज है
+   (https://saubhagya.net/). order.saubhagya.net से सीधे खोलने पर PhonePe "INTERNAL_SECURITY_BLOCK_1"
+   देता है ("Something went wrong")। इसलिए ऑर्डर पेज भुगतान का लिंक यहाँ भेजता है और यह पेज
+   saubhagya.net की ओर से PhonePe खोल देता है। सिर्फ़ phonepe.com के https लिंक मान्य हैं। */
+(function () {
+  var u = "";
+  try { u = decodeURIComponent((location.hash || "").slice(1)); } catch (e) { u = ""; }
+  var ok = false;
+  try {
+    var x = new URL(u);
+    ok = x.protocol === "https:" && /(^|\.)phonepe\.com$/.test(x.hostname);
+  } catch (e) { ok = false; }
+  if (ok) {
+    location.href = u;
+  } else {
+    document.getElementById("s").style.display = "none";
+    document.getElementById("m").textContent =
+      "भुगतान का लिंक ठीक नहीं है — ऑर्डर पेज पर वापस जाकर फिर से “भुगतान करें” दबाइए।";
+  }
+})();
+</script>
+</body>
+</html>
