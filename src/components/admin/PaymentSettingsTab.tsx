@@ -287,6 +287,11 @@ export function PaymentSettingsTab({
               Disabled until onboarding is complete. Keys are stored server-side and never shown
               again after saving.
             </p>
+            <p className="mt-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900">
+              ध्यान दें: PhonePe की चाबियाँ अब सिर्फ़ Vercel के Environment Variables से पढ़ी जाती हैं
+              (PHONEPE_ENABLED, PHONEPE_ENV, PHONEPE_CLIENT_ID, PHONEPE_CLIENT_SECRET,
+              PHONEPE_CLIENT_VERSION). नीचे के खाने इस्तेमाल नहीं होते — यहाँ कोई चाबी मत डालिए।
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Switch

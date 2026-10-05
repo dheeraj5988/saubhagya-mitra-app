@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
+import { z } from "zod";
 
 import {
   LEAD_STATUSES,
   leadSchema,
   makeOrderId,
   orderSchema,
+  phoneSchema,
   sampleRequestSchema,
   visitSchema,
 } from "./orders.schema";
@@ -531,9 +533,77 @@ export const getPublicPaymentConfig = createServerFn({ method: "GET" })
       }
     }
 
+    const { isPhonePeEnabled } = await import("./phonepe.server");
+
     return {
       cashfree_enabled: Boolean(data?.cashfree_enabled),
       cashfree_env: data?.cashfree_env || "sandbox",
       software_enabled,
+      phonepe_enabled: isPhonePeEnabled(),
     };
+  });
+
+/**
+ * Starts a PhonePe payment for a website order. The amount always comes from
+ * the stored order — the browser only says WHICH order, and must know the
+ * mobile number that placed it.
+ */
+export const createPhonePeCheckout = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({ orderId: z.string().trim().min(1).max(40), phone: phoneSchema }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { isPhonePeEnabled, createPhonePePayment, makeMerchantOrderId, siteUrl } = await import(
+      "./phonepe.server"
+    );
+    if (!isPhonePeEnabled()) throw new Error("Online payment is not available right now");
+
+    const db = supabaseAdmin as any;
+    const { data: order } = await db
+      .from("orders")
+      .select("id, order_id, amount, contact_number, payment_status, status")
+      .eq("order_id", data.orderId)
+      .maybeSingle();
+    if (!order || order.contact_number !== data.phone) throw new Error("Order not found");
+    if (order.payment_status === "PAID") throw new Error("This order is already paid");
+
+    const amountPaise = Math.round(Number(order.amount ?? 0) * 100);
+    if (amountPaise < 100) throw new Error("Order amount is not available");
+
+    const merchantOrderId = makeMerchantOrderId(order.order_id);
+    const { error } = await db
+      .from("orders")
+      .update({ payment_gateway_order_id: merchantOrderId })
+      .eq("id", order.id);
+    if (error) throw new Error("Could not start the payment. Please try again.");
+
+    const payment = await createPhonePePayment({
+      merchantOrderId,
+      amountPaise,
+      redirectUrl: `${siteUrl()}/order/${encodeURIComponent(order.order_id)}?paid=1`,
+      message: `Order ${order.order_id}`,
+    });
+    return { redirectUrl: payment.redirectUrl };
+  });
+
+/** Called when the customer returns from PhonePe: asks PhonePe for the real status. */
+export const confirmPhonePePayment = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ orderId: z.string().trim().min(1).max(40) }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as any;
+    const { data: order } = await db
+      .from("orders")
+      .select("payment_status, payment_gateway_order_id")
+      .eq("order_id", data.orderId)
+      .maybeSingle();
+    if (!order) throw new Error("Order not found");
+    if (order.payment_status === "PAID") return { state: "COMPLETED" as const };
+    if (!order.payment_gateway_order_id) return { state: "NONE" as const };
+
+    const { isPhonePeEnabled, settlePhonePePayment } = await import("./phonepe.server");
+    if (!isPhonePeEnabled()) return { state: "NONE" as const };
+    const result = await settlePhonePePayment(order.payment_gateway_order_id);
+    return { state: result.state };
   });

@@ -47,7 +47,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { captureLeadPhone, createOrder, recordVisit, createCashfreePaymentSession, getPublicPaymentConfig } from "@/lib/orders.functions";
+import { captureLeadPhone, createOrder, recordVisit, createCashfreePaymentSession, createPhonePeCheckout, getPublicPaymentConfig } from "@/lib/orders.functions";
 // @ts-expect-error no types for cashfree-js
 import { load } from "@cashfreepayments/cashfree-js";
 import {
@@ -337,6 +337,28 @@ export function OrderForm() {
   const createCashfreeSession = useServerFn(createCashfreePaymentSession);
   const paymentConfigQuery = useQuery({ queryKey: ["paymentConfig"], queryFn: () => getPublicPaymentConfig() });
   const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
+
+  const startPhonePe = useServerFn(createPhonePeCheckout);
+
+  async function handlePhonePePayment() {
+    if (!success) return;
+    setIsRedirectingToPayment(true);
+    try {
+      const result = await startPhonePe({
+        data: { orderId: success.orderId, phone: contact.trim() },
+      });
+      // Same tab on purpose: PhonePe needs the referrer of this site.
+      window.location.href = result.redirectUrl;
+    } catch (e) {
+      console.error(e);
+      toast.error(
+        en
+          ? "Could not open PhonePe. Please try again or contact us on WhatsApp."
+          : "PhonePe नहीं खुल सका। दोबारा कोशिश कीजिए या WhatsApp पर संपर्क कीजिए।",
+      );
+      setIsRedirectingToPayment(false);
+    }
+  }
 
   async function handleOnlinePayment() {
     if (!success) return;
@@ -1721,7 +1743,18 @@ export function OrderForm() {
               ) : null}
             </div>
 
-            {paymentConfigQuery.data?.cashfree_enabled ? (
+            {paymentConfigQuery.data?.phonepe_enabled && success?.amount ? (
+              <Button
+                variant="hero"
+                size="lg"
+                className="w-full rounded-[10px]"
+                disabled={isRedirectingToPayment}
+                onClick={handlePhonePePayment}
+              >
+                {isRedirectingToPayment ? <Loader2 className="mr-2 size-5 animate-spin" /> : null}
+                {en ? "Pay with PhonePe" : "PhonePe से भुगतान कीजिए"}
+              </Button>
+            ) : paymentConfigQuery.data?.cashfree_enabled ? (
               <Button
                 variant="hero"
                 size="lg"

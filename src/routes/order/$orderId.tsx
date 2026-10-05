@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from '@tanstack/react-router';
+import { confirmPhonePePayment } from '@/lib/orders.functions';
 import { supabaseAdmin } from '@/integrations/supabase/client.server';
 import { generateDownloadUrl } from '@/lib/r2.server';
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
@@ -84,6 +86,42 @@ function OrderTrackingPage() {
   const [downloadLinks, setDownloadLinks] = useState<{ name: string; url: string }[] | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const [payNote, setPayNote] = useState<'checking' | 'paid' | 'failed' | 'pending' | null>(null);
+
+  // Returning from PhonePe (?paid=1): ask the server for the real status.
+  // The redirect itself is never trusted.
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('paid')) return;
+    let stop = false;
+    let tries = 0;
+    const check = async () => {
+      if (stop) return;
+      tries += 1;
+      try {
+        const r = await confirmPhonePePayment({ data: { orderId: order.order_id || order.id } });
+        if (stop) return;
+        if (r.state === 'COMPLETED') {
+          setPayNote('paid');
+          void router.invalidate();
+          return;
+        }
+        if (r.state === 'FAILED') {
+          setPayNote('failed');
+          return;
+        }
+      } catch {
+        // try again below
+      }
+      if (tries < 8) window.setTimeout(check, 4000);
+      else setPayNote('pending');
+    };
+    setPayNote('checking');
+    void check();
+    return () => {
+      stop = true;
+    };
+  }, [order.order_id, order.id, router]);
 
   const getStatusText = () => {
     if (order.payment_status === 'UNPAID' || order.payment_status === 'PENDING') return "Pending Payment";
@@ -139,6 +177,25 @@ function OrderTrackingPage() {
             <span className="text-muted-foreground">Status</span>
             <span className="font-bold text-primary">{getStatusText()}</span>
           </div>
+
+          {payNote && (
+            <p
+              className={
+                payNote === 'paid'
+                  ? 'rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800'
+                  : payNote === 'failed'
+                    ? 'rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800'
+                    : 'rounded-lg border bg-muted px-3 py-2 text-sm text-muted-foreground'
+              }
+            >
+              {payNote === 'checking' && 'भुगतान की पुष्टि हो रही है… / Confirming your payment…'}
+              {payNote === 'paid' && 'भुगतान मिल गया। धन्यवाद! / Payment received. Thank you!'}
+              {payNote === 'failed' &&
+                'भुगतान पूरा नहीं हुआ। पैसा कटा हो तो 5–7 दिन में वापस आ जाता है। / Payment did not complete.'}
+              {payNote === 'pending' &&
+                'भुगतान की पुष्टि अभी बाकी है। कुछ मिनट बाद यह पेज दोबारा खोलिए। / Payment is still being confirmed. Please reopen this page in a few minutes.'}
+            </p>
+          )}
 
           {hasFiles && !downloadLinks && (
             <div className="pt-4 space-y-3">

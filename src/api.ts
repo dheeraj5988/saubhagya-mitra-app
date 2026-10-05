@@ -25,6 +25,103 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
     });
   }
 
+  // 0b. PhonePe webhook. PhonePe calls this when a payment finishes. The body
+  // is only a hint: the real status is fetched from PhonePe before anything
+  // is marked paid, so a forged call cannot mark an order PAID.
+  if (request.method === "POST" && path === "/api/phonepe/webhook") {
+    try {
+      const { checkWebhookAuth, isPhonePeEnabled, settlePhonePePayment } = await import(
+        "@/lib/phonepe.server"
+      );
+      if (!isPhonePeEnabled()) return new Response("Not found", { status: 404 });
+      const auth = await checkWebhookAuth(request.headers.get("authorization"));
+      if (auth === "bad") return new Response("Unauthorized", { status: 401 });
+
+      const body = JSON.parse(await request.text());
+      const merchantOrderId = String(
+        body?.payload?.merchantOrderId ?? body?.payload?.originalMerchantOrderId ?? "",
+      );
+      if (!/^[A-Za-z0-9_-]{1,63}$/.test(merchantOrderId)) {
+        return new Response("Bad Request", { status: 400 });
+      }
+      await settlePhonePePayment(merchantOrderId);
+      return new Response("OK", { status: 200 });
+    } catch (err) {
+      console.error("[PhonePe Webhook] Error:", err);
+      // 500 makes PhonePe retry later.
+      return new Response("Error", { status: 500 });
+    }
+  }
+
+  // 0c. PhonePe for orders made on the PC order page (VS####). The PC app
+  // calls these with its private key (header X-PC-Key; only the key's sha256
+  // is stored on Vercel as PC_SYNC_KEY_SHA256).
+  if (path === "/api/pc/pay-link" || path === "/api/pc/pay-status") {
+    try {
+      const phonepe = await import("@/lib/phonepe.server");
+      const expected = (process.env["PC_SYNC_KEY_SHA256"] ?? "").trim().toLowerCase();
+      const given = request.headers.get("x-pc-key") ?? "";
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(given));
+      const givenHash = Array.from(new Uint8Array(digest))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      if (!given || expected.length !== 64 || !phonepe.timingSafeEqualStr(givenHash, expected)) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      if (!phonepe.isPhonePeEnabled()) {
+        return Response.json({ error: "PhonePe is switched off" }, { status: 503 });
+      }
+
+      if (request.method === "POST" && path === "/api/pc/pay-link") {
+        const body = await request.json();
+        const orderNo = String(body?.order_no ?? "");
+        const amountPaise = Number(body?.amount_paise);
+        if (!/^[A-Za-z0-9_-]{2,30}$/.test(orderNo) || !Number.isInteger(amountPaise) || amountPaise < 100) {
+          return Response.json({ error: "order_no and amount_paise (integer, paise) are required" }, { status: 400 });
+        }
+        // After paying, the customer returns to the PC order page for that order.
+        let redirectUrl = `https://order.saubhagya.net/order/${orderNo}`;
+        if (typeof body?.redirect_url === "string") {
+          try {
+            const u = new URL(body.redirect_url);
+            if (u.protocol === "https:" && (u.hostname === "saubhagya.net" || u.hostname.endsWith(".saubhagya.net"))) {
+              redirectUrl = u.toString();
+            }
+          } catch {
+            // keep the default
+          }
+        }
+        const merchantOrderId = phonepe.makeMerchantOrderId(orderNo);
+        const payment = await phonepe.createPhonePePayment({
+          merchantOrderId,
+          amountPaise,
+          redirectUrl,
+          message: `Order ${orderNo}`,
+        });
+        return Response.json({ merchant_order_id: merchantOrderId, pay_url: payment.redirectUrl, expires_in_seconds: 1800 });
+      }
+
+      if (request.method === "GET" && path === "/api/pc/pay-status") {
+        const merchantOrderId = url.searchParams.get("merchant_order_id") ?? "";
+        if (!/^[A-Za-z0-9_-]{1,63}$/.test(merchantOrderId)) {
+          return Response.json({ error: "merchant_order_id is required" }, { status: 400 });
+        }
+        const result = await phonepe.settlePhonePePayment(merchantOrderId);
+        return Response.json({
+          merchant_order_id: merchantOrderId,
+          order_no: result.orderRef,
+          state: result.state,
+          amount_paise: result.amountPaise,
+          phonepe_order_id: result.phonePeOrderId,
+        });
+      }
+      return new Response("Method not allowed", { status: 405 });
+    } catch (err: any) {
+      console.error("[PC PhonePe] Error:", err);
+      return Response.json({ error: err?.message || "PhonePe error" }, { status: 502 });
+    }
+  }
+
   // 1. Cashfree Webhook
   if (request.method === "POST" && path === "/api/cashfree/webhook") {
     try {
