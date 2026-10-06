@@ -1,19 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Download, FileText, ListOrdered, MessageCircle, Send } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { HowToUse, OrderHowTo } from "@/components/HowToUse";
-import { LiveOrder } from "@/components/LiveOrder";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
-import { buildEnquiryWhatsAppUrl } from "@/lib/campaign";
 import { useI18n } from "@/lib/i18n";
 import { getPublicPaymentConfig } from "@/lib/orders.functions";
-import { SERIES_RATES } from "@/lib/pricing";
 
+/**
+ * 06.10.2026 — owner: a clean home page with only the 4 main buttons.
+ * Each button opens our order page https://order.saubhagya.net/order with that
+ * choice already selected (?kind=pdf | sample | exe | data). Header and footer
+ * (policy links needed for PhonePe) stay as they are.
+ * Software (EXE) and Data buttons follow the admin "software" switch, as before.
+ */
 const TITLE = "सौभाग्य | Saubhagya — कस्टमाइज्ड प्रिंट-रेडी टेम्पलेट्स और डिजिटल पर्ची";
 const DESCRIPTION =
-  "छपाई-योग्य कस्टमाइज्ड टेम्पलेट्स और अभियान पर्ची PDF — P 15 पैसे, A 16 पैसे, Ph 20 पैसे प्रति पर्ची। डिजिटल डिलीवरी।";
+  "छपाई-योग्य कस्टमाइज्ड टेम्पलेट्स और अभियान पर्ची PDF — पंच, सरपंच, पंचायत समिति और ज़िला परिषद सदस्य। डिजिटल डिलीवरी।";
+
+const ORDER_URL = "https://order.saubhagya.net/order";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,10 +33,52 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const p = (r: number) => Math.round(r * 100);
+type Card = {
+  kind: "pdf" | "sample" | "exe" | "data";
+  icon: string;
+  hi: string;
+  en: string;
+  subHi: string;
+  subEn: string;
+};
+
+const CARDS: Card[] = [
+  {
+    kind: "pdf",
+    icon: "🧾",
+    hi: "वोटर पर्ची PDF",
+    en: "Voter slip PDF",
+    subHi: "पंच, सरपंच, पं.स. व ज़ि.प. प्रत्याशी — छपाई के लिए तैयार",
+    subEn: "Print-ready slips for every post",
+  },
+  {
+    kind: "sample",
+    icon: "🆓",
+    hi: "नमूना — मुफ़्त",
+    en: "Free sample",
+    subHi: "अपने क्षेत्र की नमूना पर्ची PDF तुरंत",
+    subEn: "A sample slip PDF for your area, instantly",
+  },
+  {
+    kind: "exe",
+    icon: "💻",
+    hi: "सॉफ़्टवेयर (EXE)",
+    en: "Software (EXE)",
+    subHi: "अपने कंप्यूटर पर ख़ुद पर्चियाँ बनाइए",
+    subEn: "Make slips yourself on your computer",
+  },
+  {
+    kind: "data",
+    icon: "📦",
+    hi: "डेटा — सॉफ़्टवेयर के लिए",
+    en: "Data — for the software",
+    subHi: "समिति / ज़िले का डेटा, सॉफ़्टवेयर पहले से हो तो",
+    subEn: "Samiti / district data for your software",
+  },
+];
 
 function Index() {
-  const { t, lang } = useI18n();
+  const { lang } = useI18n();
   const en = lang === "en";
   const fetchConfig = useServerFn(getPublicPaymentConfig);
   const { data: config } = useQuery({
@@ -41,117 +87,36 @@ function Index() {
     staleTime: 30_000,
   });
   const softwareActive = Boolean(config?.software_enabled);
-
-  const deliver = [
-    {
-      icon: FileText,
-      title: en ? "PDF slips" : "PDF पर्चियाँ",
-      body: en
-        ? "Booth-wise, ready to print on A4 — plain, with symbol, or with your banner."
-        : "बूथ-वार, A4 पर छपाई के लिए तैयार — सादी, प्रतीक चिन्ह वाली या आपके बैनर के साथ।",
-    },
-    {
-      icon: ListOrdered,
-      title: en ? "Different types of lists" : "विभिन्न प्रकार की सूचियाँ",
-      body: en
-        ? "Hindi alphabetical, English alphabetical and family-wise lists for booth work."
-        : "बूथ पर काम के लिए हिंदी वर्णमाला, English Alphabetical और परिवार वार सूची।",
-    },
-    {
-      icon: Send,
-      title: en ? "Digital delivery" : "डिजिटल डिलीवरी",
-      body: en
-        ? "Files come on WhatsApp after payment. We do not print or courier anything."
-        : "भुगतान के बाद फ़ाइलें WhatsApp पर। हम छपाई या कूरियर नहीं करते।",
-    },
-  ];
+  const cards = CARDS.filter((c) => softwareActive || (c.kind !== "exe" && c.kind !== "data"));
 
   return (
-    <div className="min-h-screen bg-page">
+    <div className="flex min-h-screen flex-col bg-page">
       <SiteHeader />
-
-      <main id="order" className="mx-auto max-w-6xl px-4 pt-5">
-        {/* Rate strip — gateway reviewers look for prices on the home page. */}
-        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[10px] border border-[oklch(0.892_0.053_262.7)] bg-brand-soft px-4 py-2.5 text-[13.5px] text-ink2">
-          <span className="font-bold text-saffron-deep">{en ? "Rates:" : "रेट:"}</span>
-          <span>
-            P {p(SERIES_RATES.P)} · A {p(SERIES_RATES.A)} · Ph {p(SERIES_RATES.Ph)}{" "}
-            {en ? "paise per slip" : "पैसे प्रति पर्ची"}
-          </span>
-          <span className="text-muted-foreground">
-            {en ? "Amount = slips × rate" : "राशि = पर्ची × रेट"}
-          </span>
-          <Link to="/pricing" className="font-semibold text-primary underline underline-offset-4">
-            {en ? "Full rate list" : "पूरी रेट सूची"}
-          </Link>
-        </div>
-
-        <h1 className="text-xl font-bold text-foreground sm:text-2xl">
-          {t("order.heading")}
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-4 py-10">
+        <h1 className="text-center text-2xl font-bold text-slate-800 sm:text-3xl">
+          {en ? "What do you need?" : "आपको क्या चाहिए?"}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {en
-            ? "Print-ready customized templates — Panch, Sarpanch, Panchayat Samiti and Zila Parishad areas."
-            : "छपाई-योग्य कस्टमाइज्ड टेम्पलेट्स — पंच, सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य।"}
-        </p>
-
-        <OrderHowTo />
-
-        <div className="mt-5">
-          <LiveOrder />
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {cards.map((c) => (
+            <a
+              key={c.kind}
+              href={`${ORDER_URL}?kind=${c.kind}`}
+              className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+            >
+              <span className="text-4xl leading-none" aria-hidden="true">
+                {c.icon}
+              </span>
+              <span className="flex flex-col">
+                <span className="text-lg font-semibold text-slate-800 group-hover:text-primary">
+                  {en ? c.en : c.hi}
+                </span>
+                <span className="mt-0.5 text-sm text-slate-500">{en ? c.subEn : c.subHi}</span>
+              </span>
+            </a>
+          ))}
         </div>
-
-        <HowToUse showSoftware={softwareActive} />
-
-        <section className="mt-10">
-          <h2 className="text-lg font-bold text-foreground">
-            {en ? "What we deliver" : "हम क्या देते हैं"}
-          </h2>
-          <div className={`mt-3 grid gap-3 sm:grid-cols-2 ${softwareActive ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
-            {deliver.map((item) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-border bg-card p-4 shadow-card"
-              >
-                <item.icon className="size-5 text-primary" aria-hidden />
-                <p className="mt-2 font-bold text-foreground">{item.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
-              </div>
-            ))}
-            {softwareActive && (
-              <Link
-                to="/software"
-                className="rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-primary"
-              >
-                <Download className="size-5 text-primary" aria-hidden />
-                <p className="mt-2 font-bold text-foreground">
-                  {en ? "Software licence" : "सॉफ़्टवेयर लाइसेंस"}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {en
-                    ? "For a whole panchayat samiti or district — make unlimited slips on your own computer."
-                    : "पूरी पंचायत समिति या ज़िले के लिए — अपने कंप्यूटर पर जितनी चाहें पर्चियाँ।"}
-                </p>
-                <p className="mt-2 text-sm font-semibold text-primary underline underline-offset-4">
-                  {en ? "Download the free sample" : "मुफ़्त नमूना डाउनलोड कीजिए"}
-                </p>
-              </Link>
-            )}
-          </div>
-        </section>
       </main>
-
       <SiteFooter />
-
-      <a
-        href={buildEnquiryWhatsAppUrl(lang)}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="WhatsApp"
-        className="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-success text-white shadow-elevated transition-transform hover:scale-105"
-      >
-        <MessageCircle className="size-7" />
-      </a>
     </div>
   );
 }
