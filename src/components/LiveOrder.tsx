@@ -1,31 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { OrderForm } from "@/components/OrderForm";
 import { useI18n } from "@/lib/i18n";
 
 /**
- * The order + sample page runs on Saubhagya's own computer and is published
- * through Cloudflare Tunnel at order.saubhagya.net. When it answers, it is shown
- * here; when that computer is off, the older order form below is used instead.
+ * 06.10.2026 — PhonePe review: the customer flow must go from saubhagya.net to the
+ * order page at https://order.saubhagya.net/order (same business, our own sub-domain).
+ * So the home page no longer embeds the order page in an iframe; it shows a clear
+ * "Order" button that opens https://order.saubhagya.net/order in the same tab.
  *
- * On a phone the live page opens full screen by default. A history entry is
- * pushed for that, so the phone's Back button (or the "back to site" button)
- * returns to the normal page without reloading the order page.
+ * The order page runs on Saubhagya's own computer (Cloudflare Tunnel). When that
+ * computer is off, the older order form below is shown instead (as before).
  */
 const ORDER_URL = "https://order.saubhagya.net/order";
 const PROBE_URL = "https://order.saubhagya.net/symbols/p01.png";
-const PHONE = "(max-width: 767px)";
-
-function isPhone() {
-  return typeof window !== "undefined" && window.matchMedia(PHONE).matches;
-}
 
 export function LiveOrder() {
   const { lang } = useI18n();
   const en = lang === "en";
   const [state, setState] = useState<"check" | "live" | "off">("check");
   const [qs, setQs] = useState("");
-  const [full, setFull] = useState(false);
 
   useEffect(() => {
     setQs(window.location.search);
@@ -47,96 +41,39 @@ export function LiveOrder() {
     };
   }, []);
 
-  // Phone: full screen as soon as the live page is available; Back = normal view.
-  useEffect(() => {
-    if (state !== "live" || !isPhone()) return;
-    window.history.pushState({ sbgFull: true }, "");
-    setFull(true);
-  }, [state]);
+  if (state === "off") return <OrderForm />;
 
-  useEffect(() => {
-    const onPop = () => setFull(false);
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
+  const href = ORDER_URL + qs;
 
-  useEffect(() => {
-    if (!full) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [full]);
-
-  const enterFull = useCallback((e: { preventDefault: () => void }) => {
-    if (!isPhone()) return; // desktop keeps the new-tab link
-    e.preventDefault();
-    window.history.pushState({ sbgFull: true }, "");
-    setFull(true);
-  }, []);
-
-  if (state === "check") {
-    return (
-      <p className="rounded-xl border bg-white px-4 py-6 text-center text-sm text-muted-foreground">
-        {en ? "Opening the order form…" : "ऑर्डर फ़ॉर्म खुल रहा है…"}
-      </p>
-    );
-  }
-
-  if (state === "off") {
-    return <OrderForm />;
-  }
-
-  const src = `${ORDER_URL}${qs}`;
-
-  // The iframe stays the first child in both modes so React only updates its
-  // className — moving or remounting it would reload the order page.
   return (
-    <div
-      className={
-        full
-          ? "fixed inset-0 z-[100] flex flex-col bg-white"
-          : "overflow-hidden rounded-2xl border bg-white shadow-sm"
-      }
-    >
-      <iframe
-        title={en ? "Order" : "ऑर्डर"}
-        src={src}
-        className={
-          full
-            ? "block min-h-0 w-full flex-1 border-0"
-            : "block h-[85dvh] min-h-[560px] w-full border-0"
-        }
-        allow="clipboard-write"
-      />
-      {full ? (
-        <div className="order-first flex h-10 shrink-0 items-center gap-2 border-b bg-white px-2">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="rounded-lg border px-3 py-1 text-sm font-semibold text-primary"
-          >
-            {en ? "← Back to site" : "← साइट पर वापस"}
-          </button>
-          <span className="truncate text-xs text-muted-foreground">
-            {en ? "Order page — full screen" : "ऑर्डर पेज — पूरी स्क्रीन"}
-          </span>
-        </div>
-      ) : (
-        <p className="border-t px-3 py-2 text-xs text-muted-foreground">
-          {en ? "Easier on a phone: " : "फ़ोन पर आसान: "}
-          <a
-            href={src}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={enterFull}
-            className="font-semibold text-primary underline underline-offset-4"
-          >
-            {en ? "open the order page full screen" : "ऑर्डर पेज पूरी स्क्रीन पर खोलिए"}
-          </a>
-        </p>
-      )}
+    <div className="rounded-2xl border bg-white px-5 py-6 text-center shadow-sm">
+      <h3 className="text-lg font-bold">
+        {en ? "Place your order on our order page" : "हमारे ऑर्डर पेज पर ऑर्डर कीजिए"}
+      </h3>
+      <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+        {en
+          ? "Choose your area and design, see a sample slip, and pay securely (PhonePe / UPI / cards). Your PDFs come on WhatsApp."
+          : "अपना क्षेत्र और डिज़ाइन चुनिए, पर्ची का नमूना देखिए और सुरक्षित भुगतान कीजिए (PhonePe / UPI / कार्ड)। आपकी PDF WhatsApp पर आती हैं।"}
+      </p>
+      <a
+        href={href}
+        className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground hover:opacity-90"
+      >
+        {state === "check"
+          ? en
+            ? "Order now →"
+            : "ऑर्डर करें →"
+          : en
+            ? "Order now — open order page →"
+            : "ऑर्डर करें — ऑर्डर पेज खोलें →"}
+      </a>
+      <p className="mt-3 text-xs text-muted-foreground">
+        {en ? "Opens " : "खुलेगा: "}
+        <a href={href} className="underline">
+          order.saubhagya.net/order
+        </a>
+        {en ? " — Saubhagya's official order page." : " — सौभाग्य का आधिकारिक ऑर्डर पेज।"}
+      </p>
     </div>
   );
 }
