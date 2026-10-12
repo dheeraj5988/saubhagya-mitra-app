@@ -12,6 +12,12 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Outside Vercel/Lovable, build a plain Node.js server (.output/server/index.mjs)
+  // that listens on PORT/HOST — needed for Node hosts such as Cloudways.
+  // Vercel is still auto-detected (VERCEL env), and Lovable's own builds force
+  // their preset, so neither is affected. Override with NITRO_PRESET=... if needed.
+  // `defaultPreset` is a valid nitro option; the wrapper's type just omits it.
+  nitro: { defaultPreset: "node-server" } as unknown as { preset?: string },
   vite: {
     ssr: {
       noExternal: ["aws4fetch"]
