@@ -242,8 +242,14 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
       }
       window.localStorage.setItem(ADMIN_TOKEN_KEY, result.token);
       onSuccess(result.token);
-    } catch {
-      setError("Unable to sign in right now. Please retry.");
+    } catch (err) {
+      // Setup problems (missing env / database) are shown as-is so the owner
+      // can fix them; anything else stays generic.
+      const msg = err instanceof Error ? err.message : "";
+      const setup = msg.indexOf("SETUP:");
+      setError(
+        setup >= 0 ? msg.slice(setup + 6).trim() : "Unable to sign in right now. Please retry.",
+      );
     } finally {
       setBusy(false);
       setPassword("");

@@ -46,7 +46,12 @@ export const adminLogin = createServerFn({ method: "POST" })
     } = await import("./admin.server");
 
     const expected = process.env["ADMIN_PASSWORD"];
-    if (!expected) throw new Error("Admin password is not configured");
+    if (!expected) {
+      throw new Error("SETUP: ADMIN_PASSWORD is not set on the server (check the host's environment variables).");
+    }
+    if (!process.env["SUPABASE_URL"] || !process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      throw new Error("SETUP: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set on the server.");
+    }
 
     const key = await clientKey();
     const limit = await getLoginRateLimit(key);
@@ -72,7 +77,13 @@ export const adminLogin = createServerFn({ method: "POST" })
     }
 
     await clearLoginFailures(key);
-    const session = await createSession();
+    let session: Awaited<ReturnType<typeof createSession>>;
+    try {
+      session = await createSession();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`SETUP: database error while signing in — ${msg.slice(0, 160)}`);
+    }
     return { ok: true as const, token: session.token, expires_at: session.expires_at };
   });
 

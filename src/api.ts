@@ -25,6 +25,41 @@ export async function handleApiRoutes(request: Request, url: URL): Promise<Respo
     });
   }
 
+  // Setup check: https://saubhagya.net/api/health
+  // Shows only yes/no — never any key or value — so it is safe to open.
+  if (request.method === "GET" && path === "/api/health") {
+    const names = [
+      "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_PUBLISHABLE_KEY",
+      "ADMIN_PASSWORD", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY",
+      "PHONEPE_ENABLED", "PHONEPE_CLIENT_ID", "PHONEPE_CLIENT_SECRET",
+    ];
+    const env = Object.fromEntries(names.map((n) => [n, Boolean((process.env[n] ?? "").trim())]));
+    const supabaseProject = (() => {
+      try {
+        return new URL(process.env["SUPABASE_URL"] ?? "").hostname.split(".")[0] || null;
+      } catch {
+        return null;
+      }
+    })();
+    const db: Record<string, string> = {};
+    if (env["SUPABASE_URL"] && env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      for (const table of ["admin_sessions", "admin_login_attempts", "payment_config", "orders"]) {
+        try {
+          const { error } = await (supabaseAdmin as any)
+            .from(table)
+            .select("*", { count: "exact", head: true });
+          db[table] = error ? `error: ${error.code ?? ""} ${error.message ?? ""}`.slice(0, 120) : "ok";
+        } catch (e: any) {
+          db[table] = `error: ${String(e?.message ?? e).slice(0, 120)}`;
+        }
+      }
+    }
+    return Response.json(
+      { env, supabase_project: supabaseProject, db, node: process.version },
+      { headers: { "cache-control": "no-store" } },
+    );
+  }
+
   // 0a. Checkout hand-off page on the approved website (see src/lib/pay-page.ts).
   if (request.method === "GET" && path === "/pay") {
     const { renderPayPage } = await import("@/lib/pay-page");
