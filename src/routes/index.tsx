@@ -52,10 +52,10 @@ const CARDS: Card[] = [
   {
     kind: "adv",
     icon: "🗓",
-    hi: "सरपंच / पंच — अग्रिम बुकिंग (चिन्ह सहित)",
-    en: "Sarpanch / Panch — Advance booking (with symbol)",
-    subHi: "चिन्ह मिलने वाले दिन सबसे ज़्यादा भीड़ होती है — अभी अपना 1 घंटे का स्लॉट पक्का कीजिए; जानकारी भरते ही फ़ाइलें स्लॉट ख़त्म होने के 15 मिनट के अंदर।",
-    subEn: "The symbol-allotment day is the busiest — book your 1-hour slot now; files within 15 minutes of your slot ending.",
+    hi: "सरपंच / पंच — अग्रिम बुकिंग · 1 घंटे में चुनाव-चिन्ह सहित पर्चियाँ",
+    en: "Sarpanch / Panch — Advance booking · slips with symbol within 1 hour",
+    subHi: "चुनाव-चिन्ह मिलने वाले दिन सबसे ज़्यादा भीड़ होती है — अभी अपना 1 घंटे का स्लॉट पक्का कीजिए; स्लॉट में जानकारी भरिए, चुनाव-चिन्ह सहित पर्चियाँ लगभग 1 घंटे में।",
+    subEn: "The symbol-allotment day is the busiest — book your 1-hour slot now; fill in your details in the slot and get your slips with the symbol in about an hour.",
     hot: true,
     badgeHi: "नया · सीमित स्लॉट",
     badgeEn: "New · limited slots",
@@ -150,7 +150,7 @@ function Index() {
         <p className="mt-6 text-right text-xs text-slate-400">
           <a
             href="https://order.saubhagya.net/order/matpatra"
-            className="underline-offset-2 hover:text-slate-600 hover:underline"
+            className="inline-block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-slate-600 no-underline hover:border-primary hover:text-primary"
           >
             {en ? "🗳 Free sample ballot / EVM →" : "🗳 नमूना मतपत्र / EVM (फ़्री) →"}
           </a>
