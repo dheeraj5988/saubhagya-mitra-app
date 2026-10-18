@@ -34,7 +34,13 @@ export const Route = createFileRoute("/")({
 });
 
 type Card = {
-  kind: "pdf" | "sample" | "exe" | "data";
+  kind: "adv" | "matpatra" | "pdf" | "sample" | "exe" | "data";
+  /** 18.10.2026 — order site par seedha alag pej (kind ki jagah) */
+  href?: string;
+  /** 18.10.2026 — highlighted (agrim booking) */
+  hot?: boolean;
+  badgeHi?: string;
+  badgeEn?: string;
   icon: string;
   hi: string;
   en: string;
@@ -43,6 +49,26 @@ type Card = {
 };
 
 const CARDS: Card[] = [
+  {
+    kind: "adv",
+    icon: "🗓",
+    hi: "सरपंच / पंच — अग्रिम बुकिंग (चिन्ह सहित)",
+    en: "Sarpanch / Panch — Advance booking (with symbol)",
+    subHi: "चिन्ह मिलने वाले दिन सबसे ज़्यादा भीड़ होती है — अभी अपना 1 घंटे का स्लॉट पक्का कीजिए; जानकारी भरते ही फ़ाइलें स्लॉट ख़त्म होने के 15 मिनट के अंदर।",
+    subEn: "The symbol-allotment day is the busiest — book your 1-hour slot now; files within 15 minutes of your slot ending.",
+    hot: true,
+    badgeHi: "नया · सीमित स्लॉट",
+    badgeEn: "New · limited slots",
+  },
+  {
+    kind: "matpatra",
+    icon: "🗳",
+    hi: "नमूना मतपत्र / EVM — फ़्री",
+    en: "Free sample ballot / EVM",
+    subHi: "नाम + क्रम संख्या भरिए — मतदाता को समझाने वाला नमूना PDF तुरंत, बिल्कुल मुफ़्त",
+    subEn: "Enter name + serial no. — a sample ballot / EVM PDF instantly, free",
+    href: "https://order.saubhagya.net/order/matpatra",
+  },
   {
     kind: "pdf",
     icon: "🧾",
@@ -54,8 +80,8 @@ const CARDS: Card[] = [
   {
     kind: "sample",
     icon: "🆓",
-    hi: "नमूना — मुफ़्त",
-    en: "Free sample",
+    hi: "नमूना PDF — फ़्री",
+    en: "Free sample PDF",
     subHi: "अपने क्षेत्र की नमूना पर्ची PDF तुरंत",
     subEn: "A sample slip PDF for your area, instantly",
   },
@@ -100,14 +126,29 @@ function Index() {
           {cards.map((c) => (
             <a
               key={c.kind}
-              href={`${ORDER_URL}?kind=${c.kind}`}
-              className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+              href={c.href ?? `${ORDER_URL}?kind=${c.kind}`}
+              className={
+                c.hot
+                  ? "group relative flex items-center gap-4 rounded-2xl border-2 border-orange-600 bg-gradient-to-br from-orange-50 to-orange-100 p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg sm:col-span-2"
+                  : "group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+              }
             >
+              {c.hot && (
+                <span className="absolute -top-2.5 right-3 rounded-full bg-orange-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                  {en ? c.badgeEn : c.badgeHi}
+                </span>
+              )}
               <span className="text-4xl leading-none" aria-hidden="true">
                 {c.icon}
               </span>
               <span className="flex flex-col">
-                <span className="text-lg font-semibold text-slate-800 group-hover:text-primary">
+                <span
+                  className={
+                    c.hot
+                      ? "text-lg font-bold text-orange-800"
+                      : "text-lg font-semibold text-slate-800 group-hover:text-primary"
+                  }
+                >
                   {en ? c.en : c.hi}
                 </span>
                 <span className="mt-0.5 text-sm text-slate-500">{en ? c.subEn : c.subHi}</span>
