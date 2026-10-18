@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Card = {
-  kind: "adv" | "matpatra" | "pdf" | "sample" | "exe" | "data";
+  kind: "adv" | "pdf" | "sample" | "exe" | "data";
   /** 18.10.2026 — order site par seedha alag pej (kind ki jagah) */
   href?: string;
   /** 18.10.2026 — highlighted (agrim booking) */
@@ -59,15 +59,6 @@ const CARDS: Card[] = [
     hot: true,
     badgeHi: "नया · सीमित स्लॉट",
     badgeEn: "New · limited slots",
-  },
-  {
-    kind: "matpatra",
-    icon: "🗳",
-    hi: "नमूना मतपत्र / EVM — फ़्री",
-    en: "Free sample ballot / EVM",
-    subHi: "नाम + क्रम संख्या भरिए — मतदाता को समझाने वाला नमूना PDF तुरंत, बिल्कुल मुफ़्त",
-    subEn: "Enter name + serial no. — a sample ballot / EVM PDF instantly, free",
-    href: "https://order.saubhagya.net/order/matpatra",
   },
   {
     kind: "pdf",
@@ -156,6 +147,14 @@ function Index() {
             </a>
           ))}
         </div>
+        <p className="mt-6 text-right text-xs text-slate-400">
+          <a
+            href="https://order.saubhagya.net/order/matpatra"
+            className="underline-offset-2 hover:text-slate-600 hover:underline"
+          >
+            {en ? "🗳 Free sample ballot / EVM →" : "🗳 नमूना मतपत्र / EVM (फ़्री) →"}
+          </a>
+        </p>
       </main>
       <SiteFooter />
     </div>
