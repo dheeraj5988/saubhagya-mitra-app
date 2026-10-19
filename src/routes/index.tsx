@@ -94,6 +94,70 @@ const CARDS: Card[] = [
   },
 ];
 
+
+/**
+ * 19.10.2026 — owner: use the empty side space (wide screens) to show samples of every slip
+ * design we make. Images are rendered by the PC app (order.saubhagya.net/namune/<id>.png, with the
+ * design code as a light purple watermark); a missing image just hides its card.
+ */
+const NAMUNE_BASE = "https://order.saubhagya.net/namune/";
+type Namuna = { png: string; id: string; hi: string; en: string };
+const NAMUNE_LEFT: Namuna[] = [
+  { png: "SR-10", id: "SR-10", hi: "चिन्ह दायीं ओर — उम्मीदवार का नाम, चिन्ह व क्रम", en: "Symbol right — name, symbol & serial" },
+  { png: "SR-10_pic", id: "SR-10", hi: "चिन्ह की पट्टी में आपकी फ़ोटो / छोटा बैनर", en: "Your photo / small banner in the strip" },
+  { png: "SL-10", id: "SL-10", hi: "चिन्ह बायीं ओर", en: "Symbol left" },
+  { png: "SL-10_pic", id: "SL-10", hi: "पट्टी में आपकी फ़ोटो / बैनर", en: "Your photo / banner in the strip" },
+  { png: "P-16", id: "P-16", hi: "सादी — 16 स्लिप, चौड़ा पेज", en: "Plain — 16 per page" },
+  { png: "P-12", id: "P-12", hi: "सादी — 12 स्लिप", en: "Plain — 12 per page" },
+  { png: "P-10", id: "P-10", hi: "सादी — 10 स्लिप", en: "Plain — 10 per page" },
+  { png: "P-9", id: "P-9", hi: "सादी — 9 स्लिप, चौड़ा पेज", en: "Plain — 9 per page" },
+  { png: "P-8", id: "P-8", hi: "सादी — 8 स्लिप (बड़ी)", en: "Plain — 8 (large)" },
+  { png: "P-6", id: "P-6", hi: "सादी — 6 स्लिप (बड़ी)", en: "Plain — 6 (large)" },
+  { png: "P-4", id: "P-4", hi: "सादी — 4 स्लिप (सबसे बड़ी)", en: "Plain — 4 (largest)" },
+];
+const NAMUNE_RIGHT: Namuna[] = [
+  { png: "AT-9", id: "AT-9", hi: "विज्ञापन ऊपर — 9 स्लिप; यहाँ आपका दिया बैनर / फ़ोटो छपता है", en: "Ad on top — 9; your banner / photo prints here" },
+  { png: "AT-8", id: "AT-8", hi: "विज्ञापन ऊपर — 8 स्लिप", en: "Ad on top — 8" },
+  { png: "AL-8", id: "AL-8", hi: "विज्ञापन बायीं ओर — 8 स्लिप", en: "Ad left — 8" },
+  { png: "AR-8", id: "AR-8", hi: "विज्ञापन दायीं ओर — 8 स्लिप", en: "Ad right — 8" },
+  { png: "AL-8a", id: "AL-8a", hi: "पूरी चौड़ाई, विज्ञापन बायीं ओर", en: "Full width, ad left" },
+  { png: "AR-8a", id: "AR-8a", hi: "पूरी चौड़ाई, विज्ञापन दायीं ओर", en: "Full width, ad right" },
+  { png: "AT-4", id: "AT-4", hi: "विज्ञापन ऊपर — 4 स्लिप (सबसे बड़ी)", en: "Ad on top — 4 (largest)" },
+  { png: "AL-4", id: "AL-4", hi: "पूरी चौड़ाई, विज्ञापन बायीं ओर (सबसे बड़ी)", en: "Full width, ad left (largest)" },
+  { png: "AR-4", id: "AR-4", hi: "पूरी चौड़ाई, विज्ञापन दायीं ओर (सबसे बड़ी)", en: "Full width, ad right (largest)" },
+];
+
+function NamuneRail({ items, title, en }: { items: Namuna[]; title: string; en: boolean }) {
+  return (
+    <aside className="sticky top-4 hidden max-h-[calc(100vh-2rem)] w-64 shrink-0 overflow-y-auto pr-1 xl:block">
+      <h2 className="mb-2 text-sm font-bold text-slate-700">{title}</h2>
+      {items.map((n) => (
+        <figure
+          key={n.png}
+          className="mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm"
+          onError={(e) => {
+            (e.currentTarget as HTMLElement).style.display = "none";
+          }}
+        >
+          <img
+            src={`${NAMUNE_BASE}${n.png}.png`}
+            alt={n.id}
+            loading="lazy"
+            className="block w-full rounded-md bg-slate-50"
+            onError={(e) => {
+              const f = e.currentTarget.closest("figure") as HTMLElement | null;
+              if (f) f.style.display = "none";
+            }}
+          />
+          <figcaption className="mt-1 text-[11px] leading-snug text-slate-600">
+            <b className="text-slate-800">{n.id}</b> — {en ? n.en : n.hi}
+          </figcaption>
+        </figure>
+      ))}
+    </aside>
+  );
+}
+
 function Index() {
   const { lang } = useI18n();
   const en = lang === "en";
@@ -109,7 +173,9 @@ function Index() {
   return (
     <div className="flex min-h-screen flex-col bg-page">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-4 py-10">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 justify-center gap-6 px-4 py-10">
+      <NamuneRail items={NAMUNE_LEFT} title={en ? "Slip designs — plain & with symbol" : "पर्ची के डिज़ाइन — सादी व चिन्ह वाली"} en={en} />
+      <main className="flex w-full max-w-3xl flex-1 flex-col justify-center">
         <h1 className="text-center text-2xl font-bold text-slate-800 sm:text-3xl">
           {en ? "What do you need?" : "आपको क्या चाहिए?"}
         </h1>
@@ -156,6 +222,8 @@ function Index() {
           </a>
         </p>
       </main>
+      <NamuneRail items={NAMUNE_RIGHT} title={en ? "With advertisement (your banner)" : "विज्ञापन वाली (आपका बैनर / फ़ोटो)"} en={en} />
+      </div>
       <SiteFooter />
     </div>
   );
