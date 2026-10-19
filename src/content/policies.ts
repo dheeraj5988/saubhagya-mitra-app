@@ -51,7 +51,7 @@ const taxEn = isComposition()
 /* ------------------------------------------------------------------ */
 
 /** Software licence fee per voter (in rupees) of the licensed area. */
-export const LICENCE_RATES = { all: 0.3, one: 0.2 } as const;
+export const LICENCE_RATES = { all: 0.25, gp: 0.2, zpps: 0.15, one: 0.2 } as const;
 
 /** Code that opens the free sample data inside the software. */
 export const SAMPLE_CODE = "Guest@123";
@@ -216,24 +216,42 @@ export const PRICING_ROWS: {
 }[] = [
   {
     series: "P",
-    what: p("सादी पर्ची — पूरी जानकारी", "Plain slip — full details"),
+    what: p("पंच — सादी पर्ची, पूरी जानकारी", "Panch — plain slip, full details"),
     designs: "P-16, P-12",
     rate: SERIES_RATES.P,
   },
   {
     series: "A",
-    what: p("विज्ञापन / बैनर — P + आपका बैनर", "Advertisement / banner — P + your banner"),
+    what: p("पंच — विज्ञापन / बैनर (P + आपका बैनर)", "Panch — advertisement / banner — P + your banner"),
     designs: "AT-9, AT-8, AL-8, AR-8",
     rate: SERIES_RATES.A,
   },
   {
     series: "Ph",
     what: p(
-      "फ़ोटो सहित (जहाँ फ़ोटो-सूची उपलब्ध हो)",
-      "With photo (where the photo roll is available)",
+      "पंच — फ़ोटो सहित (जहाँ फ़ोटो-सूची उपलब्ध हो)",
+      "Panch — with photo (where the photo roll is available)",
     ),
     designs: "—",
     rate: SERIES_RATES.Ph,
+  },
+  {
+    series: "—",
+    what: p(
+      "सरपंच / पंचायत समिति सदस्य / ज़िला परिषद सदस्य — सभी डिज़ाइन (विशेष रेट)",
+      "Sarpanch / Panchayat Samiti member / Zila Parishad member — all designs (special rate)",
+    ),
+    designs: "सभी",
+    rate: 0.1,
+  },
+  {
+    series: "Ph",
+    what: p(
+      "सरपंच / पंचायत समिति सदस्य / ज़िला परिषद सदस्य — फ़ोटो सहित",
+      "Sarpanch / PS member / ZP member — with photo",
+    ),
+    designs: "—",
+    rate: 0.15,
   },
 ];
 
@@ -247,16 +265,28 @@ export const LICENCE_ROWS: { code: string; what: Bi; rate: number }[] = [
     rate: LICENCE_RATES.all,
   },
   {
-    code: "L1",
+    code: "L2",
     what: p(
-      "सॉफ़्टवेयर लाइसेंस — कोई एक पद; सारे डिज़ाइन, PDF असीमित",
-      "Software licence — any one post; all designs, unlimited PDFs",
+      "सॉफ़्टवेयर लाइसेंस — पंच + सरपंच; सारे डिज़ाइन, PDF असीमित",
+      "Software licence — Panch + Sarpanch; all designs, unlimited PDFs",
     ),
-    rate: LICENCE_RATES.one,
+    rate: LICENCE_RATES.gp,
+  },
+  {
+    code: "L3",
+    what: p(
+      "सॉफ़्टवेयर लाइसेंस — ज़िला परिषद सदस्य + पंचायत समिति सदस्य; सारे डिज़ाइन, PDF असीमित",
+      "Software licence — Zila Parishad member + Panchayat Samiti member; all designs, unlimited PDFs",
+    ),
+    rate: LICENCE_RATES.zpps,
   },
 ];
 
 export const PRICING_NOTES: Bi[] = [
+  p(
+    "सरपंच, पंचायत समिति सदस्य और ज़िला परिषद सदस्य के ऑर्डर पर विशेष रेट — सभी डिज़ाइन 10 पैसे / पर्ची, फ़ोटो सहित (Ph) 15 पैसे / पर्ची। पंच के लिए ऊपर की तालिका के रेट।",
+    "Special rates for Sarpanch, Panchayat Samiti member and Zila Parishad member orders — all designs 10 paise / slip, with photo (Ph) 15 paise / slip. Panch orders follow the table above.",
+  ),
   p(
     "राशि = चुने हुए वार्ड / भाग की संख्या × प्रति-पर्ची रेट। संख्या ऑर्डर फ़ॉर्म पर चुनते ही दिखती है, और भुगतान से पहले पूरी राशि बताई जाती है।",
     "Amount = count in the selected ward / booths × per-slip rate. The count appears on the order form as you select, and the full amount is shown before payment.",
@@ -355,8 +385,8 @@ export const TERMS: PolicyDoc = {
       title: p("5. रेट", "5. Pricing"),
       paras: [
         p(
-          `अभियान पर्चियाँ: राशि = चुने हुए क्षेत्र की संख्या × प्रति-पर्ची रेट (P ${paise(SERIES_RATES.P)} पैसे, A ${paise(SERIES_RATES.A)} पैसे, Ph ${paise(SERIES_RATES.Ph)} पैसे)। सॉफ़्टवेयर लाइसेंस: शुल्क = लाइसेंस वाले क्षेत्र की संख्या × लाइसेंस रेट (चारों पद ${paise(LICENCE_RATES.all)} पैसे, एक पद ${paise(LICENCE_RATES.one)} पैसे)। पूरी रेट सूची: saubhagya.net/pricing`,
-          `Campaign slips: amount = count in the selected area × per-slip rate (P ${paise(SERIES_RATES.P)} paise, A ${paise(SERIES_RATES.A)} paise, Ph ${paise(SERIES_RATES.Ph)} paise). Software licence: fee = count in the licensed area × licence rate (all four posts ${paise(LICENCE_RATES.all)} paise, one post ${paise(LICENCE_RATES.one)} paise). Full rate list: saubhagya.net/pricing`,
+          `अभियान पर्चियाँ: राशि = चुने हुए क्षेत्र की संख्या × प्रति-पर्ची रेट (P ${paise(SERIES_RATES.P)} पैसे, A ${paise(SERIES_RATES.A)} पैसे, Ph ${paise(SERIES_RATES.Ph)} पैसे; सरपंच / पं.स. / ज़ि.प. सदस्य — सभी डिज़ाइन 10 पैसे, Ph 15 पैसे)। सॉफ़्टवेयर लाइसेंस: शुल्क = लाइसेंस वाले क्षेत्र की संख्या × लाइसेंस रेट (चारों पद ${paise(LICENCE_RATES.all)} पैसे, पंच + सरपंच ${paise(LICENCE_RATES.gp)} पैसे, ज़िला परिषद + पंचायत समिति सदस्य ${paise(LICENCE_RATES.zpps)} पैसे)। पूरी रेट सूची: saubhagya.net/pricing`,
+          `Campaign slips: amount = count in the selected area × per-slip rate (P ${paise(SERIES_RATES.P)} paise, A ${paise(SERIES_RATES.A)} paise, Ph ${paise(SERIES_RATES.Ph)} paise; Sarpanch / PS / ZP member — all designs 10 paise, Ph 15 paise). Software licence: fee = count in the licensed area × licence rate (all four posts ${paise(LICENCE_RATES.all)} paise, Panch + Sarpanch ${paise(LICENCE_RATES.gp)} paise, ZP + PS member ${paise(LICENCE_RATES.zpps)} paise). Full rate list: saubhagya.net/pricing`,
         ),
         p(
           "पूरी संख्या और राशि भुगतान से पहले बताई जाती है। रेट बदल सकते हैं, पर जिस ऑर्डर का भुगतान हो चुका है उस पर पुराना रेट ही लागू रहेगा।",
@@ -884,8 +914,8 @@ export const SOFTWARE: PolicyDoc = {
       title: p("पूरे क्षेत्र का लाइसेंस", "Licence for a full area"),
       paras: [
         p(
-          `WhatsApp ${CONTACT_DISPLAY} पर अपना ज़िला / पंचायत समिति और पद बताइए — इसी सॉफ़्टवेयर में खुलने वाली डेटा-फ़ाइल और उसका कोड भेजे जाएँगे। रेट: चारों पद ${paise(LICENCE_RATES.all)} पैसे / रिकॉर्ड, एक पद ${paise(LICENCE_RATES.one)} पैसे / रिकॉर्ड। लाइसेंस निर्दिष्ट अवधि तक; शर्तें: saubhagya.net/terms (धारा 9)।`,
-          `Tell us your district / panchayat samiti and post(s) on WhatsApp ${CONTACT_DISPLAY} — we send a data file that opens in this same software, with its code. Rates: all four posts ${paise(LICENCE_RATES.all)} paise / record, one post ${paise(LICENCE_RATES.one)} paise / record. The licence runs for the specified period; terms: saubhagya.net/terms (clause 9).`,
+          `WhatsApp ${CONTACT_DISPLAY} पर अपना ज़िला / पंचायत समिति और पद बताइए — इसी सॉफ़्टवेयर में खुलने वाली डेटा-फ़ाइल और उसका कोड भेजे जाएँगे। रेट: चारों पद ${paise(LICENCE_RATES.all)} पैसे / रिकॉर्ड, पंच + सरपंच ${paise(LICENCE_RATES.gp)} पैसे / रिकॉर्ड, ज़िला परिषद + पंचायत समिति सदस्य ${paise(LICENCE_RATES.zpps)} पैसे / रिकॉर्ड। लाइसेंस निर्दिष्ट अवधि तक; शर्तें: saubhagya.net/terms (धारा 9)।`,
+          `Tell us your district / panchayat samiti and post(s) on WhatsApp ${CONTACT_DISPLAY} — we send a data file that opens in this same software, with its code. Rates: all four posts ${paise(LICENCE_RATES.all)} paise / record, Panch + Sarpanch ${paise(LICENCE_RATES.gp)} paise / record, ZP + PS member ${paise(LICENCE_RATES.zpps)} paise / record. The licence runs for the specified period; terms: saubhagya.net/terms (clause 9).`,
         ),
       ],
     },
