@@ -5,8 +5,8 @@
  * section 3). Rates follow the payment-gateway audit (section 5.3):
  *
  *   P  — सादी पर्ची             15 पैसे / पर्ची
- *   S  — प्रतीक-चिन्ह पट्टी      16 पैसे / पर्ची
- *   A  — विज्ञापन / बैनर          16 पैसे / पर्ची
+ *   S  — प्रतीक-चिन्ह पट्टी      15 पैसे / पर्ची
+ *   A  — विज्ञापन / बैनर          15 पैसे / पर्ची
  *   Ph — फ़ोटो सहित               20 पैसे / पर्ची
  *
  * Amount = voters × rate. The server always recomputes it; the browser's
@@ -17,8 +17,8 @@ export type Series = "P" | "S" | "A" | "Ph";
 
 export const SERIES_RATES: Record<Series, number> = {
   P: 0.15,
-  S: 0.16,
-  A: 0.16,
+  S: 0.15,
+  A: 0.15,
   Ph: 0.2,
 };
 
