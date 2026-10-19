@@ -114,6 +114,11 @@ const NAMUNE_LEFT: Namuna[] = [
   { png: "P-8", id: "P-8", hi: "सादी — 8 स्लिप (बड़ी)", en: "Plain — 8 (large)" },
   { png: "P-6", id: "P-6", hi: "सादी — 6 स्लिप (बड़ी)", en: "Plain — 6 (large)" },
   { png: "P-4", id: "P-4", hi: "सादी — 4 स्लिप (सबसे बड़ी)", en: "Plain — 4 (largest)" },
+  { png: "Ph-16", id: "Ph-16", hi: "फ़ोटो वाली — हर पर्ची पर मतदाता की फ़ोटो (16 स्लिप)", en: "With voter photo — 16 per page" },
+  { png: "Ph-12", id: "Ph-12", hi: "फ़ोटो वाली — 12 स्लिप", en: "With voter photo — 12" },
+  { png: "Ph-10", id: "Ph-10", hi: "फ़ोटो वाली — 10 स्लिप", en: "With voter photo — 10" },
+  { png: "Ph-8", id: "Ph-8", hi: "फ़ोटो वाली — 8 स्लिप (बड़ी)", en: "With voter photo — 8 (large)" },
+  { png: "Ph-4", id: "Ph-4", hi: "फ़ोटो वाली — 4 स्लिप (सबसे बड़ी)", en: "With voter photo — 4 (largest)" },
 ];
 const NAMUNE_RIGHT: Namuna[] = [
   { png: "AT-9", id: "AT-9", hi: "विज्ञापन ऊपर — 9 स्लिप; यहाँ आपका दिया बैनर / फ़ोटो छपता है", en: "Ad on top — 9; your banner / photo prints here" },
