@@ -100,7 +100,7 @@ const CARDS: Card[] = [
  * design we make. Images are rendered by the PC app (order.saubhagya.net/namune/<id>.png, with the
  * design code as a light purple watermark); a missing image just hides its card.
  */
-const NAMUNE_BASE = "https://order.saubhagya.net/namune/";
+const NAMUNE_BASE = "https://order.saubhagya.net/api/order/namune/";
 type Namuna = { png: string; id: string; hi: string; en: string };
 const NAMUNE_LEFT: Namuna[] = [
   { png: "SR-10", id: "SR-10", hi: "चिन्ह दायीं ओर — उम्मीदवार का नाम, चिन्ह व क्रम", en: "Symbol right — name, symbol & serial" },
