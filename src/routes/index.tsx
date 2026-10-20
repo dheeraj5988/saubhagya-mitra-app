@@ -50,17 +50,6 @@ type Card = {
 
 const CARDS: Card[] = [
   {
-    kind: "adv",
-    icon: "🗓",
-    hi: "सरपंच / पंच — अग्रिम बुकिंग · 1 घंटे में चुनाव-चिन्ह सहित पर्चियाँ",
-    en: "Sarpanch / Panch — Advance booking · slips with symbol within 1 hour",
-    subHi: "चुनाव-चिन्ह मिलने वाले दिन सबसे ज़्यादा भीड़ होती है — अभी अपना 1 घंटे का स्लॉट पक्का कीजिए; स्लॉट में जानकारी भरिए, चुनाव-चिन्ह सहित पर्चियाँ लगभग 1 घंटे में।",
-    subEn: "The symbol-allotment day is the busiest — book your 1-hour slot now; fill in your details in the slot and get your slips with the symbol in about an hour.",
-    hot: true,
-    badgeHi: "नया · सीमित स्लॉट",
-    badgeEn: "New · limited slots",
-  },
-  {
     kind: "pdf",
     icon: "🧾",
     hi: "वोटर पर्ची PDF",
@@ -223,7 +212,7 @@ function Index() {
             href="https://order.saubhagya.net/order/matpatra"
             className="inline-block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-slate-600 no-underline hover:border-primary hover:text-primary"
           >
-            {en ? "🗳 Free sample ballot / EVM →" : "🗳 नमूना मतपत्र / EVM (फ़्री) →"}
+            {en ? "🗳 Sample EVM (free) · ballot (₹20) →" : "🗳 नमूना EVM (फ़्री) · मतपत्र (₹20) →"}
           </a>
         </p>
       </main>
