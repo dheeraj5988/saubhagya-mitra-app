@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Card = {
-  kind: "adv" | "pdf" | "sample" | "exe" | "data";
+  kind: "matpatra" | "adv" | "pdf" | "sample" | "exe" | "data";
   /** 18.10.2026 — order site par seedha alag pej (kind ki jagah) */
   href?: string;
   /** 18.10.2026 — highlighted (agrim booking) */
@@ -49,6 +49,15 @@ type Card = {
 };
 
 const CARDS: Card[] = [
+  {
+    kind: "matpatra",
+    href: "https://order.saubhagya.net/order/matpatra",
+    icon: "🗳",
+    hi: "नमूना मतपत्र / EVM",
+    en: "Sample ballot / EVM",
+    subHi: "नमूना EVM (ZP/PS) फ़्री · नमूना मतपत्र (पंच/सरपंच) ₹20",
+    subEn: "Sample EVM (ZP/PS) free · sample ballot (panch/sarpanch) ₹20",
+  },
   {
     kind: "pdf",
     icon: "🧾",
@@ -207,14 +216,6 @@ function Index() {
             </a>
           ))}
         </div>
-        <p className="mt-6 text-right text-xs text-slate-400">
-          <a
-            href="https://order.saubhagya.net/order/matpatra"
-            className="inline-block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-slate-600 no-underline hover:border-primary hover:text-primary"
-          >
-            {en ? "🗳 Sample EVM (free) · ballot (₹20) →" : "🗳 नमूना EVM (फ़्री) · मतपत्र (₹20) →"}
-          </a>
-        </p>
       </main>
       <NamuneRail items={NAMUNE_RIGHT} title={en ? "With advertisement (your banner)" : "विज्ञापन वाली (आपका बैनर / फ़ोटो)"} en={en} />
       </div>
